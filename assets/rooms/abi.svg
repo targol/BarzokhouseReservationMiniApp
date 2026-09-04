@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 320" width="100%" height="100%">
+  <defs>
+    <linearGradient id="abiBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ebf4f8"/>
+      <stop offset="100%" stop-color="#cadde6"/>
+    </linearGradient>
+    <linearGradient id="turquoiseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b7b99"/>
+      <stop offset="100%" stop-color="#0c4456"/>
+    </linearGradient>
+  </defs>
+  <rect width="500" height="320" fill="url(#abiBg)"/>
+  
+  <!-- Persian Turquoise Tile Arch (طاق کاشی‌کاری فیروزه‌ای و لاجوردی) -->
+  <path d="M 60 320 L 60 130 C 60 50, 440 50, 440 130 L 440 320 Z" fill="#f8fafc" stroke="#1b7b99" stroke-width="4"/>
+  <path d="M 90 320 L 90 145 C 90 75, 410 75, 410 145 L 410 320 Z" fill="#ffffff"/>
+  
+  <!-- Turquoise Tile Pattern Row -->
+  <g fill="url(#turquoiseGrad)" opacity="0.85">
+    <rect x="130" y="80" width="24" height="24" rx="2"/>
+    <rect x="160" y="80" width="24" height="24" rx="2"/>
+    <rect x="190" y="80" width="24" height="24" rx="2"/>
+    <rect x="220" y="80" width="24" height="24" rx="2"/>
+    <rect x="250" y="80" width="24" height="24" rx="2"/>
+    <rect x="280" y="80" width="24" height="24" rx="2"/>
+    <rect x="310" y="80" width="24" height="24" rx="2"/>
+    <rect x="340" y="80" width="24" height="24" rx="2"/>
+  </g>
+  
+  <!-- Window with Stained Glass (ارسی و شیشه‌های رنگی) -->
+  <g transform="translate(190, 115)">
+    <rect width="120" height="85" rx="8" fill="#1b7b99" opacity="0.2"/>
+    <circle cx="35" cy="40" r="18" fill="#258fba" opacity="0.7"/>
+    <circle cx="85" cy="40" r="18" fill="#d49b29" opacity="0.7"/>
+    <circle cx="60" cy="55" r="16" fill="#1b7b99" opacity="0.8"/>
+    <rect width="120" height="85" rx="8" fill="none" stroke="#684227" stroke-width="4"/>
+  </g>
+  
+  <!-- Cozy Double Bed with Soft Blue Linens -->
+  <g transform="translate(130, 205)">
+    <rect x="0" y="35" width="240" height="40" rx="4" fill="#3a2516"/>
+    <rect x="10" y="20" width="220" height="25" rx="6" fill="#1e5870"/>
+    <rect x="15" y="5" width="65" height="20" rx="8" fill="#f0f7fa" stroke="#c0dce7" stroke-width="2"/>
+    <rect x="85" y="5" width="65" height="20" rx="8" fill="#f0f7fa" stroke="#c0dce7" stroke-width="2"/>
+    <rect x="155" y="5" width="65" height="20" rx="8" fill="#f0f7fa" stroke="#c0dce7" stroke-width="2"/>
+  </g>
+  
+  <text x="250" y="300" text-anchor="middle" fill="#0f3d4d" font-family="sans-serif" font-size="18" font-weight="bold">اتاق آبی • آرامش لاجوردی و نور فیروزه‌ای</text>
+</svg>

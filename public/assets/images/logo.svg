@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#233e33"/>
+      <stop offset="100%" stop-color="#162922"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0c265"/>
+      <stop offset="100%" stop-color="#c58b1f"/>
+    </linearGradient>
+  </defs>
+  <!-- Background badge -->
+  <rect width="200" height="200" rx="40" fill="url(#logoBg)"/>
+  
+  <!-- Subtle decorative traditional border -->
+  <rect x="12" y="12" width="176" height="176" rx="32" fill="none" stroke="url(#gold)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="6,4"/>
+  
+  <!-- Traditional Arch (طاق سنتی) -->
+  <path d="M 60 148 L 60 90 C 60 55, 140 55, 140 90 L 140 148 Z" fill="none" stroke="url(#gold)" stroke-width="4" stroke-linejoin="round"/>
+  
+  <!-- Inner window grille (گره چینی) -->
+  <path d="M 75 148 L 75 96 C 75 75, 125 75, 125 96 L 125 148 Z" fill="#2d4e41" opacity="0.6"/>
+  <circle cx="100" cy="90" r="10" fill="none" stroke="url(#gold)" stroke-width="2.5"/>
+  <line x1="100" y1="100" x2="100" y2="148" stroke="url(#gold)" stroke-width="2.5"/>
+  <line x1="75" y1="120" x2="125" y2="120" stroke="url(#gold)" stroke-width="2.5"/>
+  
+  <!-- Sun / Morning glow over Barzok mountains -->
+  <path d="M 45 155 Q 100 135 155 155" fill="none" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Traditional Leaf / Green motif -->
+  <path d="M 100 42 C 108 30, 118 36, 114 48 C 110 58, 100 62, 100 62 C 100 62, 90 58, 86 48 C 82 36, 92 30, 100 42 Z" fill="url(#gold)"/>
+</svg>

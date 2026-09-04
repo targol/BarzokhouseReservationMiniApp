@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Telegram Mini App & Cloudflare Bot | خانه برزک</title>
+    <meta name="description" content="Telegram Mini App for Barzok House eco-lodge (اقامتگاه بومگردی خانه برزک) with pure HTML, CSS, Vanilla JS, Telegram WebApp SDK, room reservations, and food menu." />
+    <meta property="og:title" content="Telegram Mini App & Cloudflare Bot | خانه برزک" />
+    <meta property="og:description" content="Telegram Mini App for Barzok House eco-lodge (اقامتگاه بومگردی خانه برزک) with pure HTML, CSS, Vanilla JS, Telegram WebApp SDK, room reservations, and food menu." />
+    
+    <!-- Telegram WebApp Official JS SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- فونت زیبای وزیرمتن برای تایپوگرافی فارسی سنتی و مدرن -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app-container" id="app-container">
+      
+      <!-- هدر و هویت بصری خانه برزک -->
+      <header class="app-header" id="app-header">
+        <div class="brand-bar">
+          <img src="./assets/images/logo.svg" alt="لوگوی خانه برزک" class="brand-logo" id="header-brand-logo" />
+          <div class="brand-meta">
+            <h1 class="brand-title" id="header-brand-title">اقامتگاه بومگردی خانه برزک</h1>
+            <p class="brand-subtitle">برزک، در نزدیکی کاشان • همنشین با اصالت و طبیعت</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========================================================
+           ۱. صفحه اصلی (Home Screen)
+           ======================================================== -->
+      <section class="screen active" id="screen-home">
+        <!-- پیام خوش‌آمدگویی و معرفی -->
+        <div class="welcome-card" id="welcome-intro-card">
+          <h2 class="welcome-heading">به اقامتگاه بومگردی خانه برزک خوش آمدید</h2>
+          <p class="welcome-text">
+            خانه برزک یک اقامتگاه بومگردی در برزک، در نزدیکی کاشان است؛ یک خانه تاریخی که مهمانان در آن علاوه بر اقامت، امکان آشنایی و ارتباط با فضای محلی و زندگی مردم منطقه را دارند.
+          </p>
+          <div class="welcome-badges">
+            <span class="badge">🌿 آرامش کوهستان</span>
+            <span class="badge">🍲 غذاهای ارگانیک محلی</span>
+            <span class="badge badge-gold">🌱 سفر سبز و پایدار</span>
+          </div>
+        </div>
+
+        <!-- منوی اصلی (Main Menu Buttons) -->
+        <h3 class="section-title">منوی اصلی اقامتگاه</h3>
+        <div class="menu-grid" id="main-menu-grid">
+          
+          <!-- ۱. اتاق‌ها (کارت ویژه) -->
+          <div class="menu-card featured" id="menu-btn-rooms" onclick="navigateTo('screen-rooms')">
+            <div class="menu-card-icon">🏠</div>
+            <div class="menu-card-info">
+              <h4 class="menu-card-title">اتاق‌های خانه برزک</h4>
+              <p class="menu-card-desc">مشاهده ظرفیت، امکانات و درخواست رزرو ۵ اتاق تاریخی</p>
+            </div>
+            <span style="font-size: 18px; color: var(--brand-mustard);">←</span>
+          </div>
+
+          <!-- ۲. آدرس و موقعیت -->
+          <div class="menu-card" id="menu-btn-address" onclick="navigateTo('screen-address')">
+            <div class="menu-card-icon">📍</div>
+            <h4 class="menu-card-title">آدرس و نقشه</h4>
+            <p class="menu-card-desc">موقعیت دقیق روی نقشه و مسیر دسترسی</p>
+          </div>
+
+          <!-- ۳. تماس با ما -->
+          <div class="menu-card" id="menu-btn-contact" onclick="navigateTo('screen-contact')">
+            <div class="menu-card-icon">📞</div>
+            <h4 class="menu-card-title">تماس با ما</h4>
+            <p class="menu-card-desc">شماره تماس مستقیم و مشاوره سفر</p>
+          </div>
+
+          <!-- ۴. شبکه‌های اجتماعی -->
+          <div class="menu-card" id="menu-btn-social" onclick="navigateTo('screen-social')">
+            <div class="menu-card-icon">📱</div>
+            <h4 class="menu-card-title">شبکه‌های اجتماعی</h4>
+            <p class="menu-card-desc">کانال تلگرام و صفحه اینستاگرام</p>
+          </div>
+
+          <!-- ۵. قوانین خانه -->
+          <div class="menu-card" id="menu-btn-rules" onclick="navigateTo('screen-rules')">
+            <div class="menu-card-icon">📜</div>
+            <h4 class="menu-card-title">قوانین خانه</h4>
+            <p class="menu-card-desc">شرایط ورود مهمان و نکات پیش از اقامت</p>
+          </div>
+
+          <!-- ۶. آب‌وهوا -->
+          <div class="menu-card" id="menu-btn-weather" onclick="navigateTo('screen-weather')">
+            <div class="menu-card-icon">🌤️</div>
+            <h4 class="menu-card-title">آب‌وهوای برزک</h4>
+            <p class="menu-card-desc">پیش‌بینی وضعیت جوی و راهنمای پوشش</p>
+          </div>
+
+          <!-- ۷. سفر سبز به خانه برزک -->
+          <div class="menu-card" id="menu-btn-green" onclick="navigateTo('screen-green-travel')">
+            <div class="menu-card-icon">🌱</div>
+            <h4 class="menu-card-title">سفر سبز</h4>
+            <p class="menu-card-desc">همیاری در حفظ محیط‌زیست و طبیعت برزک</p>
+          </div>
+
+          <!-- ۸. منوی غذا -->
+          <div class="menu-card" id="menu-btn-food" onclick="navigateTo('screen-food')">
+            <div class="menu-card-icon">🍽️</div>
+            <h4 class="menu-card-title">منوی غذا</h4>
+            <p class="menu-card-desc">غذاهای سنتی و ثبت درخواست وعده غذایی</p>
+          </div>
+
+          <!-- ۹. وب‌سایت خانه برزک -->
+          <a class="menu-card" id="menu-btn-website" href="https://barzokhouse.com" target="_blank" rel="noopener noreferrer">
+            <div class="menu-card-icon">🌐</div>
+            <h4 class="menu-card-title">وب‌سایت خانه برزک</h4>
+            <p class="menu-card-desc">مشاهده وب‌سایت رسمی: barzokhouse.com</p>
+          </a>
+
+          <!-- ۱۰. نظر و امتیاز شما -->
+          <div class="menu-card" id="menu-btn-reviews" onclick="navigateTo('screen-reviews')" style="grid-column: span 2;">
+            <div class="menu-card-icon">⭐</div>
+            <h4 class="menu-card-title">نظر و امتیاز شما</h4>
+            <p class="menu-card-desc">ثبت تجربه اقامت در Google Maps و TripAdvisor</p>
+          </div>
+
+        </div>
+
+        <!-- پیام درباره رفتار بات پیش از Start (بخش ۲۳ پرامپت) -->
+        <div class="disclaimer-banner" style="margin-top: 12px;">
+          <span>💡</span>
+          <div>
+            <strong>نکته درباره پیام معرفی بات:</strong> متن معرفی بات تلگرام («سلام 👋 به بات خانه برزک خوش آمدید...») از طریق دستور <code>/setdescription</code> در BotFather تلگرام تنظیم می‌شود تا قبل از دکمه Start برای کاربر نمایش یابد.
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ۷. صفحه لیست اتاق‌ها (Rooms Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-rooms">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-rooms">
+            ← بازگشت به صفحه اصلی
+          </button>
+          <span class="screen-title">🏠 اتاق‌ها</span>
+        </div>
+
+        <p style="font-size: 13.5px; color: var(--brand-text-muted); margin-bottom: 16px;">
+          برای مشاهده جزئیات، عکس‌ها و ارسال درخواست رزرو، اتاق مورد نظر خود را انتخاب فرمایید:
+        </p>
+
+        <!-- کانتینر کارت‌های ۵ اتاق (شاتوت، قالی، آبی، سرا، بالاخونه) -->
+        <div class="rooms-grid" id="rooms-list-container"></div>
+      </section>
+
+
+      <!-- ========================================================
+           ۸. صفحه جزئیات اتاق (Room Detail Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-room-detail">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-room-detail">
+            ← بازگشت به اتاق‌ها
+          </button>
+          <span class="screen-title" id="detail-room-name">جزئیات اتاق</span>
+        </div>
+
+        <img src="" alt="تصویر اتاق" class="detail-hero-img" id="detail-room-img" />
+
+        <div class="detail-specs-grid">
+          <div class="spec-item">
+            <span class="spec-label">ظرفیت اقامت</span>
+            <span class="spec-value" id="detail-capacity">تا ۴ نفر</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">تعداد و نوع تخت</span>
+            <span class="spec-value" id="detail-beds">تخت و سرویس سنتی</span>
+          </div>
+        </div>
+
+        <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 8px;">امکانات اتاق:</h4>
+        <div class="amenities-list" id="detail-amenities"></div>
+
+        <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 8px;">درباره اتاق:</h4>
+        <p class="welcome-text" id="detail-desc" style="margin-bottom: 16px;"></p>
+
+        <!-- بخش قیمت و توضیحات نرخ -->
+        <div class="price-box">
+          <div class="price-main" id="detail-price">۱,۸۰۰,۰۰۰ تومان / هر شب</div>
+          <div class="price-note" id="detail-price-note"></div>
+        </div>
+
+        <!-- دکمه درخواست رزرو این اتاق -->
+        <button class="btn btn-mustard" id="btn-request-reservation" onclick="startReservationForCurrentRoom()">
+          🏠 درخواست رزرو این اتاق
+        </button>
+      </section>
+
+
+      <!-- ========================================================
+           ۱۰. فرم درخواست رزرو (Reservation Form Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-reservation">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-reservation">
+            ← بازگشت
+          </button>
+          <span class="screen-title">📝 فرم درخواست رزرو</span>
+        </div>
+
+        <form class="form-card" id="reservation-form" onsubmit="submitReservationForm(event)">
+          
+          <h4 style="font-size: 14.5px; font-weight: 800; color: var(--brand-green); margin-bottom: 14px;">
+            اطلاعات مهمان
+          </h4>
+
+          <div class="form-group">
+            <label class="form-label" for="res-name">نام و نام خانوادگی:</label>
+            <input type="text" class="form-input" id="res-name" placeholder="مثال: مریم علوی" required />
+            <span class="form-hint">در صورت حضور در تلگرام نام اولیه شما به شکل خودکار ثبت شده و قابل اصلاح است.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="res-phone">شماره تلفن تماس (موبایل):</label>
+            <input type="tel" class="form-input" id="res-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+            <span class="form-hint">جهت هماهنگی و تایید درخواست رزرو توسط میزبان</span>
+          </div>
+
+          <h4 style="font-size: 14.5px; font-weight: 800; color: var(--brand-green); margin: 20px 0 14px;">
+            اطلاعات اقامت
+          </h4>
+
+          <div class="form-group">
+            <label class="form-label" for="res-room-select">اتاق انتخابی:</label>
+            <select class="form-select" id="res-room-select"></select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="res-checkin-date">تاریخ ورود:</label>
+            <input type="date" class="form-input" id="res-checkin-date" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">تعداد شب اقامت:</label>
+            <div class="stepper">
+              <button type="button" class="stepper-btn" onclick="changeReservationNights(-1)">-</button>
+              <span class="stepper-val" id="res-nights-val">۱ شب</span>
+              <button type="button" class="stepper-btn" onclick="changeReservationNights(1)">+</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">تاریخ خروج (محاسبه خودکار):</label>
+            <div style="background: var(--brand-surface-subtle); padding: 12px 14px; border-radius: var(--radius-md); font-weight: 700; color: var(--brand-green); border: 1px solid var(--brand-border);" id="res-checkout-display">
+              --
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">تعداد نفرات:</label>
+            <div class="stepper">
+              <button type="button" class="stepper-btn" onclick="changeReservationGuests(-1)">-</button>
+              <span class="stepper-val" id="res-guests-val">۲ نفر</span>
+              <button type="button" class="stepper-btn" onclick="changeReservationGuests(1)">+</button>
+            </div>
+          </div>
+
+          <!-- جعبه برآورد هزینه -->
+          <div class="estimate-box">
+            <div class="estimate-row">
+              <span id="res-summary-room">اتاق شاتوت</span>
+              <span id="res-summary-nights">۱ شب</span>
+            </div>
+            <div class="estimate-row estimate-total">
+              <span>برآورد اولیه اقامت:</span>
+              <span id="res-summary-total">۱,۸۰۰,۰۰۰ تومان</span>
+            </div>
+          </div>
+
+          <!-- تاکید بر عدم پرداخت و پیش‌نویس بودن رزرو -->
+          <div class="disclaimer-banner">
+            <span>⚠️</span>
+            <div>«این مبلغ صرفاً برآورد اولیه است و درخواست شما پس از بررسی و تأیید خانه برزک قطعی خواهد شد.»</div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary" id="btn-submit-reservation">
+              📩 ارسال درخواست رزرو
+            </button>
+          </div>
+
+        </form>
+      </section>
+
+
+      <!-- ========================================================
+           ۳. صفحه آدرس و نقشه (Address Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-address">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-address">
+            ← بازگشت
+          </button>
+          <span class="screen-title">📍 آدرس و مسیر دسترسی</span>
+        </div>
+
+        <div class="content-card">
+          <h3>آدرس پستی خانه برزک</h3>
+          <p id="display-house-address" style="font-weight: 500; line-height: 1.8;">
+            استان اصفهان، شهرستان کاشان، شهر برزک، محله مصلی، کوچه باغستان، اقامتگاه بومگردی خانه برزک
+          </p>
+
+          <div class="button-stack">
+            <a class="btn btn-mustard" id="btn-open-map" data-config-map href="https://maps.google.com/?q=33.7915,51.2223" target="_blank" rel="noopener noreferrer">
+              📍 مشاهده موقعیت روی نقشه
+            </a>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <h3>راهنمای دسترسی به برزک</h3>
+          <p>
+            شهر کوهستانی برزک در ۴۵ کیلومتری جنوب غربی کاشان واقع شده است. جاده کاشان به برزک آسفالت و دارای چشم‌اندازهای کوهستانی زیبا و باغات گل محمدی و گردو می‌باشد.
+          </p>
+          <p style="font-size: 13px; color: var(--brand-text-muted);">
+            فاصله تقریبی از تهران: حدود ۲۵۰ کیلومتر (۳ ساعت) • فاصله از اصفهان: حدود ۱۷۰ کیلومتر
+          </p>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ۴. صفحه تماس با ما (Contact Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-contact">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-contact">
+            ← بازگشت
+          </button>
+          <span class="screen-title">📞 تماس با خانه برزک</span>
+        </div>
+
+        <div class="content-card">
+          <h3>ارتباط تلفنی مستقیم</h3>
+          <p>
+            برای استعلام رزرو، هماهنگی ساعت ورود یا طرح هرگونه سؤال، می‌توانید مستقیماً با اقامتگاه تماس بگیرید:
+          </p>
+
+          <div style="background: var(--brand-surface-subtle); padding: 14px; border-radius: var(--radius-md); text-align: center; margin: 16px 0; border: 1px solid var(--brand-border);">
+            <div style="font-size: 12.5px; color: var(--brand-text-muted); margin-bottom: 4px;">شماره همراه اقامتگاه:</div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--brand-green);" id="display-house-phone">۰۹۱۳ ۰۰۰ ۰۰۰۰</div>
+          </div>
+
+          <div class="button-stack">
+            <a class="btn btn-primary" id="btn-call-phone" data-config-phone href="tel:09130000000">
+              📞 تماس با خانه برزک
+            </a>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <h3>پاسخگویی و مهمان‌نوازی</h3>
+          <p>
+            ما همیشه مشتاق شنیدن صدای گرم شما هستیم و پیش و هنگام سفر، همراهتان خواهیم بود تا اقامتی بی‌دغدغه و سرشار از خاطره‌های خوب داشته باشید.
+          </p>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ۵. صفحه شبکه‌های اجتماعی (Social Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-social">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-social">
+            ← بازگشت
+          </button>
+          <span class="screen-title">📱 شبکه‌های اجتماعی</span>
+        </div>
+
+        <div class="content-card">
+          <h3>همراهی در شبکه‌های اجتماعی</h3>
+          <p>
+            برای دیدن تصاویر روزانه از فصول مختلف برزک، رویدادهای گلاب‌گیری، چیدن شاتوت و باخبر شدن از اخبار خانه برزک، ما را دنبال کنید:
+          </p>
+
+          <div class="button-stack">
+            <a class="btn btn-primary" id="btn-social-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer">
+              📱 تلگرام خانه برزک
+            </a>
+
+            <a class="btn btn-mustard" id="btn-social-instagram" data-config-instagram href="https://instagram.com/barzokhouse" target="_blank" rel="noopener noreferrer">
+              📷 اینستاگرام خانه برزک
+            </a>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ۱۳. صفحه قوانین خانه (Rules Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-rules">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-rules">
+            ← بازگشت
+          </button>
+          <span class="screen-title">📜 قوانین خانه</span>
+        </div>
+
+        <div class="content-card">
+          <p style="margin-bottom: 14px;">
+            سلام
+          </p>
+          <p style="margin-bottom: 14px;">
+            از اینکه خانه برزک را برای اقامت خود انتخاب کرده‌اید، خوشحالیم و مشتاق دیدار شما هستیم.
+          </p>
+          <p style="margin-bottom: 20px;">
+            برای اینکه اقامت راحت‌تر و لذت‌بخش‌تری داشته باشید، لطفاً پیش از سفر نگاهی به موارد زیر بیندازید، مطالعه آن کمتر از ۳ دقیقه زمان می‌برد.
+          </p>
+
+          <h3 style="margin-top: 20px;">آشنایی با خانه برزک</h3>
+          <p>
+            اطلاعات اتاق‌ها، امکانات، مسیر دسترسی و سایر اطلاعات موردنیاز را در سایت مشاهده کنید.
+          </p>
+          
+          <div class="button-stack" style="margin-bottom: 24px;">
+            <a class="btn btn-outline" id="btn-rules-rooms-info" data-config-rooms-info href="https://barzokhouse.com/مشاهده-اتاق-ها" target="_blank" rel="noopener noreferrer">
+              🔗 مشاهده اطلاعات اتاق‌ها
+            </a>
+          </div>
+
+          <h3>چند نکته پیش از اقامت</h3>
+          <p>
+            برای اینکه همه مهمانان اقامت آرام و دلپذیری داشته باشند، لطفاً نکات خانه و ورود مهمان را در طول اقامت در نظر داشته باشید.
+          </p>
+
+          <div class="button-stack" style="margin-bottom: 24px;">
+            <a class="btn btn-outline-mustard" id="btn-rules-guest-terms" data-config-rules href="https://barzokhouse.com/شرایط-خانه-و-ورود-مهمان/" target="_blank" rel="noopener noreferrer">
+              📜 مشاهده شرایط خانه و ورود مهمان
+            </a>
+          </div>
+
+          <p style="font-weight: 500; color: var(--brand-green); margin-top: 18px;">
+            اگر پیش از سفر سؤال یا ابهامی داشتید، با کمال میل پاسخگوی شما هستیم.
+          </p>
+          <p style="font-weight: 700; color: var(--brand-green); margin-top: 6px;">
+            به امید دیدار شما در خانه برزک
+          </p>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ۱۴. صفحه آب‌وهوا (Weather Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-weather">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-weather">
+            ← بازگشت
+          </button>
+          <span class="screen-title">🌤️ آب‌وهوای برزک</span>
+        </div>
+
+        <div class="content-card">
+          <h3>اقلیم کوهستانی برزک</h3>
+          <p>
+            برزک در دامنه کوه‌های سرسبز کرکس قرار دارد و به دلیل ارتفاع بیشتر، آب‌وهوایی خنک‌تر و مطبوع‌تر از دشت کاشان دارد. تابستان‌های برزک خنک و دلپذیر بوده و در فصول بهار و پاییز هوایی باطراوت همراه با بوی شکوفه‌ها و گلاب دارد.
+          </p>
+
+          <div class="button-stack" style="margin-top: 18px;">
+            <a class="btn btn-mustard" id="btn-weather-forecast" data-config-weather href="https://www.accuweather.com/en/ir/azaran/208117/weather-forecast/208117?type=place&placename=barzok%20house" target="_blank" rel="noopener noreferrer">
+              🌤️ مشاهده وضعیت آب‌وهوا
+            </a>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <h3>پیشنهاد پوشش برای مسافران</h3>
+          <p style="font-size: 13.5px; color: var(--brand-text-muted);">
+            به دلیل اختلاف دمای شب و روز در مناطق کوهستانی، پیشنهاد می‌کنیم حتی در فصل تابستان یک لباس آستین‌بلند یا بالاپوش سبک برای قدم زدن در باغستان‌ها و شب‌های ایوان بالاخونه همراه داشته باشید.
+          </p>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ۱۵. صفحه سفر سبز به خانه برزک (Green Travel Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-green-travel">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-green-travel">
+            ← بازگشت
+          </button>
+          <span class="screen-title">🌱 سفر سبز</span>
+        </div>
+
+        <div class="content-card">
+          <img src="./assets/images/green-travel.svg" alt="سفر سبز به خانه برزک" class="green-travel-banner" id="green-travel-img" />
+          
+          <h3>🌱 سفر سبز به خانه برزک</h3>
+          <p style="font-size: 14.5px; font-weight: 500; color: var(--brand-green);">
+            «با چند کار ساده می‌توانیم در کنار هم به حفظ طبیعت زیبای برزک کمک کنیم.»
+          </p>
+
+          <ul class="eco-tips-list">
+            <li class="eco-tip-item">
+              <span class="eco-tip-icon">🚯</span>
+              <span>کاهش زباله و پرهیز از ظروف پلاستیکی یک‌بارمصرف در اقامتگاه</span>
+            </li>
+            <li class="eco-tip-item">
+              <span class="eco-tip-icon">💧</span>
+              <span>مصرف مسئولانه آب و انرژی با احترام به منابع ارزشمند بومی منطقه</span>
+            </li>
+            <li class="eco-tip-item">
+              <span class="eco-tip-icon">🧺</span>
+              <span>حمایت از اقتصاد محلی با خرید محصولات باغی و صنایع‌دستی اهالی برزک</span>
+            </li>
+            <li class="eco-tip-item">
+              <span class="eco-tip-icon">🌸</span>
+              <span>احترام به فرهنگ، سکوت و آرامش محله‌های بومی و تاریخی</span>
+            </li>
+          </ul>
+
+          <div class="button-stack">
+            <a class="btn btn-primary" id="btn-green-travel-info" data-config-green-travel href="https://barzokhouse.com/green-eco-lodge/" target="_blank" rel="noopener noreferrer">
+              🌱 درباره سفر سبز به خانه برزک
+            </a>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           ۱۶ و ۱۷. صفحه منوی غذا و درخواست غذا (Food Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-food">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-food">
+            ← بازگشت
+          </button>
+          <span class="screen-title">🍽️ منوی غذای خانه برزک</span>
+        </div>
+
+        <div class="content-card" style="padding-bottom: 14px;">
+          <p style="margin-bottom: 12px;">
+            غذاهای خانه برزک با مواد اولیه محلی، گوشت گرم، سبزیجات کوهی و دستورهای اصیل منطقه طبخ می‌شوند.
+          </p>
+          <a class="btn btn-outline" id="btn-food-recipes-site" data-config-food-menu href="https://barzokhouse.com/%d8%af%d8%b3%d8%aa%d9%88%d8%b1-%d9%be%d8%ae%d8%aa-%d8%ba%d8%b0%d8%a7%d9%87%d8%a7/" target="_blank" rel="noopener noreferrer">
+            📖 مشاهده دستور پخت و جزئیات در وب‌سایت
+          </a>
+        </div>
+
+        <div class="alert alert-warning" style="margin-bottom: 14px;">
+          <span>ℹ️</span>
+          <span><strong>قانون سفارش:</strong> در هر وعده غذایی حداکثر امکان انتخاب <strong>دو نوع غذای متفاوت</strong> وجود دارد.</span>
+        </div>
+
+        <!-- لیست غذاها -->
+        <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 10px;">انتخاب غذاها از منو:</h4>
+        <div id="dishes-list-container"></div>
+
+        <!-- فرم درخواست غذا -->
+        <form class="form-card" id="food-order-form" onsubmit="submitFoodOrderForm(event)" style="margin-top: 20px;">
+          <h4 style="font-size: 15px; font-weight: 800; color: var(--brand-green); margin-bottom: 14px;">
+            ثبت مشخصات درخواست غذا
+          </h4>
+
+          <div class="form-group">
+            <label class="form-label" for="food-name">نام مهمان:</label>
+            <input type="text" class="form-input" id="food-name" placeholder="نام و نام خانوادگی" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="food-phone">شماره تلفن:</label>
+            <input type="tel" class="form-input" id="food-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="food-date">تاریخ اقامت:</label>
+            <input type="date" class="form-input" id="food-date" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="food-day">روز هفته:</label>
+            <select class="form-select" id="food-day">
+              <option value="شنبه">شنبه</option>
+              <option value="یکشنبه">یکشنبه</option>
+              <option value="دوشنبه">دوشنبه</option>
+              <option value="سه‌شنبه">سه‌شنبه</option>
+              <option value="چهارشنبه">چهارشنبه</option>
+              <option value="پنج‌شنبه">پنج‌شنبه</option>
+              <option value="جمعه" selected>جمعه</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="food-meal">وعده غذایی:</label>
+            <select class="form-select" id="food-meal">
+              <option value="ناهار" selected>ناهار</option>
+              <option value="شام">شام</option>
+            </select>
+          </div>
+
+          <!-- خلاصه سفارش غذا -->
+          <div class="estimate-box" id="food-order-summary"></div>
+
+          <button type="submit" class="btn btn-mustard" id="btn-submit-food-order" style="margin-top: 14px;">
+            📩 ارسال درخواست غذا
+          </button>
+        </form>
+      </section>
+
+
+      <!-- ========================================================
+           ۲۲. صفحه نظر و امتیاز (Reviews Screen)
+           ======================================================== -->
+      <section class="screen" id="screen-reviews">
+        <div class="screen-header">
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-reviews">
+            ← بازگشت
+          </button>
+          <span class="screen-title">⭐ نظر و امتیاز شما</span>
+        </div>
+
+        <div class="content-card">
+          <p style="margin-bottom: 14px;">
+            سپاس که مهمان خانه برزک بودید.
+          </p>
+          <p style="margin-bottom: 14px;">
+            امیدواریم اقامت دلنشینی را در کنار ما تجربه کرده باشید و خاطرات خوشی از برزک با خود ببرید.
+          </p>
+          <p style="margin-bottom: 14px;">
+            اگر از حضورتان در خانه برزک رضایت داشتید، خوشحال می‌شویم چند خط درباره تجربه خود بنویسید.
+          </p>
+          <p style="margin-bottom: 20px;">
+            نظر شما هم برای ما ارزشمند است و هم به مسافران بعدی کمک می‌کند تا با اطمینان بیشتری خانه برزک را انتخاب کنند.
+          </p>
+
+          <div class="button-stack" style="margin-bottom: 24px;">
+            <a class="btn btn-mustard" id="btn-review-google" data-config-google-reviews href="https://maps.app.goo.gl/aC1vyJ9T5Q4jJkMy6" target="_blank" rel="noopener noreferrer">
+              ⭐ ثبت نظر در Google Maps
+            </a>
+
+            <a class="btn btn-outline" id="btn-review-tripadvisor" data-config-tripadvisor href="https://www.tripadvisor.com/Hotel_Review-g680023-d8618364-Reviews-Barzok_House-Kashan_Isfahan_Province.html" target="_blank" rel="noopener noreferrer">
+              ⭐ ثبت نظر در TripAdvisor
+            </a>
+          </div>
+
+          <p style="font-weight: 700; color: var(--brand-green); text-align: center; margin-top: 10px;">
+            سپاسگزاریم که بخشی از داستان خانه برزک هستید.
+          </p>
+        </div>
+      </section>
+
+      <!-- فوتر -->
+      <footer class="app-footer">
+        <p class="footer-text">
+          اقامتگاه بومگردی خانه برزک • نسخه سبک Telegram Mini App
+        </p>
+      </footer>
+
+    </div><!-- /app-container -->
+
+    <!-- ========================================================
+         مدال پیش‌نمایش پیام تلگرام (Telegram Message Modal)
+         ======================================================== -->
+    <div class="modal-overlay" id="message-modal">
+      <div class="modal-box">
+        <h3 class="modal-title" id="modal-title">پیش‌نمایش درخواست</h3>
+        <p class="modal-text" id="modal-subtitle">متن پیام آماده برای ارسال به گروه مدیریت اقامتگاه:</p>
+        
+        <div class="telegram-message-preview" id="modal-message-preview"></div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="btn btn-primary" id="btn-modal-send-tg" onclick="sendViaTelegram()">
+            🚀 ارسال به تلگرام خانه برزک
+          </button>
+          
+          <button class="btn btn-outline" id="btn-modal-copy" onclick="copyModalMessage()">
+            📋 کپی متن پیام
+          </button>
+
+          <button class="btn" style="background: transparent; color: var(--brand-text-muted); font-size: 13.5px;" onclick="closeMessageModal()">
+            بستن پنجره
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- اعلان معلق (Toast) -->
+    <div class="toast" id="app-toast"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

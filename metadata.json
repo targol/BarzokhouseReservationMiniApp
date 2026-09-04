@@ -1,0 +1,6 @@
+{
+  "name": "Telegram Mini App & Cloudflare Bot",
+  "description": "Telegram Mini App for Barzok House eco-lodge (اقامتگاه بومگردی خانه برزک) with pure HTML, CSS, Vanilla JS, Telegram WebApp SDK, room reservations, and food menu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -44,9 +44,9 @@ const ROOMS = [
     beds: "۱ تخت دو نفره + ۲ سرویس کف‌خواب سنتی",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه ۱,۳۰۰,۰۰۰ تومان.",
-    description: "ادر خانه جدید، همراه با یک تخت دو نفره، پنکه دیواری، بخاری گازی، سرویس بهداشتی ایرانی و حمام اختصای.",
-    amenities: ["سرویس بهداشتی و حمام اختصاصی", "سیستم سرمایش و گرمایش", "صبحانه محلی", "وای‌فای رایگان", "چای ایرانی تازه دم"],
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان.",
+    description: "واقع در بخش آرام و جدید خانه، همراه با یک تخت دونفره، پنکه دیواری، بخاری گازی، سرویس بهداشتی و حمام اختصاصی.",
+    amenities: ["سرویس بهداشتی و حمام اختصاصی", "سیستم سرمایش و گرمایش", "صبحانه محلی", "وای‌فای رایگان", "چای تازه دم"],
     images: ["./assets/rooms/shatoot.webp"]
   },
   {
@@ -56,9 +56,9 @@ const ROOMS = [
     beds: "۲ تخت یک نفره + ۱ سرویس سنتی",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. همراه با صبحانه ارگانیک روستایی و کرسی سنتی فعال در فصول سرد سال.",
-    description: "یادآور هنر اصیل قالی‌بافی برزک و کاشان با دست‌بافته‌های پشمی نفیس و کرسی سنتی گرم. انتخابی ایده‌آل برای تجربه فرهنگ زیست بومی و آرامش محض کوهستان.",
-    amenities: ["کرسی سنتی گرم در زمستان", "سرویس بهداشتی اختصاصی", "دست‌بافته‌های اصیل", "سیستم تهویه", "صبحانه محلی", "چای‌خانه سنتی"],
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان (همراه با کرسی گرم در فصول سرد).",
+    description: "یادآور هنر اصیل قالی‌بافی برزک و کاشان با دست‌بافته‌های پشمی و کرسی گرم و سنتی؛ انتخابی دلنشین برای تجربه آرامش کوهستان.",
+    amenities: ["کرسی سنتی در زمستان", "سرویس بهداشتی اختصاصی", "دست‌بافته‌های اصیل", "سیستم تهویه", "صبحانه محلی", "چای تازه دم"],
     images: ["./assets/rooms/ghaali.webp"]
   },
   {
@@ -68,9 +68,9 @@ const ROOMS = [
     beds: "۱ تخت دو نفره",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. مناسب اقامت دونفره و زوج‌ها؛ همراه با صبحانه و پذیرایی عرقیات گیاهی ناب برزک.",
-    description: "اتاقی دل‌انگیز با نقاشی‌ها و کاشی‌کاری‌های لاجوردی و فیروزه‌ای الهام‌گرفته از آسمان پاک برزک. نورگیر عالی به حیاط عمارت با شیشه‌های رنگی ارسی.",
-    amenities: ["نورگیر طبیعی به حیاط مرکزی", "حمام و سرویس اختصاصی", "اسپلیت سرمایشی/گرمایشی", "صبحانه روستایی", "پذیرایی عرقیات ارگانیک"],
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان؛ مناسب اقامت دونفره.",
+    description: "اتاقی دنج با کاشی‌کاری‌های لاجوردی و فیروزه‌ای الهام‌گرفته از آسمان برزک و نورگیر زیبا با شیشه‌های رنگی به حیاط خانه.",
+    amenities: ["نورگیر زیبا به حیاط مرکزی", "حمام و سرویس اختصاصی", "اسپلیت سرمایشی و گرمایشی", "صبحانه روستایی", "پذیرایی عرقیات گیاهی"],
     images: ["./assets/rooms/abi.webp"]
   },
   {
@@ -80,9 +80,9 @@ const ROOMS = [
     beds: "۵ سرویس کف‌خواب سنتی دست‌دوز با تشک و لحاف پنبه‌ای",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. مناسب خانواده‌ها و دورهمی‌های صمیمی دوستانه.",
-    description: "بزرگ‌ترین و اصیل‌ترین شاه‌نشین اقامتگاه با طاق‌های خشتی مرتفع، پنج‌دری‌های رو به باغ و نورگیرهای زیبا، مناسب دورهمی‌های خاطره‌انگیز خانوادگی.",
-    amenities: ["فضای بزرگ نشیمن سنتی", "سرویس بهداشتی و حمام اختصاصی", "لحاف و تشک سنتی اعلا", "سیستم گرمایش و سرمایش", "صبحانه محلی کامل"],
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان؛ مناسب دورهمی خانواده‌ها و دوستان.",
+    description: "بزرگ‌ترین و اصیل‌ترین بخش خانه با طاق‌های خشتی، پنج‌دری‌های رو به باغ و فضایی دلباز برای شب‌نشینی‌های صمیمی.",
+    amenities: ["فضای بزرگ نشیمن سنتی", "سرویس بهداشتی و حمام اختصاصی", "لحاف و تشک سنتی پنبه‌ای", "گرمایش و سرمایش", "صبحانه محلی کامل"],
     images: ["./assets/rooms/sara.webp"]
   },
   {
@@ -92,9 +92,9 @@ const ROOMS = [
     beds: "۱ تخت دو نفره + ۱ سرویس سنتی",
     price: 1200000,
     priceDisplay: "۱,۲۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۲۰۰,۰۰۰ تومان. دارای ایوان اختصاصی با چشم‌انداز ۳۶۰ درجه به دره و باغات گردو و گل محمدی.",
-    description: "واقع در بالاترین نقطه عمارت تاریخی با تراس بزرگ اختصاصی رو به طبیعت بکر و کوه‌های سرسبز برزک. هوایی بسیار لطیف با نسیم خنک کوهستانی.",
-    amenities: ["تراس و ایوان با منظره اختصاصی", "میز و صندلی چوبی در ایوان", "سرویس بهداشتی و حمام اختصاصی", "اسپلیت", "صبحانه سنتی"],
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۲۰۰,۰۰۰ تومان؛ دارای ایوان اختصاصی رو به دره و باغات.",
+    description: "در بالاترین نقطه خانه تاریخی با ایوان اختصاصی رو به کوهستان و باغات گردوی برزک؛ با نسیم خنک و دلپذیر عصرگاهی.",
+    amenities: ["ایوان اختصاصی با منظره کوهستان", "میز و صندلی در ایوان", "سرویس بهداشتی و حمام اختصاصی", "اسپلیت", "صبحانه سنتی"],
     images: ["./assets/rooms/balakhoneh.webp"]
   }
 ];
@@ -693,39 +693,38 @@ function generateUnifiedOrderMessage() {
     }).join("\n");
 
     foodSectionText = 
-`🍽️ سفارش خوراک و غذای سنتی:
-• وعده غذایی: ${state.foodOrder.mealType || 'ناهار'}
-• تاریخ وعده: ${formatPersianNumber(state.foodOrder.date || checkIn)} (روز ${state.foodOrder.dayOfWeek || 'جمعه'})
-• غذاهای انتخابی:
+`🍽️ سفارش غذا:
+• وعده: ${state.foodOrder.mealType || 'ناهار'} (${state.foodOrder.dayOfWeek || 'جمعه'} ${formatPersianNumber(state.foodOrder.date || checkIn)})
+• خوراک‌ها:
 ${dishesLines}
-• برآورد خوراک: ${formatToman(foodTotal)}`;
+• برآورد غذا: ${formatToman(foodTotal)}`;
   } else {
     foodSectionText = 
-`🍽️ سفارش خوراک:
-• بدون سفارش غذای مازاد (فقط اقامت همراه با صبحانه محلی کامل)`;
+`🍽️ سفارش غذا:
+• بدون سفارش غذای مازاد (اقامت همراه با صبحانه محلی)`;
   }
 
   const grandTotal = roomTotal + foodTotal;
 
-  return `🔴 درخواست یکپارچه اقامت و خوراک - خانه برزک
+  return `🌿 درخواست رزرو در خانه برزک
 
-👤 نام مهمان: ${name}
-📞 شماره تماس: ${phone}
+👤 مهمان: ${name}
+📞 تماس: ${phone}
 
-🏠 مشخصات اقامت:
-• اتاق انتخابی: ${room.name}
-• تاریخ ورود: ${formatPersianNumber(checkIn)}
-• مدت اقامت: ${formatPersianNumber(nights)} شب (خروج: ${formatPersianNumber(checkOut)})
-• تعداد نفرات: ${formatPersianNumber(guests)} نفر
-• برآورد اقامت: ${formatToman(roomTotal)} (${formatPersianNumber(guests)} نفر × ${formatPersianNumber(nights)} شب با صبحانه محلی)
+🏡 اقامت:
+• اتاق: ${room.name}
+• ورود: ${formatPersianNumber(checkIn)}
+• مدت: ${formatPersianNumber(nights)} شب (خروج: ${formatPersianNumber(checkOut)})
+• تعداد نفرات: ${formatPersianNumber(guests)} نفر (با صبحانه محلی)
+• برآورد اقامت: ${formatToman(roomTotal)}
 
 ${foodSectionText}
 
-💰 جمع کل برآورد نهایی: ${formatToman(grandTotal)}
+💰 جمع کل برآورد: ${formatToman(grandTotal)}
 
-⚠️ یادداشت: این پیام صرفاً پیش‌نویس درخواست اولیه است و پس از بررسی و هماهنگی با مدیریت اقامتگاه قطعی خواهد شد.
+🌱 این درخواست پس از بررسی میزبان تایید و نهایی می‌شود.
 🔗 گروه رزرو خانه برزک: ${CONFIG.reservationGroupUrl}
-#درخواست_رزرو_یکپارچه`;
+#درخواست_رزرو`;
 }
 
 // ۱۰. ثبت و ارسال درخواست یکپارچه از فرم اقامت
@@ -752,8 +751,8 @@ function submitReservationForm(e) {
   const messageText = generateUnifiedOrderMessage();
 
   openMessagePreviewModal({
-    title: "پیش‌نمایش درخواست یکپارچه",
-    subtitle: "اطلاعات کامل اقامت و خوراک آماده ارسال به گروه رزرو خانه برزک است:",
+    title: "پیش‌نمایش درخواست شما",
+    subtitle: "خلاصه درخواست شما آماده ارسال به میزبان است:",
     messageText: messageText,
     actionType: "unified"
   });
@@ -837,9 +836,9 @@ function toggleDishSelection(dishId) {
     if (currentSelectedKeys.length >= maxAllowed) {
       triggerHaptic('warning');
       if (maxAllowed === 1) {
-        showToast("«در هر وعده امکان انتخاب یک نوع غذا وجود دارد. در صورت سفر گروهی، گزینه سفر گروهی را فعال کنید تا ۲ نوع غذا انتخاب نمایید.»");
+        showToast("در هر وعده می‌توانید یک نوع غذا انتخاب کنید. برای انتخاب تا ۲ غذا، گزینه سفر گروهی را فعال کنید.");
       } else {
-        showToast("«در سفر گروهی، در هر وعده حداکثر امکان انتخاب دو غذا وجود دارد.»");
+        showToast("در سفر گروهی می‌توانید حداکثر دو نوع غذا انتخاب کنید.");
       }
       const checkbox = document.getElementById(`check-${dishId}`);
       if (checkbox) checkbox.checked = false;
@@ -860,7 +859,7 @@ function toggleGroupTravel(isGroup) {
   if (!isGroup && currentKeys.length > 1) {
     const toRemove = currentKeys.slice(1);
     toRemove.forEach(k => delete state.foodOrder.selectedDishes[k]);
-    showToast("تعداد غذاها مطابق سفر غیرگروهی به یک نوع غذا تنظیم شد.");
+    showToast("تعداد غذاها به یک نوع تنظیم شد.");
   }
   renderFoodSection();
   updateReservationCalculations();
@@ -885,7 +884,7 @@ function updateFoodOrderSummary() {
   if (selectedIds.length === 0) {
     summaryBox.innerHTML = `
       <div style="font-size: 12.5px; color: var(--brand-text-muted); text-align: center;">
-        هنوز غذایی انتخاب نشده است. از منوی بالا ${state.foodOrder.isGroupTravel ? 'حداکثر ۲ نوع غذا' : 'یک نوع غذا'} را علامت بزنید.
+        هنوز غذایی انتخاب نشده است. از منوی بالا ${state.foodOrder.isGroupTravel ? 'تا ۲ نوع غذا' : 'یک نوع غذا'} انتخاب کنید.
       </div>
     `;
     return;
@@ -908,7 +907,7 @@ function updateFoodOrderSummary() {
   summaryBox.innerHTML = `
     ${rows}
     <div class="estimate-row estimate-total">
-      <span>مبلغ سفارش خوراک سنتی:</span>
+      <span>برآورد سفارش غذا:</span>
       <span>${formatToman(totalSum)}</span>
     </div>
   `;
@@ -943,8 +942,8 @@ function submitFoodOrderForm(e) {
   const messageText = generateUnifiedOrderMessage();
 
   openMessagePreviewModal({
-    title: "پیش‌نمایش درخواست یکپارچه",
-    subtitle: "اطلاعات سفارش غذا به همراه اقامتگاه آماده ارسال به گروه رزرو است:",
+    title: "پیش‌نمایش درخواست شما",
+    subtitle: "خلاصه درخواست شما آماده ارسال به میزبان است:",
     messageText: messageText,
     actionType: "unified"
   });

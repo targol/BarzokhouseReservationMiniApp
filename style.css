@@ -553,9 +553,17 @@ body {
 }
 
 .spec-value {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--brand-green);
+  line-height: 1.5;
+}
+
+.spec-sub {
+  font-size: 11px;
+  color: var(--brand-text-muted);
+  line-height: 1.4;
+  margin-top: 2px;
 }
 
 .amenities-list {

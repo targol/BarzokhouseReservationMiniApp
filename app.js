@@ -41,46 +41,50 @@ const ROOMS = [
     id: "shatoot",
     name: "شاتوت",
     capacity: 2,
-    beds: "۱ تخت دو نفره + ۲ سرویس کف‌خواب سنتی",
+    capacityDisplay: "۲ نفر (یک تخت دو نفره) + تا ۱ نفر اضافه با رختخواب سنتی",
+    beds: "یک تخت دو نفره + تا یک نفر اضافه با رختخواب سنتی",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان.",
-    description: "واقع در بخش آرام و جدید خانه، همراه با یک تخت دونفره، پنکه دیواری، بخاری گازی، سرویس بهداشتی و حمام اختصاصی.",
-    amenities: ["سرویس بهداشتی و حمام اختصاصی", "سیستم سرمایش و گرمایش", "صبحانه محلی", "وای‌فای رایگان", "چای تازه دم"],
+    priceNote: "هر نفر/شب با صبحانه محلی",
+    description: "واقع در بخش آرام و جدید خانه؛ دارای یک تخت دو نفره، تا یک نفر اضافه با رختخواب سنتی، پنکه دیواری، بخاری گازی و سرویس بهداشتی ایرانی و حمام اختصاصی.",
+    amenities: ["تخت دو نفره", "سرویس بهداشتی ایرانی", "حمام اختصاصی", "بخاری گازی", "پنکه دیواری", "صبحانه محلی", "وای‌فای رایگان"],
     images: ["./assets/rooms/shatoot.webp"]
   },
   {
     id: "ghaali",
     name: "قالی",
     capacity: 3,
+    capacityDisplay: "۳ نفر (۲ تخت یک‌نفره + ۱ رختخواب سنتی)",
     beds: "۲ تخت یک نفره + ۱ سرویس سنتی",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان (همراه با کرسی گرم در فصول سرد).",
+    priceNote: "هر نفر/شب با صبحانه محلی (همراه با کرسی گرم در زمستان)",
     description: "یادآور هنر اصیل قالی‌بافی برزک و کاشان با دست‌بافته‌های پشمی و کرسی گرم و سنتی؛ انتخابی دلنشین برای تجربه آرامش کوهستان.",
-    amenities: ["کرسی سنتی در زمستان", "سرویس بهداشتی اختصاصی", "دست‌بافته‌های اصیل", "سیستم تهویه", "صبحانه محلی", "چای تازه دم"],
+    amenities: ["کرسی سنتی در زمستان", "سرویس بهداشتی و حمام اختصاصی", "دست‌بافته‌های اصیل", "سیستم تهویه", "صبحانه محلی"],
     images: ["./assets/rooms/ghaali.webp"]
   },
   {
     id: "abi",
     name: "آبی",
     capacity: 2,
+    capacityDisplay: "۲ نفر (یک تخت دو نفره)",
     beds: "۱ تخت دو نفره",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان؛ مناسب اقامت دونفره.",
+    priceNote: "هر نفر/شب با صبحانه محلی؛ مناسب اقامت دونفره",
     description: "اتاقی دنج با کاشی‌کاری‌های لاجوردی و فیروزه‌ای الهام‌گرفته از آسمان برزک و نورگیر زیبا با شیشه‌های رنگی به حیاط خانه.",
-    amenities: ["نورگیر زیبا به حیاط مرکزی", "حمام و سرویس اختصاصی", "اسپلیت سرمایشی و گرمایشی", "صبحانه روستایی", "پذیرایی عرقیات گیاهی"],
+    amenities: ["نورگیر زیبا به حیاط مرکزی", "سرویس بهداشتی و حمام اختصاصی", "اسپلیت سرمایشی و گرمایشی", "صبحانه روستایی", "پذیرایی عرقیات گیاهی"],
     images: ["./assets/rooms/abi.webp"]
   },
   {
     id: "sara",
     name: "سرا",
     capacity: 5,
+    capacityDisplay: "۵ نفر (رختخواب سنتی پنبه‌ای)",
     beds: "۵ سرویس کف‌خواب سنتی دست‌دوز با تشک و لحاف پنبه‌ای",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان؛ مناسب دورهمی خانواده‌ها و دوستان.",
+    priceNote: "هر نفر/شب با صبحانه محلی؛ مناسب خانواده‌ها و دورهمی‌ها",
     description: "بزرگ‌ترین و اصیل‌ترین بخش خانه با طاق‌های خشتی، پنج‌دری‌های رو به باغ و فضایی دلباز برای شب‌نشینی‌های صمیمی.",
     amenities: ["فضای بزرگ نشیمن سنتی", "سرویس بهداشتی و حمام اختصاصی", "لحاف و تشک سنتی پنبه‌ای", "گرمایش و سرمایش", "صبحانه محلی کامل"],
     images: ["./assets/rooms/sara.webp"]
@@ -89,10 +93,11 @@ const ROOMS = [
     id: "balakhoneh",
     name: "بالاخونه",
     capacity: 3,
+    capacityDisplay: "۳ نفر (یک تخت دو نفره + ۱ رختخواب سنتی)",
     beds: "۱ تخت دو نفره + ۱ سرویس سنتی",
     price: 1200000,
     priceDisplay: "۱,۲۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۲۰۰,۰۰۰ تومان؛ دارای ایوان اختصاصی رو به دره و باغات.",
+    priceNote: "هر نفر/شب با صبحانه محلی؛ دارای ایوان اختصاصی رو به دره و باغات",
     description: "در بالاترین نقطه خانه تاریخی با ایوان اختصاصی رو به کوهستان و باغات گردوی برزک؛ با نسیم خنک و دلپذیر عصرگاهی.",
     amenities: ["ایوان اختصاصی با منظره کوهستان", "میز و صندلی در ایوان", "سرویس بهداشتی و حمام اختصاصی", "اسپلیت", "صبحانه سنتی"],
     images: ["./assets/rooms/balakhoneh.webp"]
@@ -382,11 +387,26 @@ function openRoomDetail(roomId) {
       }
     };
   }
-  document.getElementById("detail-capacity").textContent = `تا ${formatPersianNumber(room.capacity)} نفر`;
-  document.getElementById("detail-beds").textContent = room.beds;
-  document.getElementById("detail-price").textContent = formatToman(room.price) + " / هر نفر شب اقامت با صبحانه";
-  document.getElementById("detail-price-note").textContent = room.priceNote;
-  document.getElementById("detail-desc").textContent = room.description;
+  const detailCap = document.getElementById("detail-capacity");
+  if (detailCap) {
+    detailCap.textContent = room.capacityDisplay || `تا ${formatPersianNumber(room.capacity)} نفر`;
+  }
+  const detailBeds = document.getElementById("detail-beds");
+  if (detailBeds) {
+    detailBeds.textContent = room.beds;
+  }
+  const detailPrice = document.getElementById("detail-price");
+  if (detailPrice) {
+    detailPrice.textContent = formatToman(room.price);
+  }
+  const detailPriceNote = document.getElementById("detail-price-note");
+  if (detailPriceNote) {
+    detailPriceNote.textContent = room.priceNote || "هر نفر/شب با صبحانه محلی";
+  }
+  const detailDesc = document.getElementById("detail-desc");
+  if (detailDesc) {
+    detailDesc.textContent = room.description;
+  }
 
   // امکانات
   const amenitiesWrap = document.getElementById("detail-amenities");

@@ -48,6 +48,7 @@
           </p>
           <div class="welcome-badges">
             <span class="badge">🏡 مثل یک خانه، امن و راحت</span>
+            <span class="badge">☕ چای تازه‌دم همیشه به راه</span>
             <span class="badge">🍲 طعم غذای محلی تازه</span>
             <span class="badge badge-gold">🌱 سفر سبز و پایدار</span>
           </div>
@@ -130,7 +131,7 @@
         </div>
 
         <p style="font-size: 13.5px; color: var(--brand-text-muted); margin-bottom: 16px;">
-          هر اتاق قصه و حال‌وهوای خودش را دارد؛ با صبحانه محلی و امکانات اختصاصی:
+          هر اتاق قصه و حال‌وهوای خودش را دارد؛ با صبحانه محلی و چای تازه‌دمی که همیشه در خانه به راه است:
         </p>
 
         <!-- کانتینر کارت‌های ۵ اتاق (شاتوت، قالی، آبی، سرا، بالاخونه) -->
@@ -154,11 +155,12 @@
         <div class="detail-specs-grid">
           <div class="spec-item">
             <span class="spec-label">ظرفیت اقامت</span>
-            <span class="spec-value" id="detail-capacity">تا ۴ نفر</span>
+            <span class="spec-value" id="detail-capacity">۲ نفر</span>
           </div>
           <div class="spec-item">
-            <span class="spec-label">تخت و چیدمان</span>
-            <span class="spec-value" id="detail-beds">تخت و سرویس سنتی</span>
+            <span class="spec-label">هزینه اقامت</span>
+            <span class="spec-value" id="detail-price">۱,۳۰۰,۰۰۰ تومان</span>
+            <span class="spec-sub" id="detail-price-note">هر نفر/شب با صبحانه</span>
           </div>
         </div>
 
@@ -166,13 +168,7 @@
         <div class="amenities-list" id="detail-amenities"></div>
 
         <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 8px;">حال‌وهوای اتاق:</h4>
-        <p class="welcome-text" id="detail-desc" style="margin-bottom: 16px;"></p>
-
-        <!-- بخش قیمت و توضیحات نرخ -->
-        <div class="price-box">
-          <div class="price-main" id="detail-price">۱,۸۰۰,۰۰۰ تومان / هر شب</div>
-          <div class="price-note" id="detail-price-note"></div>
-        </div>
+        <p class="welcome-text" id="detail-desc" style="margin-bottom: 20px;"></p>
 
         <!-- دکمه درخواست رزرو این اتاق -->
         <button class="btn btn-mustard" id="btn-request-reservation" onclick="startReservationForCurrentRoom()">
@@ -323,10 +319,10 @@
 
         <div class="content-card">
           <h3>چطور بیاییم؟</h3>
-          <p>
-            برزک در ۴۵ کیلومتری جنوب غربی کاشان قرار دارد. جاده آسفالت، کوهستانی و باصفاست و از میان باغات گردو و گل محمدی می‌گذرد.
+          <p style="line-height: 1.8;">
+            برزک در ۴۵ کیلومتری جنوب غربی کاشان قرار دارد. جاده آسفالت، کوهستانی است و ممکن است شانس دیدن روباه و شغال و خارپشت را بخصوص در شب داشته باشید. آنچنان برانید که از حضورشان محروم نشویم.
           </p>
-          <p style="font-size: 13px; color: var(--brand-text-muted);">
+          <p style="font-size: 13px; color: var(--brand-text-muted); margin-top: 10px;">
             حدود ۳ ساعت از تهران (۲۵۰ کیلومتر) • حدود ۲ ساعت از اصفهان (۱۷۰ کیلومتر)
           </p>
         </div>
@@ -684,7 +680,7 @@
             اگر از حضورتان در خانه برزک رضایت داشتید، خیلی خوشحال می‌شویم چند کلمه از تجربه خود برای ما و سایر مسافران بنویسید.
           </p>
           <p style="margin-bottom: 20px;">
-            نظرات شما هم دلگرمی ماست و هم راهنمای مسافران بعدی:
+            نظرات شما هم دلگرمی ماست و هم راهنمای مهمانان بعدی:
           </p>
 
           <div class="button-stack" style="margin-bottom: 24px;">

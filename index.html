@@ -8,13 +8,17 @@
     <meta property="og:title" content="Telegram Mini App & Cloudflare Bot | خانه برزک" />
     <meta property="og:description" content="Telegram Mini App for Barzok House eco-lodge (اقامتگاه بومگردی خانه برزک) with pure HTML, CSS, Vanilla JS, Telegram WebApp SDK, room reservations, and food menu." />
     
-    <!-- Telegram WebApp Official JS SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Telegram WebApp Official JS SDK (deferred for instant rendering) -->
+    <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
 
-    <!-- فونت زیبای وزیرمتن برای تایپوگرافی فارسی سنتی و مدرن -->
+    <!-- بهینه‌سازی سرعت بارگذاری با رندر آنی، سیستم فونت بومی و لود غیرمسدودکننده فونت -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    </noscript>
 
     <link rel="stylesheet" href="./style.css" />
   </head>
@@ -53,8 +57,8 @@
         <h3 class="section-title">منوی اصلی اقامتگاه</h3>
         <div class="menu-grid" id="main-menu-grid">
           
-          <!-- ۱. اتاق‌ها (کارت ویژه) -->
-          <div class="menu-card featured" id="menu-btn-rooms" onclick="navigateTo('screen-rooms')">
+          <!-- کارت ویژه: اتاق‌های خانه برزک -->
+          <div class="menu-card featured" id="menu-btn-rooms" onclick="navigateTo('screen-rooms')" role="button" tabindex="0">
             <div class="menu-card-icon">🏠</div>
             <div class="menu-card-info">
               <h4 class="menu-card-title">اتاق‌های خانه برزک</h4>
@@ -63,77 +67,62 @@
             <span style="font-size: 18px; color: var(--brand-mustard);">←</span>
           </div>
 
-          <!-- ۲. آدرس و موقعیت -->
-          <div class="menu-card" id="menu-btn-address" onclick="navigateTo('screen-address')">
+          <!-- ۱- منوی خوراک -->
+          <div class="menu-card" id="menu-btn-food" onclick="navigateTo('screen-food')" role="button" tabindex="0">
+            <div class="menu-card-icon">🍽️</div>
+            <h4 class="menu-card-title">۱. منوی خوراک</h4>
+            <p class="menu-card-desc">غذاهای سنتی برزک و ثبت درخواست وعده غذایی</p>
+          </div>
+
+          <!-- ۲- آدرس و نقشه -->
+          <div class="menu-card" id="menu-btn-address" onclick="navigateTo('screen-address')" role="button" tabindex="0">
             <div class="menu-card-icon">📍</div>
-            <h4 class="menu-card-title">آدرس و نقشه</h4>
+            <h4 class="menu-card-title">۲. آدرس و نقشه</h4>
             <p class="menu-card-desc">موقعیت دقیق روی نقشه و مسیر دسترسی</p>
           </div>
 
-          <!-- ۳. تماس با ما -->
-          <div class="menu-card" id="menu-btn-contact" onclick="navigateTo('screen-contact')">
+          <!-- ۳- شبکه‌های اجتماعی و وب‌سایت (ترکیب شده) -->
+          <div class="menu-card" id="menu-btn-social" onclick="navigateTo('screen-social')" role="button" tabindex="0">
+            <div class="menu-card-icon">🌐</div>
+            <h4 class="menu-card-title">۳. شبکه‌های اجتماعی و وب‌سایت</h4>
+            <p class="menu-card-desc">وب‌سایت رسمی، کانال تلگرام و صفحه اینستاگرام</p>
+          </div>
+
+          <!-- ۴- آب و هوای برزک -->
+          <div class="menu-card" id="menu-btn-weather" onclick="navigateTo('screen-weather')" role="button" tabindex="0">
+            <div class="menu-card-icon">🌤️</div>
+            <h4 class="menu-card-title">۴. آب‌وهوای برزک</h4>
+            <p class="menu-card-desc">پیش‌بینی وضعیت جوی و راهنمای پوشش</p>
+          </div>
+
+          <!-- ۵- قوانین خانه -->
+          <div class="menu-card" id="menu-btn-rules" onclick="navigateTo('screen-rules')" role="button" tabindex="0">
+            <div class="menu-card-icon">📜</div>
+            <h4 class="menu-card-title">۵. قوانین خانه</h4>
+            <p class="menu-card-desc">شرایط ورود مهمان و نکات پیش از اقامت</p>
+          </div>
+
+          <!-- ۶- سفر سبز -->
+          <div class="menu-card" id="menu-btn-green" onclick="navigateTo('screen-green-travel')" role="button" tabindex="0">
+            <div class="menu-card-icon">🌱</div>
+            <h4 class="menu-card-title">۶. سفر سبز</h4>
+            <p class="menu-card-desc">همیاری در حفظ محیط‌زیست و طبیعت برزک</p>
+          </div>
+
+          <!-- تماس با ما -->
+          <div class="menu-card" id="menu-btn-contact" onclick="navigateTo('screen-contact')" role="button" tabindex="0">
             <div class="menu-card-icon">📞</div>
             <h4 class="menu-card-title">تماس با ما</h4>
             <p class="menu-card-desc">شماره تماس مستقیم و مشاوره سفر</p>
           </div>
 
-          <!-- ۴. شبکه‌های اجتماعی -->
-          <div class="menu-card" id="menu-btn-social" onclick="navigateTo('screen-social')">
-            <div class="menu-card-icon">📱</div>
-            <h4 class="menu-card-title">شبکه‌های اجتماعی</h4>
-            <p class="menu-card-desc">کانال تلگرام و صفحه اینستاگرام</p>
-          </div>
-
-          <!-- ۵. قوانین خانه -->
-          <div class="menu-card" id="menu-btn-rules" onclick="navigateTo('screen-rules')">
-            <div class="menu-card-icon">📜</div>
-            <h4 class="menu-card-title">قوانین خانه</h4>
-            <p class="menu-card-desc">شرایط ورود مهمان و نکات پیش از اقامت</p>
-          </div>
-
-          <!-- ۶. آب‌وهوا -->
-          <div class="menu-card" id="menu-btn-weather" onclick="navigateTo('screen-weather')">
-            <div class="menu-card-icon">🌤️</div>
-            <h4 class="menu-card-title">آب‌وهوای برزک</h4>
-            <p class="menu-card-desc">پیش‌بینی وضعیت جوی و راهنمای پوشش</p>
-          </div>
-
-          <!-- ۷. سفر سبز به خانه برزک -->
-          <div class="menu-card" id="menu-btn-green" onclick="navigateTo('screen-green-travel')">
-            <div class="menu-card-icon">🌱</div>
-            <h4 class="menu-card-title">سفر سبز</h4>
-            <p class="menu-card-desc">همیاری در حفظ محیط‌زیست و طبیعت برزک</p>
-          </div>
-
-          <!-- ۸. منوی غذا -->
-          <div class="menu-card" id="menu-btn-food" onclick="navigateTo('screen-food')">
-            <div class="menu-card-icon">🍽️</div>
-            <h4 class="menu-card-title">منوی غذا</h4>
-            <p class="menu-card-desc">غذاهای سنتی و ثبت درخواست وعده غذایی</p>
-          </div>
-
-          <!-- ۹. وب‌سایت خانه برزک -->
-          <a class="menu-card" id="menu-btn-website" href="https://barzokhouse.com" target="_blank" rel="noopener noreferrer">
-            <div class="menu-card-icon">🌐</div>
-            <h4 class="menu-card-title">وب‌سایت خانه برزک</h4>
-            <p class="menu-card-desc">مشاهده وب‌سایت رسمی: barzokhouse.com</p>
-          </a>
-
-          <!-- ۱۰. نظر و امتیاز شما -->
-          <div class="menu-card" id="menu-btn-reviews" onclick="navigateTo('screen-reviews')" style="grid-column: span 2;">
+          <!-- نظر و امتیاز شما -->
+          <div class="menu-card" id="menu-btn-reviews" onclick="navigateTo('screen-reviews')" role="button" tabindex="0">
             <div class="menu-card-icon">⭐</div>
             <h4 class="menu-card-title">نظر و امتیاز شما</h4>
             <p class="menu-card-desc">ثبت تجربه اقامت در Google Maps و TripAdvisor</p>
           </div>
 
-        </div>
-
-        <!-- پیام درباره رفتار بات پیش از Start (بخش ۲۳ پرامپت) -->
-        <div class="disclaimer-banner" style="margin-top: 12px;">
-          <span>💡</span>
-          <div>
-            <strong>نکته درباره پیام معرفی بات:</strong> متن معرفی بات تلگرام («سلام 👋 به بات خانه برزک خوش آمدید...») از طریق دستور <code>/setdescription</code> در BotFather تلگرام تنظیم می‌شود تا قبل از دکمه Start برای کاربر نمایش یابد.
-          </div>
         </div>
       </section>
 
@@ -372,29 +361,40 @@
 
 
       <!-- ========================================================
-           ۵. صفحه شبکه‌های اجتماعی (Social Screen)
+           ۵. صفحه شبکه‌های اجتماعی و وب‌سایت (Social & Website Screen)
            ======================================================== -->
       <section class="screen" id="screen-social">
         <div class="screen-header">
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-social">
             ← بازگشت
           </button>
-          <span class="screen-title">📱 شبکه‌های اجتماعی</span>
+          <span class="screen-title">🌐 شبکه‌های اجتماعی و وب‌سایت</span>
         </div>
 
         <div class="content-card">
-          <h3>همراهی در شبکه‌های اجتماعی</h3>
+          <h3>وب‌سایت رسمی اقامتگاه</h3>
           <p>
-            برای دیدن تصاویر روزانه از فصول مختلف برزک، رویدادهای گلاب‌گیری، چیدن شاتوت و باخبر شدن از اخبار خانه برزک، ما را دنبال کنید:
+            برای مشاهده آلبوم کامل عکس‌ها، معرفی جاذبه‌های برزک و کاشان و رزرو مستقیم، از وب‌سایت رسمی ما دیدن فرمایید:
+          </p>
+
+          <div class="button-stack" style="margin-bottom: 20px;">
+            <a class="btn btn-primary" id="btn-social-website" data-config-website href="https://barzokhouse.com" target="_blank" rel="noopener noreferrer">
+              🌐 ورود به وب‌سایت barzokhouse.com
+            </a>
+          </div>
+
+          <h3 style="border-top: 1px solid var(--brand-border); padding-top: 18px;">همراهی در شبکه‌های اجتماعی</h3>
+          <p>
+            برای تماشای تصاویر روزانه از باغات شاتوت، رویدادهای سنتی گلاب‌گیری و اخبار اقامتگاه، ما را دنبال کنید:
           </p>
 
           <div class="button-stack">
-            <a class="btn btn-primary" id="btn-social-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer">
-              📱 تلگرام خانه برزک
+            <a class="btn btn-mustard" id="btn-social-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer">
+              📱 کانال تلگرام خانه برزک
             </a>
 
-            <a class="btn btn-mustard" id="btn-social-instagram" data-config-instagram href="https://instagram.com/barzokhouse" target="_blank" rel="noopener noreferrer">
-              📷 اینستاگرام خانه برزک
+            <a class="btn btn-outline" id="btn-social-instagram" data-config-instagram href="https://instagram.com/barzokhouse" target="_blank" rel="noopener noreferrer">
+              📷 صفحه اینستاگرام خانه برزک
             </a>
           </div>
         </div>

@@ -4,39 +4,54 @@
    ========================================================================== */
 
 :root {
-  /* هویت بصری خانه برزک: سبز تیره سنتی، خردلی زعفرانی، کرم و خاک رس ملایم */
-  --brand-green: #233e33;
-  --brand-green-light: #2e5244;
-  --brand-green-dark: #172a22;
-  --brand-green-subtle: #eaf1ed;
+  /* هویت بصری خانه برزک بر اساس کالیته رنگی لوگوی رسمی:
+     - فیروزه‌ای / سبز کله‌غازی خوش‌نویسی لوگو: #1f8578
+     - خردلی کاراملی / اخرایی زمینه لوزی لوگو: #b88648
+     - کرم ماسه‌ای ملایم زمینه، سطوح عاجی و کنتراست تیره خوانا */
+  --brand-teal: #1f8578;
+  --brand-teal-light: #2ba091;
+  --brand-teal-dark: #156258;
+  --brand-teal-subtle: #eaf5f3;
+
+  /* هماهنگی با کلاس‌های سبز پیشین بر پایه رنگ کله‌غازی لوگو */
+  --brand-green: var(--brand-teal);
+  --brand-green-light: var(--brand-teal-light);
+  --brand-green-dark: var(--brand-teal-dark);
+  --brand-green-subtle: var(--brand-teal-subtle);
   
-  --brand-mustard: #c58b1f;
-  --brand-mustard-hover: #b57b14;
-  --brand-mustard-soft: #fbf5e8;
-  --brand-mustard-border: #ebd3a1;
+  --brand-ochre: #b88648;
+  --brand-ochre-hover: #a57438;
+  --brand-ochre-soft: #faf4e9;
+  --brand-ochre-border: #e7d6bc;
 
-  --brand-cream: #faf8f5;
+  /* هماهنگی با کلاس‌های خردلی پیشین بر پایه رنگ اخرایی لوگو */
+  --brand-mustard: var(--brand-ochre);
+  --brand-mustard-hover: var(--brand-ochre-hover);
+  --brand-mustard-soft: var(--brand-ochre-soft);
+  --brand-mustard-border: var(--brand-ochre-border);
+
+  --brand-cream: #faf7f2;
   --brand-surface: #ffffff;
-  --brand-surface-subtle: #f4efe7;
-  --brand-border: #e8e1d3;
-  --brand-border-dark: #d5ccbd;
+  --brand-surface-subtle: #f5efe5;
+  --brand-border: #e8dfcf;
+  --brand-border-dark: #d6cbb9;
 
-  --brand-text: #24221f;
-  --brand-text-muted: #6b6459;
-  --brand-text-subtle: #968d80;
+  --brand-text: #1b2823;
+  --brand-text-muted: #5e6b64;
+  --brand-text-subtle: #8a968f;
 
   --brand-danger: #c23838;
   --brand-danger-soft: #fdeeee;
-  --brand-success: #2b7a4b;
-  --brand-success-soft: #eaf6ef;
+  --brand-success: #1f8578;
+  --brand-success-soft: #eaf6f4;
 
   /* هماهنگی با متغیرهای تم تلگرام با مقادیر پیش‌فرض بومگردی */
   --tg-bg: var(--tg-theme-bg-color, var(--brand-cream));
   --tg-secondary-bg: var(--tg-theme-secondary-bg-color, var(--brand-surface-subtle));
   --tg-text: var(--tg-theme-text-color, var(--brand-text));
   --tg-hint: var(--tg-theme-hint-color, var(--brand-text-muted));
-  --tg-link: var(--tg-theme-link-color, var(--brand-green));
-  --tg-button: var(--tg-theme-button-color, var(--brand-green));
+  --tg-link: var(--tg-theme-link-color, var(--brand-teal));
+  --tg-button: var(--tg-theme-button-color, var(--brand-teal));
   --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
 
   --radius-xs: 6px;
@@ -45,11 +60,12 @@
   --radius-lg: 20px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 2px 6px rgba(35, 62, 51, 0.05);
-  --shadow-md: 0 4px 14px rgba(35, 62, 51, 0.08);
-  --shadow-lg: 0 10px 25px rgba(35, 62, 51, 0.12);
+  --shadow-sm: 0 2px 6px rgba(31, 133, 120, 0.05);
+  --shadow-md: 0 4px 14px rgba(31, 133, 120, 0.08);
+  --shadow-lg: 0 10px 25px rgba(31, 133, 120, 0.12);
 
-  --font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* سیستم فونت فوق سریع فارسی با فال‌بک بومی جهت جلوگیری از کندی لود */
+  --font-family: 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Tahoma, Arial, sans-serif;
   --transition-fast: 0.18s ease;
   --transition-normal: 0.25s ease;
 }
@@ -111,14 +127,13 @@ body {
 }
 
 .brand-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
+  width: 52px;
+  height: 52px;
   object-fit: contain;
   flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-  background: var(--brand-green);
-  padding: 2px;
+  background: transparent;
+  padding: 0;
+  filter: drop-shadow(0 2px 6px rgba(31, 133, 120, 0.15));
 }
 
 .brand-meta {
@@ -395,7 +410,7 @@ body {
   position: absolute;
   top: 12px;
   left: 12px;
-  background: rgba(35, 62, 51, 0.9);
+  background: rgba(21, 98, 88, 0.92);
   color: #ffffff;
   padding: 4px 10px;
   border-radius: var(--radius-full);
@@ -461,7 +476,7 @@ body {
 .btn-primary {
   background: var(--brand-green);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(35, 62, 51, 0.2);
+  box-shadow: 0 4px 12px rgba(31, 133, 120, 0.25);
 }
 
 .btn-primary:hover, .btn-primary:active {
@@ -472,7 +487,7 @@ body {
 .btn-mustard {
   background: var(--brand-mustard);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(197, 139, 31, 0.25);
+  box-shadow: 0 4px 12px rgba(184, 134, 72, 0.25);
 }
 
 .btn-mustard:hover, .btn-mustard:active {
@@ -617,7 +632,7 @@ body {
 .form-input:focus, .form-select:focus {
   border-color: var(--brand-mustard);
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(197, 139, 31, 0.15);
+  box-shadow: 0 0 0 3px rgba(184, 134, 72, 0.18);
 }
 
 .form-hint {

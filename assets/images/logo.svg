@@ -1,32 +1,98 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
   <defs>
-    <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#233e33"/>
-      <stop offset="100%" stop-color="#162922"/>
-    </linearGradient>
-    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f0c265"/>
-      <stop offset="100%" stop-color="#c58b1f"/>
-    </linearGradient>
+    <!-- Filter for subtle crispness -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#1b2e25" flood-opacity="0.15"/>
+    </filter>
   </defs>
-  <!-- Background badge -->
-  <rect width="200" height="200" rx="40" fill="url(#logoBg)"/>
-  
-  <!-- Subtle decorative traditional border -->
-  <rect x="12" y="12" width="176" height="176" rx="32" fill="none" stroke="url(#gold)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="6,4"/>
-  
-  <!-- Traditional Arch (طاق سنتی) -->
-  <path d="M 60 148 L 60 90 C 60 55, 140 55, 140 90 L 140 148 Z" fill="none" stroke="url(#gold)" stroke-width="4" stroke-linejoin="round"/>
-  
-  <!-- Inner window grille (گره چینی) -->
-  <path d="M 75 148 L 75 96 C 75 75, 125 75, 125 96 L 125 148 Z" fill="#2d4e41" opacity="0.6"/>
-  <circle cx="100" cy="90" r="10" fill="none" stroke="url(#gold)" stroke-width="2.5"/>
-  <line x1="100" y1="100" x2="100" y2="148" stroke="url(#gold)" stroke-width="2.5"/>
-  <line x1="75" y1="120" x2="125" y2="120" stroke="url(#gold)" stroke-width="2.5"/>
-  
-  <!-- Sun / Morning glow over Barzok mountains -->
-  <path d="M 45 155 Q 100 135 155 155" fill="none" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
-  
-  <!-- Traditional Leaf / Green motif -->
-  <path d="M 100 42 C 108 30, 118 36, 114 48 C 110 58, 100 62, 100 62 C 100 62, 90 58, 86 48 C 82 36, 92 30, 100 42 Z" fill="url(#gold)"/>
+
+  <!-- Diamond / Rhombus background with rounded corners -->
+  <g filter="url(#shadow)">
+    <rect x="110" y="110" width="280" height="280" rx="34" transform="rotate(45 250 250)" fill="#b88648"/>
+  </g>
+
+  <!-- Persian Calligraphy "خانه برزک" -->
+  <!-- Layer 1: White outer contour / stroke -->
+  <g fill="#ffffff" stroke="#ffffff" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Shamseh / floral flourish at the top right -->
+    <circle cx="318" cy="148" r="7"/>
+    <circle cx="318" cy="132" r="3.5"/>
+    <circle cx="318" cy="164" r="3.5"/>
+    <circle cx="302" cy="148" r="3.5"/>
+    <circle cx="334" cy="148" r="3.5"/>
+
+    <!-- برزک (Barzok) text shapes -->
+    <!-- Dot of 'Z' (ز) -->
+    <ellipse cx="270" cy="168" rx="6.5" ry="7.5" transform="rotate(-25 270 168)"/>
+    <!-- Dot of 'B' (ب) -->
+    <ellipse cx="330" cy="226" rx="6" ry="7" transform="rotate(20 330 226)"/>
+
+    <!-- Letterforms for Barzok (ب، ر، ز، ک) -->
+    <!-- Roof / Serkash of Kaf (ک) -->
+    <path d="M 235 158 C 265 142 300 138 335 135 C 342 135 348 138 340 144 C 310 152 275 162 242 168 Z"/>
+    
+    <!-- Body of Kaf and Re/Zey -->
+    <path d="M 330 142 C 322 165 315 190 300 205 C 285 220 268 224 250 226 C 265 214 278 198 284 178 C 290 160 292 148 296 142 Z"/>
+    <path d="M 295 198 C 282 212 262 230 240 236 C 248 226 256 214 262 202 C 274 200 286 198 295 198 Z"/>
+    
+    <!-- Body of Ba and Re -->
+    <path d="M 345 192 C 345 208 335 218 316 220 C 328 214 334 204 334 192 Z"/>
+
+    <!-- خانه (Khaneh) main central calligraphy -->
+    <!-- Head of Khe (خ) -->
+    <path d="M 182 220 C 195 200 215 192 238 196 C 248 198 252 204 246 208 C 230 214 212 224 195 238 C 178 252 170 264 165 280 C 160 270 162 250 182 220 Z"/>
+    
+    <!-- Dot of Khe (خ) -->
+    <ellipse cx="218" cy="176" rx="7" ry="8" transform="rotate(-30 218 176)"/>
+
+    <!-- Alef (ا) and Noon-He connection (نه) -->
+    <!-- Vertical stem of Alef -->
+    <path d="M 242 198 C 244 220 244 248 242 276 C 238 276 235 250 235 218 C 235 205 238 198 242 198 Z"/>
+
+    <!-- Sweeping grand curve of Khaneh (the expansive flourish across the bottom) -->
+    <path d="M 345 252 C 345 272 320 290 280 304 C 230 322 170 326 112 308 C 88 300 70 286 64 274 C 60 266 65 264 74 268 C 102 284 150 294 205 292 C 265 290 310 274 328 254 C 336 244 345 240 345 252 Z"/>
+
+    <!-- Sharp calligraphic flourish tail extending to the bottom left -->
+    <path d="M 95 284 C 70 275 48 262 38 250 C 44 254 62 264 88 274 Z"/>
+  </g>
+
+  <!-- Layer 2: Persian teal fill #1f8578 for the exact calligraphy letters -->
+  <g fill="#1f8578" stroke="#1f8578" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Shamseh / floral flourish at the top right -->
+    <circle cx="318" cy="148" r="6"/>
+    <circle cx="318" cy="132" r="3"/>
+    <circle cx="318" cy="164" r="3"/>
+    <circle cx="302" cy="148" r="3"/>
+    <circle cx="334" cy="148" r="3"/>
+
+    <!-- Dot of 'Z' (ز) -->
+    <ellipse cx="270" cy="168" rx="5.5" ry="6.5" transform="rotate(-25 270 168)"/>
+    <!-- Dot of 'B' (ب) -->
+    <ellipse cx="330" cy="226" rx="5" ry="6" transform="rotate(20 330 226)"/>
+
+    <!-- Roof / Serkash of Kaf (ک) -->
+    <path d="M 235 158 C 265 142 300 138 335 135 C 342 135 348 138 340 144 C 310 152 275 162 242 168 Z"/>
+    
+    <!-- Body of Kaf and Re/Zey -->
+    <path d="M 330 142 C 322 165 315 190 300 205 C 285 220 268 224 250 226 C 265 214 278 198 284 178 C 290 160 292 148 296 142 Z"/>
+    <path d="M 295 198 C 282 212 262 230 240 236 C 248 226 256 214 262 202 C 274 200 286 198 295 198 Z"/>
+    
+    <!-- Body of Ba and Re -->
+    <path d="M 345 192 C 345 208 335 218 316 220 C 328 214 334 204 334 192 Z"/>
+
+    <!-- Head of Khe (خ) -->
+    <path d="M 182 220 C 195 200 215 192 238 196 C 248 198 252 204 246 208 C 230 214 212 224 195 238 C 178 252 170 264 165 280 C 160 270 162 250 182 220 Z"/>
+    
+    <!-- Dot of Khe (خ) -->
+    <ellipse cx="218" cy="176" rx="6" ry="7" transform="rotate(-30 218 176)"/>
+
+    <!-- Vertical stem of Alef -->
+    <path d="M 242 198 C 244 220 244 248 242 276 C 238 276 235 250 235 218 C 235 205 238 198 242 198 Z"/>
+
+    <!-- Sweeping grand curve of Khaneh -->
+    <path d="M 345 252 C 345 272 320 290 280 304 C 230 322 170 326 112 308 C 88 300 70 286 64 274 C 60 266 65 264 74 268 C 102 284 150 294 205 292 C 265 290 310 274 328 254 C 336 244 345 240 345 252 Z"/>
+
+    <!-- Sharp calligraphic flourish tail extending to the bottom left -->
+    <path d="M 95 284 C 70 275 48 262 38 250 C 44 254 62 264 88 274 Z"/>
+  </g>
 </svg>

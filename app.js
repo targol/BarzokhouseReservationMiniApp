@@ -37,9 +37,9 @@ const ROOMS = [
     name: "شاتوت",
     capacity: 4,
     beds: "۱ تخت دو نفره + ۲ سرویس کف‌خواب سنتی",
-    price: 1800000,
-    priceDisplay: "۱,۸۰۰,۰۰۰ تومان",
-    priceNote: "نرخ پایه برای ۲ نفر؛ هر نفر اضافه طبق تعرفه محاسبه می‌گردد. همراه با صبحانه محلی تازه و چای آتشی.",
+    price: 1300000,
+    priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. همراه با صبحانه محلی تازه روستایی و پذیرایی چای آتشی.",
     description: "اتاقی دنج و باصفا با پنجره‌های چوبی مشرف به درختان شاتوت کهنسال باغ‌های برزک. دارای طاقچه‌های گچی سنتی، فضای آرامش‌بخش، خنک و مطبوع در تابستان و دلنشین در پاییز و زمستان.",
     amenities: ["پنجره رو به باغ شاتوت", "سرویس بهداشتی و حمام اختصاصی", "سیستم سرمایش و گرمایش", "صبحانه محلی تازه", "وای‌فای رایگان", "دمنوش محلی"],
     images: ["assets/rooms/shatoot.svg"]
@@ -49,9 +49,9 @@ const ROOMS = [
     name: "قالی",
     capacity: 3,
     beds: "۲ تخت یک نفره + ۱ سرویس سنتی",
-    price: 1600000,
-    priceDisplay: "۱,۶۰۰,۰۰۰ تومان",
-    priceNote: "همراه با صبحانه ارگانیک روستایی و کرسی سنتی فعال در فصول سرد سال.",
+    price: 1300000,
+    priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. همراه با صبحانه ارگانیک روستایی و کرسی سنتی فعال در فصول سرد سال.",
     description: "یادآور هنر اصیل قالی‌بافی برزک و کاشان با دست‌بافته‌های پشمی نفیس و کرسی سنتی گرم. انتخابی ایده‌آل برای تجربه فرهنگ زیست بومی و آرامش محض کوهستان.",
     amenities: ["کرسی سنتی گرم در زمستان", "سرویس بهداشتی اختصاصی", "دست‌بافته‌های اصیل", "سیستم تهویه", "صبحانه محلی", "چای‌خانه سنتی"],
     images: ["assets/rooms/ghaali.svg"]
@@ -61,9 +61,9 @@ const ROOMS = [
     name: "آبی",
     capacity: 2,
     beds: "۱ تخت دو نفره",
-    price: 1400000,
-    priceDisplay: "۱,۴۰۰,۰۰۰ تومان",
-    priceNote: "مناسب اقامت دونفره و زوج‌ها؛ همراه با پذیرایی عرقیات گیاهی ناب برزک و صبحانه.",
+    price: 1300000,
+    priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. مناسب اقامت دونفره و زوج‌ها؛ همراه با صبحانه و پذیرایی عرقیات گیاهی ناب برزک.",
     description: "اتاقی دل‌انگیز با نقاشی‌ها و کاشی‌کاری‌های لاجوردی و فیروزه‌ای الهام‌گرفته از آسمان پاک برزک. نورگیر عالی به حیاط عمارت با شیشه‌های رنگی ارسی.",
     amenities: ["نورگیر طبیعی به حیاط مرکزی", "حمام و سرویس اختصاصی", "اسپلیت سرمایشی/گرمایشی", "صبحانه روستایی", "پذیرایی عرقیات ارگانیک"],
     images: ["assets/rooms/abi.svg"]
@@ -73,9 +73,9 @@ const ROOMS = [
     name: "سرا",
     capacity: 5,
     beds: "۵ سرویس کف‌خواب سنتی دست‌دوز با تشک و لحاف پنبه‌ای",
-    price: 2200000,
-    priceDisplay: "۲,۲۰۰,۰۰۰ تومان",
-    priceNote: "مناسب خانواده‌ها و جمع‌های صمیمی دوستانه؛ نرخ پایه تا ۴ نفر.",
+    price: 1300000,
+    priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. مناسب خانواده‌ها و دورهمی‌های صمیمی دوستانه.",
     description: "بزرگ‌ترین و اصیل‌ترین شاه‌نشین اقامتگاه با طاق‌های خشتی مرتفع، پنج‌دری‌های رو به باغ و نورگیرهای زیبا، مناسب دورهمی‌های خاطره‌انگیز خانوادگی.",
     amenities: ["فضای بزرگ نشیمن سنتی", "سرویس بهداشتی و حمام اختصاصی", "لحاف و تشک سنتی اعلا", "سیستم گرمایش و سرمایش", "صبحانه محلی کامل"],
     images: ["assets/rooms/sara.svg"]
@@ -85,9 +85,9 @@ const ROOMS = [
     name: "بالاخونه",
     capacity: 3,
     beds: "۱ تخت دو نفره + ۱ سرویس سنتی",
-    price: 1900000,
-    priceDisplay: "۱,۹۰۰,۰۰۰ تومان",
-    priceNote: "دارای ایوان اختصاصی با چشم‌انداز ۳۶۰ درجه به دره و باغستان‌های گردو و گل محمدی.",
+    price: 1200000,
+    priceDisplay: "۱,۲۰۰,۰۰۰ تومان",
+    priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۲۰۰,۰۰۰ تومان. دارای ایوان اختصاصی با چشم‌انداز ۳۶۰ درجه به دره و باغات گردو و گل محمدی.",
     description: "واقع در بالاترین نقطه عمارت تاریخی با تراس بزرگ اختصاصی رو به طبیعت بکر و کوه‌های سرسبز برزک. هوایی بسیار لطیف با نسیم خنک کوهستانی.",
     amenities: ["تراس و ایوان با منظره اختصاصی", "میز و صندلی چوبی در ایوان", "سرویس بهداشتی و حمام اختصاصی", "اسپلیت", "صبحانه سنتی"],
     images: ["assets/rooms/balakhoneh.svg"]
@@ -224,6 +224,29 @@ function triggerHaptic(type = 'light') {
   }
 }
 
+// تابع باز کردن امن لینک‌های خارجی و تلگرام درون وب‌اپلیکیشن تلگرام
+function openExternalUrl(url) {
+  triggerHaptic('light');
+  if (!url) return;
+
+  if (url.startsWith('tel:')) {
+    window.location.href = url;
+    return;
+  }
+
+  if (tg) {
+    if (url.includes('t.me/') && tg.openTelegramLink) {
+      tg.openTelegramLink(url);
+      return;
+    }
+    if (tg.openLink) {
+      tg.openLink(url);
+      return;
+    }
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
 // ۶. مدیریت Navigation و بازگشت یکپارچه (SPA بدون Reload)
 function navigateTo(screenId) {
   triggerHaptic('light');
@@ -324,7 +347,7 @@ function renderRoomsList() {
       <div class="room-card-body">
         <div class="room-card-title-row">
           <h3 class="room-card-title">اتاق ${room.name}</h3>
-          <span class="room-card-price">${formatToman(room.price)}</span>
+          <span class="room-card-price">${formatToman(room.price)} <small style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">/ نفرشب با صبحانه</small></span>
         </div>
         <p class="room-card-desc">${room.description}</p>
         <button class="btn btn-outline" onclick="openRoomDetail('${room.id}')" style="margin-top: 8px;">
@@ -347,7 +370,7 @@ function openRoomDetail(roomId) {
   document.getElementById("detail-room-img").alt = room.name;
   document.getElementById("detail-capacity").textContent = `تا ${formatPersianNumber(room.capacity)} نفر`;
   document.getElementById("detail-beds").textContent = room.beds;
-  document.getElementById("detail-price").textContent = formatToman(room.price) + " / هر شب";
+  document.getElementById("detail-price").textContent = formatToman(room.price) + " / هر نفر شب اقامت با صبحانه";
   document.getElementById("detail-price-note").textContent = room.priceNote;
   document.getElementById("detail-desc").textContent = room.description;
 
@@ -400,14 +423,14 @@ function updateReservationCalculations() {
     guestsValEl.textContent = formatPersianNumber(state.reservation.guests) + " نفر";
   }
 
-  // محاسبه مبلغ برآورد اولیه
-  const totalEstimate = state.reservation.nights * room.price;
+  // محاسبه مبلغ برآورد اولیه: تعداد شب × تعداد نفرات × قیمت هر نفر با صبحانه
+  const totalEstimate = state.reservation.nights * state.reservation.guests * room.price;
   const summaryRoomEl = document.getElementById("res-summary-room");
   const summaryNightsEl = document.getElementById("res-summary-nights");
   const summaryTotalEl = document.getElementById("res-summary-total");
 
-  if (summaryRoomEl) summaryRoomEl.textContent = `اتاق ${room.name} (${formatToman(room.price)} هر شب)`;
-  if (summaryNightsEl) summaryNightsEl.textContent = `${formatPersianNumber(state.reservation.nights)} شب اقامت`;
+  if (summaryRoomEl) summaryRoomEl.textContent = `اتاق ${room.name} (${formatToman(room.price)} هر نفر شب با صبحانه)`;
+  if (summaryNightsEl) summaryNightsEl.textContent = `${formatPersianNumber(state.reservation.guests)} نفر × ${formatPersianNumber(state.reservation.nights)} شب اقامت`;
   if (summaryTotalEl) summaryTotalEl.textContent = formatToman(totalEstimate);
 }
 
@@ -462,7 +485,7 @@ function submitReservationForm(e) {
   }
 
   const checkOut = addDaysToDateString(checkIn, state.reservation.nights);
-  const totalAmount = state.reservation.nights * room.price;
+  const totalAmount = state.reservation.nights * state.reservation.guests * room.price;
 
   // ساخت دقیق متن پیام بر اساس مشخصات بخش ۱۲
   const messageText = 
@@ -476,9 +499,9 @@ function submitReservationForm(e) {
 📅 تاریخ ورود: ${formatPersianNumber(checkIn)}
 🌙 تعداد شب: ${formatPersianNumber(state.reservation.nights)}
 📅 تاریخ خروج: ${formatPersianNumber(checkOut)}
-👥 تعداد نفرات: ${formatPersianNumber(state.reservation.guests)}
+👥 تعداد نفرات: ${formatPersianNumber(state.reservation.guests)} نفر
 
-💰 مبلغ تقریبی: ${formatToman(totalAmount)}
+💰 مبلغ تقریبی: ${formatToman(totalAmount)} (${formatPersianNumber(state.reservation.guests)} نفر × ${formatPersianNumber(state.reservation.nights)} شب با صبحانه)
 
 ⚠️ این پیام صرفاً درخواست رزرو است و به معنی تأیید قطعی رزرو نیست.`;
 
@@ -780,7 +803,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const roomSelect = document.getElementById("res-room-select");
   if (roomSelect) {
     roomSelect.innerHTML = ROOMS.map(r => `
-      <option value="${r.id}">اتاق ${r.name} - ظرفیت تا ${formatPersianNumber(r.capacity)} نفر (${formatToman(r.price)} / شب)</option>
+      <option value="${r.id}">اتاق ${r.name} - ظرفیت تا ${formatPersianNumber(r.capacity)} نفر (${formatToman(r.price)} / هر نفر شب با صبحانه)</option>
     `).join("");
     roomSelect.addEventListener("change", (e) => {
       state.selectedRoomId = e.target.value;
@@ -805,40 +828,129 @@ document.addEventListener("DOMContentLoaded", () => {
   // مقداردهی دکمه‌ها و لینک‌های خارجی از CONFIG
   document.querySelectorAll("[data-config-phone]").forEach(el => {
     el.href = `tel:${CONFIG.phone}`;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(`tel:${CONFIG.phone}`);
+    });
   });
   document.querySelectorAll("[data-config-map]").forEach(el => {
     el.href = CONFIG.mapUrl;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.mapUrl);
+    });
   });
   document.querySelectorAll("[data-config-telegram]").forEach(el => {
     el.href = CONFIG.telegram;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.telegram);
+    });
   });
   document.querySelectorAll("[data-config-instagram]").forEach(el => {
     el.href = CONFIG.instagram;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.instagram);
+    });
   });
   document.querySelectorAll("[data-config-website]").forEach(el => {
     el.href = CONFIG.website;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.website);
+    });
   });
   document.querySelectorAll("[data-config-weather]").forEach(el => {
     el.href = CONFIG.weatherUrl;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.weatherUrl);
+    });
   });
   document.querySelectorAll("[data-config-rooms-info]").forEach(el => {
     el.href = CONFIG.roomsInfoUrl;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.roomsInfoUrl);
+    });
   });
   document.querySelectorAll("[data-config-rules]").forEach(el => {
     el.href = CONFIG.rulesUrl;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.rulesUrl);
+    });
   });
   document.querySelectorAll("[data-config-green-travel]").forEach(el => {
     el.href = CONFIG.greenTravelUrl;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.greenTravelUrl);
+    });
   });
   document.querySelectorAll("[data-config-food-menu]").forEach(el => {
     el.href = CONFIG.foodMenuUrl;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.foodMenuUrl);
+    });
   });
   document.querySelectorAll("[data-config-google-reviews]").forEach(el => {
     el.href = CONFIG.googleMapsReviewUrl;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.googleMapsReviewUrl);
+    });
   });
   document.querySelectorAll("[data-config-tripadvisor]").forEach(el => {
     el.href = CONFIG.tripAdvisorUrl;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.tripAdvisorUrl);
+    });
   });
+
+  // اتصال مستقیم و مطمئن کلیک برای کارت‌های منوی اصلی صفحه نخست
+  const navBindings = [
+    { id: "menu-btn-rooms", screen: "screen-rooms" },
+    { id: "menu-btn-address", screen: "screen-address" },
+    { id: "menu-btn-contact", screen: "screen-contact" },
+    { id: "menu-btn-social", screen: "screen-social" },
+    { id: "menu-btn-rules", screen: "screen-rules" },
+    { id: "menu-btn-weather", screen: "screen-weather" },
+    { id: "menu-btn-green", screen: "screen-green-travel" },
+    { id: "menu-btn-food", screen: "screen-food" },
+    { id: "menu-btn-reviews", screen: "screen-reviews" }
+  ];
+
+  navBindings.forEach(({ id, screen }) => {
+    const cardEl = document.getElementById(id);
+    if (cardEl) {
+      cardEl.style.cursor = "pointer";
+      cardEl.setAttribute("role", "button");
+      cardEl.setAttribute("tabindex", "0");
+      cardEl.addEventListener("click", (e) => {
+        e.preventDefault();
+        navigateTo(screen);
+      });
+      cardEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigateTo(screen);
+        }
+      });
+    }
+  });
+
+  const websiteCard = document.getElementById("menu-btn-website");
+  if (websiteCard) {
+    websiteCard.style.cursor = "pointer";
+    websiteCard.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(CONFIG.website);
+    });
+  }
 
   // پر کردن متن آدرس و تلفن
   const addressTextEl = document.getElementById("display-house-address");
@@ -856,6 +968,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // اکسپورت توابع به پنجره سراسری (Global Window) برای دسترسی آسان در رویدادهای HTML
 window.navigateTo = navigateTo;
 window.navigateBack = navigateBack;
+window.openExternalUrl = openExternalUrl;
 window.openRoomDetail = openRoomDetail;
 window.startReservationForCurrentRoom = startReservationForCurrentRoom;
 window.changeReservationNights = changeReservationNights;

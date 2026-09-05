@@ -80,7 +80,7 @@ export default {
  */
 async function handleDirectReservation(payload, env) {
   const token = env.BOT_TOKEN;
-  const groupId = env.RESERVATION_CHAT_ID;
+  const groupId = env.CHAT_ID || env.RESERVATION_CHAT_ID;
   const messageText = payload.message || "درخواست رزرو جدید ثبت شد.";
 
   if (!token) {
@@ -133,15 +133,16 @@ async function handleTelegramUpdate(update, env) {
 
   const chatId = message.chat.id;
   const text = message.text || "";
-  const appUrl = env.MINI_APP_URL || "https://barzokhouse.com";
+  const appUrl = env.MINIAPP_URL || env.MINI_APP_URL || "https://barzokhouse.com";
 
   // الف: دریافت داده‌های ارسالی از مینی‌اپ (tg.sendData)
   if (message.web_app_data && message.web_app_data.data) {
     const reservationData = message.web_app_data.data;
     
     // ارسال به گروه مدیریت رزرو
-    if (env.RESERVATION_CHAT_ID) {
-      await sendTelegramMessage(token, env.RESERVATION_CHAT_ID, reservationData);
+    const targetGroup = env.CHAT_ID || env.RESERVATION_CHAT_ID;
+    if (targetGroup) {
+      await sendTelegramMessage(token, targetGroup, reservationData);
     }
 
     // ارسال تاییدیه به مسافر در چت شخصی

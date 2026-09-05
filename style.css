@@ -307,7 +307,9 @@ body {
   padding: 16px 14px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
   text-align: right;
   text-decoration: none;
   color: inherit;
@@ -315,7 +317,7 @@ body {
   transition: all var(--transition-fast);
   box-shadow: var(--shadow-sm);
   position: relative;
-  min-height: 106px;
+  min-height: 86px;
 }
 
 .menu-card:hover, .menu-card:active {
@@ -331,6 +333,7 @@ body {
   grid-column: span 2;
   flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
   padding: 16px 18px;
   min-height: 80px;
 }
@@ -346,16 +349,17 @@ body {
 }
 
 .menu-card-icon {
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1;
-  margin-bottom: 10px;
+  margin-bottom: 2px;
 }
 
 .menu-card-title {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 700;
   color: var(--brand-green);
-  margin-bottom: 4px;
+  margin-bottom: 0;
+  line-height: 1.35;
 }
 
 .menu-card-desc {

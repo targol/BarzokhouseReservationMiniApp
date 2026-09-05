@@ -9,15 +9,19 @@
 // ۱. تنظیمات متمرکز و اطلاعات قابل تغییر (Configuration)
 const CONFIG = {
   lodgeName: "اقامتگاه بومگردی خانه برزک",
-  phone: "09354868840",                  // شماره تماس خانه برزک (جهت تماس مستقیم tel:)
-  phoneDisplay: "۰۹۳۵ ۴۸۶ ۸۸۴۰",         // شماره قابل نمایش در صفحه
+  phone1: "09354868840",                  // شماره تماس اول خانه برزک
+  phone1Display: "0935 486 8840",         // شماره تماس اول جهت نمایش LTR
+  phone2: "09125472055",                  // شماره تماس دوم خانه برزک
+  phone2Display: "0912 547 2055",         // شماره تماس دوم جهت نمایش LTR
+  phone: "09354868840",                  // پشتیبانی از کد‌های قدیمی
+  phoneDisplay: "0935 486 8840",
   telegram: "https://t.me/barzokhouse",   // آدرس چنل یا پشتیبانی تلگرام
   instagram: "https://instagram.com/barzokhouse", // آدرس اینستاگرام
   website: "https://barzokhouse.com",     // وب‌سایت رسمی خانه برزک
   address: "استان اصفهان، شهرستان کاشان، شهر برزک، محله سَرِدُل، بعد از اداره آب، اقامتگاه بومگردی خانه برزک",
-  latitude: "33.7915",                   // عرض جغرافیایی برزک
-  longitude: "51.2223",                  // طول جغرافیایی برزک
-  mapUrl: "https://maps.google.com/?q=33.7915,51.2223", // لینک نقشه
+  latitude: "33.78289783354854",         // موقعیت دقیق جغرافیایی برزک
+  longitude: "51.22915745964105",
+  mapUrl: "https://maps.google.com/?q=33.78289783354854,51.22915745964105", // لینک نقشه
   weatherUrl: "https://www.accuweather.com/en/ir/azaran/208117/weather-forecast/208117?type=place&placename=barzok%20house",
   roomsInfoUrl: "https://barzokhouse.com/مشاهده-اتاق-ها",
   rulesUrl: "https://barzokhouse.com/شرایط-خانه-و-ورود-مهمان/",
@@ -43,7 +47,7 @@ const ROOMS = [
     priceNote: "هر نفر شب اقامت با صبحانه ۱,۳۰۰,۰۰۰ تومان.",
     description: "ادر خانه جدید، همراه با یک تخت دو نفره، پنکه دیواری، بخاری گازی، سرویس بهداشتی ایرانی و حمام اختصای.",
     amenities: ["سرویس بهداشتی و حمام اختصاصی", "سیستم سرمایش و گرمایش", "صبحانه محلی", "وای‌فای رایگان", "چای ایرانی تازه دم"],
-    images: ["assets/rooms/shatoot.webp"]
+    images: ["./assets/rooms/shatoot.webp"]
   },
   {
     id: "ghaali",
@@ -55,7 +59,7 @@ const ROOMS = [
     priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. همراه با صبحانه ارگانیک روستایی و کرسی سنتی فعال در فصول سرد سال.",
     description: "یادآور هنر اصیل قالی‌بافی برزک و کاشان با دست‌بافته‌های پشمی نفیس و کرسی سنتی گرم. انتخابی ایده‌آل برای تجربه فرهنگ زیست بومی و آرامش محض کوهستان.",
     amenities: ["کرسی سنتی گرم در زمستان", "سرویس بهداشتی اختصاصی", "دست‌بافته‌های اصیل", "سیستم تهویه", "صبحانه محلی", "چای‌خانه سنتی"],
-    images: ["assets/rooms/ghaali.webp"]
+    images: ["./assets/rooms/ghaali.webp"]
   },
   {
     id: "abi",
@@ -67,7 +71,7 @@ const ROOMS = [
     priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. مناسب اقامت دونفره و زوج‌ها؛ همراه با صبحانه و پذیرایی عرقیات گیاهی ناب برزک.",
     description: "اتاقی دل‌انگیز با نقاشی‌ها و کاشی‌کاری‌های لاجوردی و فیروزه‌ای الهام‌گرفته از آسمان پاک برزک. نورگیر عالی به حیاط عمارت با شیشه‌های رنگی ارسی.",
     amenities: ["نورگیر طبیعی به حیاط مرکزی", "حمام و سرویس اختصاصی", "اسپلیت سرمایشی/گرمایشی", "صبحانه روستایی", "پذیرایی عرقیات ارگانیک"],
-    images: ["assets/rooms/abi.webp"]
+    images: ["./assets/rooms/abi.webp"]
   },
   {
     id: "sara",
@@ -79,7 +83,7 @@ const ROOMS = [
     priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۳۰۰,۰۰۰ تومان. مناسب خانواده‌ها و دورهمی‌های صمیمی دوستانه.",
     description: "بزرگ‌ترین و اصیل‌ترین شاه‌نشین اقامتگاه با طاق‌های خشتی مرتفع، پنج‌دری‌های رو به باغ و نورگیرهای زیبا، مناسب دورهمی‌های خاطره‌انگیز خانوادگی.",
     amenities: ["فضای بزرگ نشیمن سنتی", "سرویس بهداشتی و حمام اختصاصی", "لحاف و تشک سنتی اعلا", "سیستم گرمایش و سرمایش", "صبحانه محلی کامل"],
-    images: ["assets/rooms/sara.webp"]
+    images: ["./assets/rooms/sara.webp"]
   },
   {
     id: "balakhoneh",
@@ -91,7 +95,7 @@ const ROOMS = [
     priceNote: "هر نفر شب اقامت با صبحانه محلی ۱,۲۰۰,۰۰۰ تومان. دارای ایوان اختصاصی با چشم‌انداز ۳۶۰ درجه به دره و باغات گردو و گل محمدی.",
     description: "واقع در بالاترین نقطه عمارت تاریخی با تراس بزرگ اختصاصی رو به طبیعت بکر و کوه‌های سرسبز برزک. هوایی بسیار لطیف با نسیم خنک کوهستانی.",
     amenities: ["تراس و ایوان با منظره اختصاصی", "میز و صندلی چوبی در ایوان", "سرویس بهداشتی و حمام اختصاصی", "اسپلیت", "صبحانه سنتی"],
-    images: ["assets/rooms/balakhoneh.webp"]
+    images: ["./assets/rooms/balakhoneh.webp"]
   }
 ];
 
@@ -165,7 +169,8 @@ const state = {
     date: getTodayFormattedDate(),
     dayOfWeek: "جمعه",
     mealType: "ناهار",
-    // حداکثر ۲ نوع غذا در هر درخواست: { [foodId]: quantity }
+    isGroupTravel: false,
+    // در هر وعده حداکثر ۱ نوع غذا، و در سفر گروهی حداکثر ۲ نوع غذا: { [foodId]: quantity }
     selectedDishes: {}
   }
 };
@@ -342,7 +347,7 @@ function renderRoomsList() {
   container.innerHTML = ROOMS.map(room => `
     <div class="room-card" id="room-card-${room.id}">
       <div class="room-card-img-wrap">
-        <img src="${room.images[0]}" alt="${room.name}" class="room-card-img" loading="lazy" />
+        <img src="${room.images[0]}" alt="${room.name}" class="room-card-img" loading="lazy" onerror="if(!this.dataset.err){this.dataset.err='1';this.src='./assets/rooms/${room.id}.svg';}" />
         <span class="room-card-capacity">👥 تا ${formatPersianNumber(room.capacity)} نفر</span>
       </div>
       <div class="room-card-body">
@@ -350,7 +355,6 @@ function renderRoomsList() {
           <h3 class="room-card-title">اتاق ${room.name}</h3>
           <span class="room-card-price">${formatToman(room.price)} <small style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">/ نفرشب با صبحانه</small></span>
         </div>
-        <p class="room-card-desc">${room.description}</p>
         <button class="btn btn-outline" onclick="openRoomDetail('${room.id}')" style="margin-top: 8px;">
           مشاهده مشخصات و عکس‌های اتاق ←
         </button>
@@ -367,8 +371,17 @@ function openRoomDetail(roomId) {
 
   // مقداردهی ویوی جزئیات اتاق
   document.getElementById("detail-room-name").textContent = `اتاق ${room.name}`;
-  document.getElementById("detail-room-img").src = room.images[0];
-  document.getElementById("detail-room-img").alt = room.name;
+  const detailImg = document.getElementById("detail-room-img");
+  if (detailImg) {
+    detailImg.src = room.images[0];
+    detailImg.alt = room.name;
+    detailImg.onerror = function() {
+      if (!this.dataset.err) {
+        this.dataset.err = '1';
+        this.src = `./assets/rooms/${room.id}.svg`;
+      }
+    };
+  }
   document.getElementById("detail-capacity").textContent = `تا ${formatPersianNumber(room.capacity)} نفر`;
   document.getElementById("detail-beds").textContent = room.beds;
   document.getElementById("detail-price").textContent = formatToman(room.price) + " / هر نفر شب اقامت با صبحانه";
@@ -812,17 +825,22 @@ function renderFoodSection() {
   updateFoodOrderSummary();
 }
 
-// محدودیت: حداکثر ۲ نوع غذای متفاوت در هر سفارش
+// قانون سفارش: در هر وعده حداکثر ۱ نوع غذا، و در سفر گروهی حداکثر ۲ نوع غذا
 function toggleDishSelection(dishId) {
   triggerHaptic('light');
   const currentSelectedKeys = Object.keys(state.foodOrder.selectedDishes);
+  const maxAllowed = state.foodOrder.isGroupTravel ? 2 : 1;
 
   if (state.foodOrder.selectedDishes[dishId]) {
     delete state.foodOrder.selectedDishes[dishId];
   } else {
-    if (currentSelectedKeys.length >= 2) {
+    if (currentSelectedKeys.length >= maxAllowed) {
       triggerHaptic('warning');
-      showToast("«در هر وعده حداکثر امکان انتخاب دو نوع غذا وجود دارد.»");
+      if (maxAllowed === 1) {
+        showToast("«در هر وعده امکان انتخاب یک نوع غذا وجود دارد. در صورت سفر گروهی، گزینه سفر گروهی را فعال کنید تا ۲ نوع غذا انتخاب نمایید.»");
+      } else {
+        showToast("«در سفر گروهی، در هر وعده حداکثر امکان انتخاب دو غذا وجود دارد.»");
+      }
       const checkbox = document.getElementById(`check-${dishId}`);
       if (checkbox) checkbox.checked = false;
       return;
@@ -830,6 +848,20 @@ function toggleDishSelection(dishId) {
     state.foodOrder.selectedDishes[dishId] = 1;
   }
 
+  renderFoodSection();
+  updateReservationCalculations();
+}
+
+// تغییر وضعیت انتخاب سفر گروهی (امکان انتخاب تا ۲ نوع غذا)
+function toggleGroupTravel(isGroup) {
+  triggerHaptic('light');
+  state.foodOrder.isGroupTravel = !!isGroup;
+  const currentKeys = Object.keys(state.foodOrder.selectedDishes);
+  if (!isGroup && currentKeys.length > 1) {
+    const toRemove = currentKeys.slice(1);
+    toRemove.forEach(k => delete state.foodOrder.selectedDishes[k]);
+    showToast("تعداد غذاها مطابق سفر غیرگروهی به یک نوع غذا تنظیم شد.");
+  }
   renderFoodSection();
   updateReservationCalculations();
 }
@@ -853,7 +885,7 @@ function updateFoodOrderSummary() {
   if (selectedIds.length === 0) {
     summaryBox.innerHTML = `
       <div style="font-size: 12.5px; color: var(--brand-text-muted); text-align: center;">
-        هنوز غذایی انتخاب نشده است. از لیست بالا حداکثر ۲ نوع غذا را علامت بزنید.
+        هنوز غذایی انتخاب نشده است. از منوی بالا ${state.foodOrder.isGroupTravel ? 'حداکثر ۲ نوع غذا' : 'یک نوع غذا'} را علامت بزنید.
       </div>
     `;
     return;
@@ -1117,11 +1149,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // مقداردهی دکمه‌ها و لینک‌های خارجی از CONFIG
-  document.querySelectorAll("[data-config-phone]").forEach(el => {
-    el.href = `tel:${CONFIG.phone}`;
+  document.querySelectorAll("[data-config-phone1]").forEach(el => {
+    el.href = `tel:${CONFIG.phone1}`;
     el.addEventListener("click", (e) => {
       e.preventDefault();
-      openExternalUrl(`tel:${CONFIG.phone}`);
+      openExternalUrl(`tel:${CONFIG.phone1}`);
+    });
+  });
+  document.querySelectorAll("[data-config-phone2]").forEach(el => {
+    el.href = `tel:${CONFIG.phone2}`;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(`tel:${CONFIG.phone2}`);
+    });
+  });
+  document.querySelectorAll("[data-config-phone]").forEach(el => {
+    el.href = `tel:${CONFIG.phone1}`;
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openExternalUrl(`tel:${CONFIG.phone1}`);
     });
   });
   document.querySelectorAll("[data-config-map]").forEach(el => {
@@ -1247,8 +1293,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const addressTextEl = document.getElementById("display-house-address");
   if (addressTextEl) addressTextEl.textContent = CONFIG.address;
 
+  const phone1TextEl = document.getElementById("display-house-phone-1");
+  if (phone1TextEl) phone1TextEl.textContent = CONFIG.phone1Display;
+
+  const phone2TextEl = document.getElementById("display-house-phone-2");
+  if (phone2TextEl) phone2TextEl.textContent = CONFIG.phone2Display;
+
   const phoneTextEl = document.getElementById("display-house-phone");
-  if (phoneTextEl) phoneTextEl.textContent = CONFIG.phoneDisplay;
+  if (phoneTextEl) phoneTextEl.textContent = CONFIG.phone1Display;
 
   // رندر بخش‌ها
   renderRoomsList();
@@ -1266,6 +1318,7 @@ window.changeReservationNights = changeReservationNights;
 window.changeReservationGuests = changeReservationGuests;
 window.submitReservationForm = submitReservationForm;
 window.toggleDishSelection = toggleDishSelection;
+window.toggleGroupTravel = toggleGroupTravel;
 window.changeDishQty = changeDishQty;
 window.submitFoodOrderForm = submitFoodOrderForm;
 window.closeMessageModal = closeMessageModal;

@@ -1,98 +1,81 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 600" width="100%" height="100%">
   <defs>
-    <!-- Filter for subtle crispness -->
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#1b2e25" flood-opacity="0.15"/>
+    <!-- Soft ambient shadow under diamond -->
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#182a20" flood-opacity="0.14" />
     </filter>
   </defs>
 
-  <!-- Diamond / Rhombus background with rounded corners -->
-  <g filter="url(#shadow)">
-    <rect x="110" y="110" width="280" height="280" rx="34" transform="rotate(45 250 250)" fill="#b88648"/>
+  <!-- Ochre/Gold Rhombus Diamond (لوزی خاکی-عسلی خانه برزک) -->
+  <g filter="url(#softShadow)">
+    <rect x="230" y="140" width="320" height="320" rx="36" transform="rotate(45 390 300)" fill="#bd893e" />
   </g>
 
-  <!-- Persian Calligraphy "خانه برزک" -->
-  <!-- Layer 1: White outer contour / stroke -->
-  <g fill="#ffffff" stroke="#ffffff" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
-    <!-- Shamseh / floral flourish at the top right -->
-    <circle cx="318" cy="148" r="7"/>
-    <circle cx="318" cy="132" r="3.5"/>
-    <circle cx="318" cy="164" r="3.5"/>
-    <circle cx="302" cy="148" r="3.5"/>
-    <circle cx="334" cy="148" r="3.5"/>
+  <!-- Calligraphy Layer 1: Solid White Contour Outline (کادر سفید پیرامون خطاطی) -->
+  <g fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Dot of 'خ' -->
+    <path d="M 268 185 L 285 168 L 302 185 L 285 202 Z" fill="#ffffff" />
 
-    <!-- برزک (Barzok) text shapes -->
-    <!-- Dot of 'Z' (ز) -->
-    <ellipse cx="270" cy="168" rx="6.5" ry="7.5" transform="rotate(-25 270 168)"/>
-    <!-- Dot of 'B' (ب) -->
-    <ellipse cx="330" cy="226" rx="6" ry="7" transform="rotate(20 330 226)"/>
+    <!-- Dot of 'ز' -->
+    <path d="M 358 238 L 373 223 L 388 238 L 373 253 Z" fill="#ffffff" />
 
-    <!-- Letterforms for Barzok (ب، ر، ز، ک) -->
-    <!-- Roof / Serkash of Kaf (ک) -->
-    <path d="M 235 158 C 265 142 300 138 335 135 C 342 135 348 138 340 144 C 310 152 275 162 242 168 Z"/>
-    
-    <!-- Body of Kaf and Re/Zey -->
-    <path d="M 330 142 C 322 165 315 190 300 205 C 285 220 268 224 250 226 C 265 214 278 198 284 178 C 290 160 292 148 296 142 Z"/>
-    <path d="M 295 198 C 282 212 262 230 240 236 C 248 226 256 214 262 202 C 274 200 286 198 295 198 Z"/>
-    
-    <!-- Body of Ba and Re -->
-    <path d="M 345 192 C 345 208 335 218 316 220 C 328 214 334 204 334 192 Z"/>
+    <!-- Zamma ُ above 'ز' -->
+    <path d="M 382 195 C 382 185 392 180 398 186 C 404 192 398 202 388 214" stroke-width="16" />
 
-    <!-- خانه (Khaneh) main central calligraphy -->
-    <!-- Head of Khe (خ) -->
-    <path d="M 182 220 C 195 200 215 192 238 196 C 248 198 252 204 246 208 C 230 214 212 224 195 238 C 178 252 170 264 165 280 C 160 270 162 250 182 220 Z"/>
-    
-    <!-- Dot of Khe (خ) -->
-    <ellipse cx="218" cy="176" rx="7" ry="8" transform="rotate(-30 218 176)"/>
+    <!-- Dot of 'ب' -->
+    <path d="M 425 320 L 438 307 L 451 320 L 438 333 Z" fill="#ffffff" />
 
-    <!-- Alef (ا) and Noon-He connection (نه) -->
-    <!-- Vertical stem of Alef -->
-    <path d="M 242 198 C 244 220 244 248 242 276 C 238 276 235 250 235 218 C 235 205 238 198 242 198 Z"/>
+    <!-- Head of 'خ' (خانه) -->
+    <path d="M 235 230 C 255 200 288 190 315 205 C 325 210 328 220 320 228 C 300 238 275 255 250 280 C 235 295 220 310 215 325" stroke-width="20" />
 
-    <!-- Sweeping grand curve of Khaneh (the expansive flourish across the bottom) -->
-    <path d="M 345 252 C 345 272 320 290 280 304 C 230 322 170 326 112 308 C 88 300 70 286 64 274 C 60 266 65 264 74 268 C 102 284 150 294 205 292 C 265 290 310 274 328 254 C 336 244 345 240 345 252 Z"/>
+    <!-- Stem of 'الف' and 'نه' in خانه -->
+    <path d="M 310 220 C 315 250 320 280 330 305 C 340 280 355 250 375 225" stroke-width="18" />
+    <path d="M 330 305 C 345 320 370 315 390 295" stroke-width="18" />
 
-    <!-- Sharp calligraphic flourish tail extending to the bottom left -->
-    <path d="M 95 284 C 70 275 48 262 38 250 C 44 254 62 264 88 274 Z"/>
+    <!-- 'ک' Serkash & flourish of برزک -->
+    <path d="M 420 250 C 425 210 435 170 410 140 C 390 118 360 120 335 130 C 325 134 320 142 328 145 C 350 140 380 140 395 160 C 408 178 402 210 398 245" stroke-width="18" />
+
+    <!-- Body of 'برز' in برزک -->
+    <path d="M 445 260 C 445 285 430 300 410 310 C 385 322 360 325 340 315" stroke-width="18" />
+
+    <!-- Grand iconic lower swoosh of 'خانه' (کشیده چشم‌نواز و اصیل پایین آرم) -->
+    <path d="M 465 370 C 450 405 410 435 365 445 C 300 458 200 455 125 435 C 75 422 35 400 20 375 C 15 366 22 362 30 366 C 70 385 130 402 210 408 C 295 414 380 400 435 368 C 455 356 470 354 465 370 Z" fill="#ffffff" stroke-width="18" />
+
+    <!-- Accent dot below right swoop -->
+    <path d="M 445 425 L 458 412 L 471 425 L 458 438 Z" fill="#ffffff" />
   </g>
 
-  <!-- Layer 2: Persian teal fill #1f8578 for the exact calligraphy letters -->
-  <g fill="#1f8578" stroke="#1f8578" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-    <!-- Shamseh / floral flourish at the top right -->
-    <circle cx="318" cy="148" r="6"/>
-    <circle cx="318" cy="132" r="3"/>
-    <circle cx="318" cy="164" r="3"/>
-    <circle cx="302" cy="148" r="3"/>
-    <circle cx="334" cy="148" r="3"/>
+  <!-- Calligraphy Layer 2: Persian Turquoise / Teal Fill (#1f8578) -->
+  <g fill="none" stroke="#1f8578" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Dot of 'خ' -->
+    <path d="M 268 185 L 285 168 L 302 185 L 285 202 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
 
-    <!-- Dot of 'Z' (ز) -->
-    <ellipse cx="270" cy="168" rx="5.5" ry="6.5" transform="rotate(-25 270 168)"/>
-    <!-- Dot of 'B' (ب) -->
-    <ellipse cx="330" cy="226" rx="5" ry="6" transform="rotate(20 330 226)"/>
+    <!-- Dot of 'ز' -->
+    <path d="M 358 238 L 373 223 L 388 238 L 373 253 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
 
-    <!-- Roof / Serkash of Kaf (ک) -->
-    <path d="M 235 158 C 265 142 300 138 335 135 C 342 135 348 138 340 144 C 310 152 275 162 242 168 Z"/>
-    
-    <!-- Body of Kaf and Re/Zey -->
-    <path d="M 330 142 C 322 165 315 190 300 205 C 285 220 268 224 250 226 C 265 214 278 198 284 178 C 290 160 292 148 296 142 Z"/>
-    <path d="M 295 198 C 282 212 262 230 240 236 C 248 226 256 214 262 202 C 274 200 286 198 295 198 Z"/>
-    
-    <!-- Body of Ba and Re -->
-    <path d="M 345 192 C 345 208 335 218 316 220 C 328 214 334 204 334 192 Z"/>
+    <!-- Zamma ُ above 'ز' -->
+    <path d="M 382 195 C 382 185 392 180 398 186 C 404 192 398 202 388 214" stroke-width="5" />
 
-    <!-- Head of Khe (خ) -->
-    <path d="M 182 220 C 195 200 215 192 238 196 C 248 198 252 204 246 208 C 230 214 212 224 195 238 C 178 252 170 264 165 280 C 160 270 162 250 182 220 Z"/>
-    
-    <!-- Dot of Khe (خ) -->
-    <ellipse cx="218" cy="176" rx="6" ry="7" transform="rotate(-30 218 176)"/>
+    <!-- Dot of 'ب' -->
+    <path d="M 425 320 L 438 307 L 451 320 L 438 333 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
 
-    <!-- Vertical stem of Alef -->
-    <path d="M 242 198 C 244 220 244 248 242 276 C 238 276 235 250 235 218 C 235 205 238 198 242 198 Z"/>
+    <!-- Head of 'خ' -->
+    <path d="M 235 230 C 255 200 288 190 315 205 C 325 210 328 220 320 228 C 300 238 275 255 250 280 C 235 295 220 310 215 325" stroke-width="8" />
 
-    <!-- Sweeping grand curve of Khaneh -->
-    <path d="M 345 252 C 345 272 320 290 280 304 C 230 322 170 326 112 308 C 88 300 70 286 64 274 C 60 266 65 264 74 268 C 102 284 150 294 205 292 C 265 290 310 274 328 254 C 336 244 345 240 345 252 Z"/>
+    <!-- Stem of 'الف' and 'نه' in خانه -->
+    <path d="M 310 220 C 315 250 320 280 330 305 C 340 280 355 250 375 225" stroke-width="7" />
+    <path d="M 330 305 C 345 320 370 315 390 295" stroke-width="7" />
 
-    <!-- Sharp calligraphic flourish tail extending to the bottom left -->
-    <path d="M 95 284 C 70 275 48 262 38 250 C 44 254 62 264 88 274 Z"/>
+    <!-- 'ک' Serkash & flourish of برزک -->
+    <path d="M 420 250 C 425 210 435 170 410 140 C 390 118 360 120 335 130 C 325 134 320 142 328 145 C 350 140 380 140 395 160 C 408 178 402 210 398 245" stroke-width="7" />
+
+    <!-- Body of 'برز' in برزک -->
+    <path d="M 445 260 C 445 285 430 300 410 310 C 385 322 360 325 340 315" stroke-width="7" />
+
+    <!-- Grand iconic lower swoosh of 'خانه' -->
+    <path d="M 465 370 C 450 405 410 435 365 445 C 300 458 200 455 125 435 C 75 422 35 400 20 375 C 15 366 22 362 30 366 C 70 385 130 402 210 408 C 295 414 380 400 435 368 C 455 356 470 354 465 370 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
+
+    <!-- Accent dot below right swoop -->
+    <path d="M 445 425 L 458 412 L 471 425 L 458 438 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
   </g>
 </svg>

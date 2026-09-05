@@ -1,32 +1,81 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 600" width="100%" height="100%">
   <defs>
-    <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#233e33"/>
-      <stop offset="100%" stop-color="#162922"/>
-    </linearGradient>
-    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f0c265"/>
-      <stop offset="100%" stop-color="#c58b1f"/>
-    </linearGradient>
+    <!-- Soft ambient shadow under diamond -->
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#182a20" flood-opacity="0.14" />
+    </filter>
   </defs>
-  <!-- Background badge -->
-  <rect width="200" height="200" rx="40" fill="url(#logoBg)"/>
-  
-  <!-- Subtle decorative traditional border -->
-  <rect x="12" y="12" width="176" height="176" rx="32" fill="none" stroke="url(#gold)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="6,4"/>
-  
-  <!-- Traditional Arch (طاق سنتی) -->
-  <path d="M 60 148 L 60 90 C 60 55, 140 55, 140 90 L 140 148 Z" fill="none" stroke="url(#gold)" stroke-width="4" stroke-linejoin="round"/>
-  
-  <!-- Inner window grille (گره چینی) -->
-  <path d="M 75 148 L 75 96 C 75 75, 125 75, 125 96 L 125 148 Z" fill="#2d4e41" opacity="0.6"/>
-  <circle cx="100" cy="90" r="10" fill="none" stroke="url(#gold)" stroke-width="2.5"/>
-  <line x1="100" y1="100" x2="100" y2="148" stroke="url(#gold)" stroke-width="2.5"/>
-  <line x1="75" y1="120" x2="125" y2="120" stroke="url(#gold)" stroke-width="2.5"/>
-  
-  <!-- Sun / Morning glow over Barzok mountains -->
-  <path d="M 45 155 Q 100 135 155 155" fill="none" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
-  
-  <!-- Traditional Leaf / Green motif -->
-  <path d="M 100 42 C 108 30, 118 36, 114 48 C 110 58, 100 62, 100 62 C 100 62, 90 58, 86 48 C 82 36, 92 30, 100 42 Z" fill="url(#gold)"/>
+
+  <!-- Ochre/Gold Rhombus Diamond (لوزی خاکی-عسلی خانه برزک) -->
+  <g filter="url(#softShadow)">
+    <rect x="230" y="140" width="320" height="320" rx="36" transform="rotate(45 390 300)" fill="#bd893e" />
+  </g>
+
+  <!-- Calligraphy Layer 1: Solid White Contour Outline (کادر سفید پیرامون خطاطی) -->
+  <g fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Dot of 'خ' -->
+    <path d="M 268 185 L 285 168 L 302 185 L 285 202 Z" fill="#ffffff" />
+
+    <!-- Dot of 'ز' -->
+    <path d="M 358 238 L 373 223 L 388 238 L 373 253 Z" fill="#ffffff" />
+
+    <!-- Zamma ُ above 'ز' -->
+    <path d="M 382 195 C 382 185 392 180 398 186 C 404 192 398 202 388 214" stroke-width="16" />
+
+    <!-- Dot of 'ب' -->
+    <path d="M 425 320 L 438 307 L 451 320 L 438 333 Z" fill="#ffffff" />
+
+    <!-- Head of 'خ' (خانه) -->
+    <path d="M 235 230 C 255 200 288 190 315 205 C 325 210 328 220 320 228 C 300 238 275 255 250 280 C 235 295 220 310 215 325" stroke-width="20" />
+
+    <!-- Stem of 'الف' and 'نه' in خانه -->
+    <path d="M 310 220 C 315 250 320 280 330 305 C 340 280 355 250 375 225" stroke-width="18" />
+    <path d="M 330 305 C 345 320 370 315 390 295" stroke-width="18" />
+
+    <!-- 'ک' Serkash & flourish of برزک -->
+    <path d="M 420 250 C 425 210 435 170 410 140 C 390 118 360 120 335 130 C 325 134 320 142 328 145 C 350 140 380 140 395 160 C 408 178 402 210 398 245" stroke-width="18" />
+
+    <!-- Body of 'برز' in برزک -->
+    <path d="M 445 260 C 445 285 430 300 410 310 C 385 322 360 325 340 315" stroke-width="18" />
+
+    <!-- Grand iconic lower swoosh of 'خانه' (کشیده چشم‌نواز و اصیل پایین آرم) -->
+    <path d="M 465 370 C 450 405 410 435 365 445 C 300 458 200 455 125 435 C 75 422 35 400 20 375 C 15 366 22 362 30 366 C 70 385 130 402 210 408 C 295 414 380 400 435 368 C 455 356 470 354 465 370 Z" fill="#ffffff" stroke-width="18" />
+
+    <!-- Accent dot below right swoop -->
+    <path d="M 445 425 L 458 412 L 471 425 L 458 438 Z" fill="#ffffff" />
+  </g>
+
+  <!-- Calligraphy Layer 2: Persian Turquoise / Teal Fill (#1f8578) -->
+  <g fill="none" stroke="#1f8578" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Dot of 'خ' -->
+    <path d="M 268 185 L 285 168 L 302 185 L 285 202 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
+
+    <!-- Dot of 'ز' -->
+    <path d="M 358 238 L 373 223 L 388 238 L 373 253 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
+
+    <!-- Zamma ُ above 'ز' -->
+    <path d="M 382 195 C 382 185 392 180 398 186 C 404 192 398 202 388 214" stroke-width="5" />
+
+    <!-- Dot of 'ب' -->
+    <path d="M 425 320 L 438 307 L 451 320 L 438 333 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
+
+    <!-- Head of 'خ' -->
+    <path d="M 235 230 C 255 200 288 190 315 205 C 325 210 328 220 320 228 C 300 238 275 255 250 280 C 235 295 220 310 215 325" stroke-width="8" />
+
+    <!-- Stem of 'الف' and 'نه' in خانه -->
+    <path d="M 310 220 C 315 250 320 280 330 305 C 340 280 355 250 375 225" stroke-width="7" />
+    <path d="M 330 305 C 345 320 370 315 390 295" stroke-width="7" />
+
+    <!-- 'ک' Serkash & flourish of برزک -->
+    <path d="M 420 250 C 425 210 435 170 410 140 C 390 118 360 120 335 130 C 325 134 320 142 328 145 C 350 140 380 140 395 160 C 408 178 402 210 398 245" stroke-width="7" />
+
+    <!-- Body of 'برز' in برزک -->
+    <path d="M 445 260 C 445 285 430 300 410 310 C 385 322 360 325 340 315" stroke-width="7" />
+
+    <!-- Grand iconic lower swoosh of 'خانه' -->
+    <path d="M 465 370 C 450 405 410 435 365 445 C 300 458 200 455 125 435 C 75 422 35 400 20 375 C 15 366 22 362 30 366 C 70 385 130 402 210 408 C 295 414 380 400 435 368 C 455 356 470 354 465 370 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
+
+    <!-- Accent dot below right swoop -->
+    <path d="M 445 425 L 458 412 L 471 425 L 458 438 Z" fill="#1f8578" stroke="#1f8578" stroke-width="2" />
+  </g>
 </svg>

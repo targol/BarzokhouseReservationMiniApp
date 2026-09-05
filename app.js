@@ -25,9 +25,10 @@ const CONFIG = {
   foodMenuUrl: "https://barzokhouse.com/%d8%af%d8%b3%d8%aa%d9%88%d8%b1-%d9%be%d8%ae%d8%aa-%d8%ba%d8%b0%d8%a7%d9%87%d8%a7/",
   googleMapsReviewUrl: "https://maps.app.goo.gl/aC1vyJ9T5Q4jJkMy6",
   tripAdvisorUrl: "https://www.tripadvisor.com/Hotel_Review-g680023-d8618364-Reviews-Barzok_House-Kashan_Isfahan_Province.html",
-  // آدرس Cloudflare Worker برای ارسال پیام به گروه تلگرام در فاز بعدی
-  // توجه: توکن ربات و Chat ID هرگز در فرانت‌اند قرار داده نمی‌شوند و در Worker ذخیره می‌گردند.
-  workerUrl: "" 
+  // لینک اختصاصی گروه تلگرام برای ارسال درخواست‌های رزرو خانه برزک
+  reservationGroupUrl: "https://t.me/+wigY6VanuYplYTk8",
+  // آدرس Cloudflare Worker برای پردازش درخواست و ارسال مستقیم به گروه تلگرام
+  workerUrl: "https://barzokhousereservationminiapp.targol.workers.dev"
 };
 
 // ۲. اطلاعات اتاق‌ها (Rooms Data)
@@ -394,7 +395,7 @@ function startReservationForCurrentRoom() {
   navigateTo("screen-reservation");
 }
 
-// ۹. فرم و محاسبات درخواست رزرو
+// ۹. فرم و محاسبات درخواست رزرو یکپارچه (اقامت + خوراک)
 function updateReservationCalculations() {
   const roomSelect = document.getElementById("res-room-select");
   const selectedId = roomSelect ? roomSelect.value : state.selectedRoomId;
@@ -412,6 +413,28 @@ function updateReservationCalculations() {
     checkOutDisplay.textContent = formatPersianNumber(checkOutVal);
   }
 
+  // همگام‌سازی فیلدهای مشترک با فرم سفارش غذا
+  const resNameInput = document.getElementById("res-name");
+  const resPhoneInput = document.getElementById("res-phone");
+  if (resNameInput && resNameInput.value) {
+    state.reservation.name = resNameInput.value.trim();
+    state.foodOrder.name = state.reservation.name;
+    const foodNameInput = document.getElementById("food-name");
+    if (foodNameInput && !foodNameInput.value) foodNameInput.value = state.reservation.name;
+  }
+  if (resPhoneInput && resPhoneInput.value) {
+    state.reservation.phone = resPhoneInput.value.trim();
+    state.foodOrder.phone = state.reservation.phone;
+    const foodPhoneInput = document.getElementById("food-phone");
+    if (foodPhoneInput && !foodPhoneInput.value) foodPhoneInput.value = state.reservation.phone;
+  }
+  if (checkInVal) {
+    state.reservation.checkInDate = checkInVal;
+    state.foodOrder.date = checkInVal;
+    const foodDateInput = document.getElementById("food-date");
+    if (foodDateInput && !foodDateInput.value) foodDateInput.value = checkInVal;
+  }
+
   // نمایش تعداد شب و نفرات در استپرها
   const nightsValEl = document.getElementById("res-nights-val");
   if (nightsValEl) {
@@ -423,15 +446,106 @@ function updateReservationCalculations() {
     guestsValEl.textContent = formatPersianNumber(state.reservation.guests) + " نفر";
   }
 
-  // محاسبه مبلغ برآورد اولیه: تعداد شب × تعداد نفرات × قیمت هر نفر با صبحانه
-  const totalEstimate = state.reservation.nights * state.reservation.guests * room.price;
+  // محاسبه مبلغ اقامت
+  const roomEstimate = state.reservation.nights * state.reservation.guests * room.price;
+
+  // محاسبه مبلغ غذاهای انتخابی (در صورت وجود)
+  const selectedFoodIds = Object.keys(state.foodOrder.selectedDishes);
+  let foodEstimate = 0;
+  selectedFoodIds.forEach(id => {
+    const dish = FOOD_MENU.find(d => d.id === id);
+    const qty = state.foodOrder.selectedDishes[id] || 1;
+    if (dish) foodEstimate += dish.price * qty;
+  });
+
+  const grandTotal = roomEstimate + foodEstimate;
+
+  // به‌روزرسانی کارت تعاملی غذا در فرم رزرو
+  const foodCard = document.getElementById("unified-food-card");
+  const foodBadge = document.getElementById("unified-food-badge");
+  const foodContent = document.getElementById("unified-food-content");
+
+  if (foodCard && foodBadge && foodContent) {
+    if (selectedFoodIds.length === 0) {
+      foodCard.classList.remove("has-food");
+      foodBadge.textContent = "بدون غذا";
+      foodBadge.style.background = "var(--brand-surface-subtle)";
+      foodBadge.style.color = "var(--brand-text-muted)";
+      foodContent.innerHTML = `
+        <p class="unified-food-empty">
+          می‌توانید وعده‌های غذایی سنتی برزک (ناهار یا شام) را نیز به همین درخواست اضافه کنید تا تمام موارد به‌صورت یکجا و هم‌زمان به گروه رزرو ارسال شوند.
+        </p>
+        <button type="button" class="btn btn-outline" style="font-size: 13px; padding: 8px 14px;" onclick="navigateToFoodFromReservation()">
+          + انتخاب غذاهای محلی از منو
+        </button>
+      `;
+    } else {
+      foodCard.classList.add("has-food");
+      foodBadge.textContent = `همراه با غذا (${formatPersianNumber(selectedFoodIds.length)} نوع)`;
+      foodBadge.style.background = "var(--brand-teal-subtle)";
+      foodBadge.style.color = "var(--brand-teal-dark)";
+
+      const dishesListHtml = selectedFoodIds.map(id => {
+        const dish = FOOD_MENU.find(d => d.id === id);
+        const qty = state.foodOrder.selectedDishes[id];
+        return `
+          <div class="unified-food-item">
+            <span>🍲 ${dish ? dish.name : id} × ${formatPersianNumber(qty)} پرس</span>
+            <span>${dish ? formatToman(dish.price * qty) : ''}</span>
+          </div>
+        `;
+      }).join("");
+
+      foodContent.innerHTML = `
+        <div class="unified-food-dishes-list">
+          ${dishesListHtml}
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 12.5px; color: var(--brand-teal-dark); font-weight: 700;">
+          <span>وعده: ${state.foodOrder.mealType || 'ناهار'} (${state.foodOrder.dayOfWeek || 'جمعه'})</span>
+          <span>جمع غذا: ${formatToman(foodEstimate)}</span>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px; flex: 1;" onclick="navigateToFoodFromReservation()">
+            ✏️ ویرایش غذاها
+          </button>
+          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px; color: #b23b3b; border-color: #f1cfcf;" onclick="clearFoodFromReservation()">
+            🗑️ حذف غذا از اقامت
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  // به‌روزرسانی جعبه برآورد یکپارچه
   const summaryRoomEl = document.getElementById("res-summary-room");
-  const summaryNightsEl = document.getElementById("res-summary-nights");
+  const summaryRoomPriceEl = document.getElementById("res-summary-room-price");
+  const summaryFoodRowEl = document.getElementById("res-summary-food-row");
+  const summaryFoodTitleEl = document.getElementById("res-summary-food-title");
+  const summaryFoodPriceEl = document.getElementById("res-summary-food-price");
   const summaryTotalEl = document.getElementById("res-summary-total");
 
-  if (summaryRoomEl) summaryRoomEl.textContent = `اتاق ${room.name} (${formatToman(room.price)} هر نفر شب با صبحانه)`;
-  if (summaryNightsEl) summaryNightsEl.textContent = `${formatPersianNumber(state.reservation.guests)} نفر × ${formatPersianNumber(state.reservation.nights)} شب اقامت`;
-  if (summaryTotalEl) summaryTotalEl.textContent = formatToman(totalEstimate);
+  if (summaryRoomEl) {
+    summaryRoomEl.textContent = `اتاق ${room.name} (${formatPersianNumber(state.reservation.guests)} نفر، ${formatPersianNumber(state.reservation.nights)} شب با صبحانه)`;
+  }
+  if (summaryRoomPriceEl) {
+    summaryRoomPriceEl.textContent = formatToman(roomEstimate);
+  }
+
+  if (summaryFoodRowEl && summaryFoodPriceEl) {
+    if (selectedFoodIds.length > 0) {
+      summaryFoodRowEl.style.display = "flex";
+      if (summaryFoodTitleEl) {
+        summaryFoodTitleEl.textContent = `سفارش خوراک سنتی (${state.foodOrder.mealType || 'ناهار'}):`;
+      }
+      summaryFoodPriceEl.textContent = formatToman(foodEstimate);
+    } else {
+      summaryFoodRowEl.style.display = "none";
+    }
+  }
+
+  if (summaryTotalEl) {
+    summaryTotalEl.textContent = formatToman(grandTotal);
+  }
 }
 
 function changeReservationNights(delta) {
@@ -456,66 +570,208 @@ function changeReservationGuests(delta) {
   updateReservationCalculations();
 }
 
-// ۱۰. ارسال درخواست رزرو
+// هدایت کاربر از فرم اقامت به منوی غذا
+function navigateToFoodFromReservation() {
+  triggerHaptic('light');
+  syncReservationToFoodInputs();
+  navigateTo("screen-food");
+}
+
+// ذخیره انتخاب غذا و بازگشت به فرم اقامت
+function saveFoodAndReturnToReservation() {
+  triggerHaptic('medium');
+  syncFoodToReservationInputs();
+  updateReservationCalculations();
+  navigateTo("screen-reservation");
+  showToast("غذاهای انتخابی با موفقیت به سفارش اقامت اضافه شدند.");
+}
+
+// حذف سفارش غذا از اقامت
+function clearFoodFromReservation() {
+  triggerHaptic('light');
+  state.foodOrder.selectedDishes = {};
+  updateReservationCalculations();
+  renderFoodSection();
+  showToast("سفارش غذا از درخواست اقامت حذف شد.");
+}
+
+// همگام‌سازی ورودی‌های فرم اقامت با فرم غذا
+function syncReservationToFoodInputs() {
+  const resName = document.getElementById("res-name")?.value.trim() || state.reservation.name;
+  const resPhone = document.getElementById("res-phone")?.value.trim() || state.reservation.phone;
+  const resDate = document.getElementById("res-checkin-date")?.value || state.reservation.checkInDate;
+
+  if (resName) {
+    state.reservation.name = resName;
+    state.foodOrder.name = resName;
+    const foodNameInput = document.getElementById("food-name");
+    if (foodNameInput) foodNameInput.value = resName;
+  }
+  if (resPhone) {
+    state.reservation.phone = resPhone;
+    state.foodOrder.phone = resPhone;
+    const foodPhoneInput = document.getElementById("food-phone");
+    if (foodPhoneInput) foodPhoneInput.value = resPhone;
+  }
+  if (resDate) {
+    state.reservation.checkInDate = resDate;
+    state.foodOrder.date = resDate;
+    const foodDateInput = document.getElementById("food-date");
+    if (foodDateInput) foodDateInput.value = resDate;
+  }
+}
+
+// همگام‌سازی ورودی‌های فرم غذا با فرم اقامت
+function syncFoodToReservationInputs() {
+  const foodName = document.getElementById("food-name")?.value.trim() || state.foodOrder.name;
+  const foodPhone = document.getElementById("food-phone")?.value.trim() || state.foodOrder.phone;
+  const foodDate = document.getElementById("food-date")?.value || state.foodOrder.date;
+  const foodDay = document.getElementById("food-day")?.value || state.foodOrder.dayOfWeek;
+  const foodMeal = document.getElementById("food-meal")?.value || state.foodOrder.mealType;
+
+  if (foodName) {
+    state.foodOrder.name = foodName;
+    state.reservation.name = foodName;
+    const resNameInput = document.getElementById("res-name");
+    if (resNameInput) resNameInput.value = foodName;
+  }
+  if (foodPhone) {
+    state.foodOrder.phone = foodPhone;
+    state.reservation.phone = foodPhone;
+    const resPhoneInput = document.getElementById("res-phone");
+    if (resPhoneInput) resPhoneInput.value = foodPhone;
+  }
+  if (foodDate) {
+    state.foodOrder.date = foodDate;
+  }
+  if (foodDay) state.foodOrder.dayOfWeek = foodDay;
+  if (foodMeal) state.foodOrder.mealType = foodMeal;
+}
+
+/**
+ * تولید متن پیام یکپارچه نهایی (شامل اطلاعات اقامت + خوراک)
+ */
+function generateUnifiedOrderMessage() {
+  const roomSelect = document.getElementById("res-room-select");
+  const roomId = roomSelect ? roomSelect.value : state.selectedRoomId;
+  const room = ROOMS.find(r => r.id === roomId) || ROOMS[0];
+
+  const name = state.reservation.name || state.foodOrder.name || "مهمان گرامی";
+  const phone = state.reservation.phone || state.foodOrder.phone || "";
+  const checkIn = state.reservation.checkInDate;
+  const checkOut = state.reservation.checkOutDate || addDaysToDateString(checkIn, state.reservation.nights);
+  const nights = state.reservation.nights;
+  const guests = state.reservation.guests;
+  const roomTotal = nights * guests * room.price;
+
+  // بخش غذا
+  const selectedFoodIds = Object.keys(state.foodOrder.selectedDishes);
+  let foodTotal = 0;
+  let foodSectionText = "";
+
+  if (selectedFoodIds.length > 0) {
+    const dishesLines = selectedFoodIds.map((id, idx) => {
+      const dish = FOOD_MENU.find(d => d.id === id);
+      const qty = state.foodOrder.selectedDishes[id];
+      const lineCost = dish ? dish.price * qty : 0;
+      foodTotal += lineCost;
+      const emoji = idx === 0 ? "🍲" : "🍛";
+      return `  ${emoji} ${dish ? dish.name : id} × ${formatPersianNumber(qty)} پرس (${formatToman(lineCost)})`;
+    }).join("\n");
+
+    foodSectionText = 
+`🍽️ سفارش خوراک و غذای سنتی:
+• وعده غذایی: ${state.foodOrder.mealType || 'ناهار'}
+• تاریخ وعده: ${formatPersianNumber(state.foodOrder.date || checkIn)} (روز ${state.foodOrder.dayOfWeek || 'جمعه'})
+• غذاهای انتخابی:
+${dishesLines}
+• برآورد خوراک: ${formatToman(foodTotal)}`;
+  } else {
+    foodSectionText = 
+`🍽️ سفارش خوراک:
+• بدون سفارش غذای مازاد (فقط اقامت همراه با صبحانه محلی کامل)`;
+  }
+
+  const grandTotal = roomTotal + foodTotal;
+
+  return `🔴 درخواست یکپارچه اقامت و خوراک - خانه برزک
+
+👤 نام مهمان: ${name}
+📞 شماره تماس: ${phone}
+
+🏠 مشخصات اقامت:
+• اتاق انتخابی: ${room.name}
+• تاریخ ورود: ${formatPersianNumber(checkIn)}
+• مدت اقامت: ${formatPersianNumber(nights)} شب (خروج: ${formatPersianNumber(checkOut)})
+• تعداد نفرات: ${formatPersianNumber(guests)} نفر
+• برآورد اقامت: ${formatToman(roomTotal)} (${formatPersianNumber(guests)} نفر × ${formatPersianNumber(nights)} شب با صبحانه محلی)
+
+${foodSectionText}
+
+💰 جمع کل برآورد نهایی: ${formatToman(grandTotal)}
+
+⚠️ یادداشت: این پیام صرفاً پیش‌نویس درخواست اولیه است و پس از بررسی و هماهنگی با مدیریت اقامتگاه قطعی خواهد شد.
+🔗 گروه رزرو خانه برزک: ${CONFIG.reservationGroupUrl}
+#درخواست_رزرو_یکپارچه`;
+}
+
+// ۱۰. ثبت و ارسال درخواست یکپارچه از فرم اقامت
 function submitReservationForm(e) {
   if (e) e.preventDefault();
   triggerHaptic('medium');
+  syncReservationToFoodInputs();
 
-  const nameInput = document.getElementById("res-name");
-  const phoneInput = document.getElementById("res-phone");
-  const roomSelect = document.getElementById("res-room-select");
-  const checkInInput = document.getElementById("res-checkin-date");
-
-  const name = nameInput ? nameInput.value.trim() : "";
-  const phone = phoneInput ? phoneInput.value.trim() : "";
-  const roomId = roomSelect ? roomSelect.value : state.selectedRoomId;
-  const checkIn = checkInInput ? checkInInput.value : state.reservation.checkInDate;
-  const room = ROOMS.find(r => r.id === roomId) || ROOMS[0];
+  const name = state.reservation.name;
+  const phone = state.reservation.phone;
 
   if (!name) {
     showToast("لطفاً نام و نام خانوادگی خود را وارد کنید.");
-    if (nameInput) nameInput.focus();
+    document.getElementById("res-name")?.focus();
     return;
   }
 
   if (!phone || phone.length < 10) {
     showToast("لطفاً شماره تماس معتبر (موبایل) را وارد کنید.");
-    if (phoneInput) phoneInput.focus();
+    document.getElementById("res-phone")?.focus();
     return;
   }
 
-  const checkOut = addDaysToDateString(checkIn, state.reservation.nights);
-  const totalAmount = state.reservation.nights * state.reservation.guests * room.price;
+  const messageText = generateUnifiedOrderMessage();
 
-  // ساخت دقیق متن پیام بر اساس مشخصات بخش ۱۲
-  const messageText = 
-`🔴 درخواست رزرو جدید
-
-🏠 اتاق: ${room.name}
-
-👤 نام مهمان: ${name}
-📞 شماره تماس: ${phone}
-
-📅 تاریخ ورود: ${formatPersianNumber(checkIn)}
-🌙 تعداد شب: ${formatPersianNumber(state.reservation.nights)}
-📅 تاریخ خروج: ${formatPersianNumber(checkOut)}
-👥 تعداد نفرات: ${formatPersianNumber(state.reservation.guests)} نفر
-
-💰 مبلغ تقریبی: ${formatToman(totalAmount)} (${formatPersianNumber(state.reservation.guests)} نفر × ${formatPersianNumber(state.reservation.nights)} شب با صبحانه)
-
-⚠️ این پیام صرفاً درخواست رزرو است و به معنی تأیید قطعی رزرو نیست.`;
-
-  // نمایش مدال تایید و آماده‌سازی ارسال
   openMessagePreviewModal({
-    title: "درخواست رزرو ثبت شد",
-    subtitle: "اطلاعات درخواست شما آماده ارسال به مدیریت اقامتگاه بومگردی خانه برزک است:",
+    title: "پیش‌نمایش درخواست یکپارچه",
+    subtitle: "اطلاعات کامل اقامت و خوراک آماده ارسال به گروه رزرو خانه برزک است:",
     messageText: messageText,
-    actionType: "reservation"
+    actionType: "unified"
   });
 }
 
 // ۱۱. رندر کردن و مدیریت منوی غذا
 function renderFoodSection() {
+  const banner = document.getElementById("food-linked-stay-banner");
+  const bannerText = document.getElementById("food-linked-stay-text");
+  const room = ROOMS.find(r => r.id === state.selectedRoomId) || ROOMS[0];
+
+  if (banner && bannerText) {
+    banner.style.display = "flex";
+    bannerText.textContent = `🏡 در حال انتخاب غذای محلی همراه با اقامت در اتاق «${room.name}» (ورود: ${formatPersianNumber(state.reservation.checkInDate)})`;
+  }
+
+  // پر کردن خودکار فیلدهای نام، تلفن و تاریخ در فرم غذا
+  const foodNameInput = document.getElementById("food-name");
+  const foodPhoneInput = document.getElementById("food-phone");
+  const foodDateInput = document.getElementById("food-date");
+
+  if (foodNameInput && !foodNameInput.value && state.reservation.name) {
+    foodNameInput.value = state.reservation.name;
+  }
+  if (foodPhoneInput && !foodPhoneInput.value && state.reservation.phone) {
+    foodPhoneInput.value = state.reservation.phone;
+  }
+  if (foodDateInput && !foodDateInput.value && state.reservation.checkInDate) {
+    foodDateInput.value = state.reservation.checkInDate;
+  }
+
   const container = document.getElementById("dishes-list-container");
   if (!container) return;
 
@@ -556,16 +812,14 @@ function renderFoodSection() {
   updateFoodOrderSummary();
 }
 
-// محدودیت مهم: حداکثر ۲ نوع غذای متفاوت در هر سفارش
+// محدودیت: حداکثر ۲ نوع غذای متفاوت در هر سفارش
 function toggleDishSelection(dishId) {
   triggerHaptic('light');
   const currentSelectedKeys = Object.keys(state.foodOrder.selectedDishes);
 
   if (state.foodOrder.selectedDishes[dishId]) {
-    // حذف غذا
     delete state.foodOrder.selectedDishes[dishId];
   } else {
-    // بررسی سقف ۲ نوع غذا
     if (currentSelectedKeys.length >= 2) {
       triggerHaptic('warning');
       showToast("«در هر وعده حداکثر امکان انتخاب دو نوع غذا وجود دارد.»");
@@ -577,6 +831,7 @@ function toggleDishSelection(dishId) {
   }
 
   renderFoodSection();
+  updateReservationCalculations();
 }
 
 function changeDishQty(dishId, delta) {
@@ -587,6 +842,7 @@ function changeDishQty(dishId, delta) {
   if (q > 20) q = 20;
   state.foodOrder.selectedDishes[dishId] = q;
   renderFoodSection();
+  updateReservationCalculations();
 }
 
 function updateFoodOrderSummary() {
@@ -607,11 +863,11 @@ function updateFoodOrderSummary() {
   const rows = selectedIds.map((id, index) => {
     const dish = FOOD_MENU.find(d => d.id === id);
     const qty = state.foodOrder.selectedDishes[id];
-    const lineTotal = dish.price * qty;
+    const lineTotal = dish ? dish.price * qty : 0;
     totalSum += lineTotal;
     return `
       <div class="estimate-row">
-        <span>🍲 غذای ${formatPersianNumber(index + 1)}: ${dish.name} × ${formatPersianNumber(qty)}</span>
+        <span>🍲 غذای ${formatPersianNumber(index + 1)}: ${dish ? dish.name : id} × ${formatPersianNumber(qty)}</span>
         <span>${formatToman(lineTotal)}</span>
       </div>
     `;
@@ -620,30 +876,30 @@ function updateFoodOrderSummary() {
   summaryBox.innerHTML = `
     ${rows}
     <div class="estimate-row estimate-total">
-      <span>مبلغ تقریبی سفارش غذا:</span>
+      <span>مبلغ سفارش خوراک سنتی:</span>
       <span>${formatToman(totalSum)}</span>
     </div>
   `;
 }
 
+// ثبت یکجای سفارش اقامت و خوراک از صفحه غذا
 function submitFoodOrderForm(e) {
   if (e) e.preventDefault();
   triggerHaptic('medium');
+  syncFoodToReservationInputs();
 
-  const name = document.getElementById("food-name")?.value.trim() || "";
-  const phone = document.getElementById("food-phone")?.value.trim() || "";
-  const date = document.getElementById("food-date")?.value || "";
-  const dayOfWeek = document.getElementById("food-day")?.value || "جمعه";
-  const mealType = document.getElementById("food-meal")?.value || "ناهار";
-
+  const name = state.foodOrder.name;
+  const phone = state.foodOrder.phone;
   const selectedIds = Object.keys(state.foodOrder.selectedDishes);
 
   if (!name) {
     showToast("لطفاً نام مهمان را وارد کنید.");
+    document.getElementById("food-name")?.focus();
     return;
   }
   if (!phone || phone.length < 10) {
     showToast("لطفاً شماره تماس را وارد کنید.");
+    document.getElementById("food-phone")?.focus();
     return;
   }
   if (selectedIds.length === 0) {
@@ -651,48 +907,29 @@ function submitFoodOrderForm(e) {
     return;
   }
 
-  let totalSum = 0;
-  const dishesFormatted = selectedIds.map((id, idx) => {
-    const dish = FOOD_MENU.find(d => d.id === id);
-    const qty = state.foodOrder.selectedDishes[id];
-    totalSum += dish.price * qty;
-    const emoji = idx === 0 ? "🍲" : "🍛";
-    return `${emoji} غذا ${formatPersianNumber(idx + 1)}: ${dish.name} × ${formatPersianNumber(qty)}`;
-  }).join("\n");
-
-  // ساخت دقیق متن پیام درخواست غذا طبق بخش ۱۸
-  const messageText = 
-`🔴 درخواست غذای جدید
-
-👤 نام مهمان: ${name}
-📞 شماره تماس: ${phone}
-
-📅 تاریخ: ${formatPersianNumber(date)}
-📆 روز هفته: ${dayOfWeek}
-
-🍽️ وعده: ${mealType}
-
-غذاهای انتخاب‌شده:
-${dishesFormatted}
-
-💰 مبلغ تقریبی: ${formatToman(totalSum)}`;
+  updateReservationCalculations();
+  const messageText = generateUnifiedOrderMessage();
 
   openMessagePreviewModal({
-    title: "درخواست غذا ثبت شد",
-    subtitle: "اطلاعات سفارش غذای محلی برزک آماده ارسال است:",
+    title: "پیش‌نمایش درخواست یکپارچه",
+    subtitle: "اطلاعات سفارش غذا به همراه اقامتگاه آماده ارسال به گروه رزرو است:",
     messageText: messageText,
-    actionType: "food"
+    actionType: "unified"
   });
 }
 
-// ۱۲. مدال پیش‌نمایش و ارسال پیام
+// ۱۲. مدال پیش‌نمایش و ارسال پیام به گروه رزرو
 let currentModalMessage = "";
 
 function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
   currentModalMessage = messageText;
-  document.getElementById("modal-title").textContent = title;
-  document.getElementById("modal-subtitle").textContent = subtitle;
-  document.getElementById("modal-message-preview").textContent = messageText;
+  const titleEl = document.getElementById("modal-title");
+  const subtitleEl = document.getElementById("modal-subtitle");
+  const previewEl = document.getElementById("modal-message-preview");
+  
+  if (titleEl) titleEl.textContent = title;
+  if (subtitleEl) subtitleEl.textContent = subtitle;
+  if (previewEl) previewEl.textContent = messageText;
   
   const modal = document.getElementById("message-modal");
   if (modal) modal.classList.add("active");
@@ -708,7 +945,7 @@ function copyModalMessage() {
   triggerHaptic('medium');
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(currentModalMessage).then(() => {
-      showToast("متن پیام با موفقیت کپی شد.");
+      showToast("متن کامل درخواست با موفقیت کپی شد.");
     }).catch(() => {
       fallbackCopy(currentModalMessage);
     });
@@ -726,50 +963,104 @@ function fallbackCopy(text) {
   ta.select();
   try {
     document.execCommand('copy');
-    showToast("متن پیام کپی شد.");
+    showToast("متن درخواست کپی شد.");
   } catch (e) {
     showToast("امکان کپی خودکار فراهم نشد.");
   }
   document.body.removeChild(ta);
 }
 
+/**
+ * ارسال هوشمند به گروه رزرو خانه برزک (از طریق ورکر، ربات یا لینک تلگرام)
+ */
 function sendViaTelegram() {
   triggerHaptic('medium');
-  // اگر ربات به Cloudflare Worker متصل باشد، مستقیم ارسال می‌شود
+
+  // تلاش برای ارسال از طریق Cloudflare Worker
   if (CONFIG.workerUrl) {
-    showToast("در حال ارسال به سرور Cloudflare...");
-    fetch(CONFIG.workerUrl, {
+    showToast("در حال ارسال درخواست به گروه رزرو خانه برزک...");
+    
+    fetch(`${CONFIG.workerUrl}/api/reserve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        action: "submit_reservation",
+        isMiniAppOrder: true,
         message: currentModalMessage,
-        initData: tg ? tg.initData : ""
+        initData: tg ? tg.initData : "",
+        data: {
+          reservation: state.reservation,
+          foodOrder: state.foodOrder
+        }
       })
-    }).then(res => res.json())
-      .then(data => {
-        showToast("درخواست شما به خانه برزک ارسال شد.");
-        closeMessageModal();
-      }).catch(err => {
-        showToast("خطا در ارسال به ورکر؛ لطفاً از طریق دکمه تلگرام ارسال کنید.");
-      });
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.ok) {
+        showToast("درخواست شما با موفقیت به گروه رزرو خانه برزک ارسال شد.");
+        // در صورت اجرای درون تلگرام وب‌اپ با tg.sendData نیز به چت ارسال می‌شود
+        if (tg && tg.sendData) {
+          try { tg.sendData(currentModalMessage); } catch (e) {}
+        }
+        setTimeout(() => closeMessageModal(), 1500);
+      } else {
+        fallbackOpenTelegramGroup();
+      }
+    })
+    .catch(err => {
+      console.warn("Worker submission notice:", err);
+      fallbackOpenTelegramGroup();
+    });
     return;
   }
 
-  // اگر داخل تلگرام باشد با tg.sendData یا لینک چت
+  fallbackOpenTelegramGroup();
+}
+
+/**
+ * باز کردن مستقیم لینک اختصاصی گروه رزرو خانه برزک
+ */
+function sendDirectToReservationGroup() {
+  triggerHaptic('medium');
+  copyModalMessage();
+  const groupUrl = CONFIG.reservationGroupUrl || "https://t.me/+wigY6VanuYplYTk8";
+
+  showToast("متن درخواست کپی شد. در حال باز کردن گروه رزرو خانه برزک...");
+  setTimeout(() => {
+    if (tg && tg.openTelegramLink) {
+      try {
+        tg.openTelegramLink(groupUrl);
+        closeMessageModal();
+        return;
+      } catch (e) {}
+    }
+    window.open(groupUrl, '_blank');
+    closeMessageModal();
+  }, 600);
+}
+
+function fallbackOpenTelegramGroup() {
+  const groupUrl = CONFIG.reservationGroupUrl || "https://t.me/+wigY6VanuYplYTk8";
+  
   if (tg && tg.sendData) {
     try {
       tg.sendData(currentModalMessage);
+      showToast("درخواست شما با موفقیت ارسال گردید.");
       closeMessageModal();
       return;
-    } catch (e) {
-      console.log("sendData error:", e);
-    }
+    } catch (e) {}
   }
 
-  // در غیر این صورت باز کردن گفتگوی تلگرام اقامتگاه
-  const encoded = encodeURIComponent(currentModalMessage);
-  window.open(`https://t.me/barzokhouse?text=${encoded}`, '_blank');
-  closeMessageModal();
+  copyModalMessage();
+  showToast("متن درخواست کپی شد. گروه رزرو را باز کنید و ارسال فرمایید.");
+  setTimeout(() => {
+    if (tg && tg.openTelegramLink) {
+      tg.openTelegramLink(groupUrl);
+    } else {
+      window.open(groupUrl, '_blank');
+    }
+    closeMessageModal();
+  }, 700);
 }
 
 // نمایش پیام Toast

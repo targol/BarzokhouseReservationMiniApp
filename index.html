@@ -258,27 +258,47 @@
             </div>
           </div>
 
-          <!-- جعبه برآورد هزینه -->
+          <!-- بخش یکپارچه‌سازی غذا با اقامت -->
+          <div class="unified-food-card" id="unified-food-card">
+            <div class="unified-food-header">
+              <span class="unified-food-title">🍲 وعده غذای محلی (اختیاری)</span>
+              <span class="badge-unified" id="unified-food-badge">بدون غذا</span>
+            </div>
+            <div id="unified-food-content">
+              <p class="unified-food-empty">
+                می‌توانید وعده‌های غذایی سنتی برزک (ناهار یا شام) را نیز به همین درخواست اضافه کنید تا تمام موارد به‌صورت یکجا و هم‌زمان به گروه رزرو ارسال شوند.
+              </p>
+              <button type="button" class="btn btn-outline" style="font-size: 13px; padding: 8px 14px;" onclick="navigateToFoodFromReservation()">
+                + انتخاب غذاهای محلی از منو
+              </button>
+            </div>
+          </div>
+
+          <!-- جعبه برآورد هزینه یکپارچه -->
           <div class="estimate-box">
             <div class="estimate-row">
-              <span id="res-summary-room">اتاق شاتوت</span>
-              <span id="res-summary-nights">۱ شب</span>
+              <span id="res-summary-room">اتاق شاتوت (۲ نفر، ۱ شب)</span>
+              <span id="res-summary-room-price">۲,۶۰۰,۰۰۰ تومان</span>
+            </div>
+            <div class="estimate-row" id="res-summary-food-row" style="display: none;">
+              <span id="res-summary-food-title">سفارش غذای سنتی:</span>
+              <span id="res-summary-food-price">۰ تومان</span>
             </div>
             <div class="estimate-row estimate-total">
-              <span>برآورد اولیه اقامت:</span>
-              <span id="res-summary-total">۱,۸۰۰,۰۰۰ تومان</span>
+              <span>جمع کل برآورد اقامت و خوراک:</span>
+              <span id="res-summary-total">۲,۶۰۰,۰۰۰ تومان</span>
             </div>
           </div>
 
           <!-- تاکید بر عدم پرداخت و پیش‌نویس بودن رزرو -->
           <div class="disclaimer-banner">
             <span>⚠️</span>
-            <div>«این مبلغ صرفاً برآورد اولیه است و درخواست شما پس از بررسی و تأیید خانه برزک قطعی خواهد شد.»</div>
+            <div>«این مبلغ صرفاً برآورد اولیه است و درخواست یکپارچه شما پس از بررسی و هماهنگی با اقامتگاه قطعی خواهد شد.»</div>
           </div>
 
           <div style="margin-top: 20px;">
             <button type="submit" class="btn btn-primary" id="btn-submit-reservation">
-              📩 ارسال درخواست رزرو
+              📩 ثبت و ارسال یکجای اقامت و خوراک به گروه رزرو
             </button>
           </div>
 
@@ -546,6 +566,11 @@
           <span class="screen-title">🍽️ منوی غذای خانه برزک</span>
         </div>
 
+        <!-- برچسب وضعیت پیوند با رزرو اقامت -->
+        <div id="food-linked-stay-banner" style="display: none; background: var(--brand-teal-subtle); border: 1px solid var(--brand-teal); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 14px; color: var(--brand-teal-dark); font-size: 13px; font-weight: 600;">
+          <span id="food-linked-stay-text">🏡 در حال انتخاب غذا برای همراهی با رزرو اقامتگاه خانه برزک</span>
+        </div>
+
         <div class="content-card" style="padding-bottom: 14px;">
           <p style="margin-bottom: 12px;">
             غذاهای خانه برزک با مواد اولیه محلی، گوشت گرم، سبزیجات کوهی و دستورهای اصیل منطقه طبخ می‌شوند.
@@ -567,7 +592,7 @@
         <!-- فرم درخواست غذا -->
         <form class="form-card" id="food-order-form" onsubmit="submitFoodOrderForm(event)" style="margin-top: 20px;">
           <h4 style="font-size: 15px; font-weight: 800; color: var(--brand-green); margin-bottom: 14px;">
-            ثبت مشخصات درخواست غذا
+            ثبت مشخصات وعده غذایی
           </h4>
 
           <div class="form-group">
@@ -581,7 +606,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="food-date">تاریخ اقامت:</label>
+            <label class="form-label" for="food-date">تاریخ وعده غذایی:</label>
             <input type="date" class="form-input" id="food-date" required />
           </div>
 
@@ -609,9 +634,15 @@
           <!-- خلاصه سفارش غذا -->
           <div class="estimate-box" id="food-order-summary"></div>
 
-          <button type="submit" class="btn btn-mustard" id="btn-submit-food-order" style="margin-top: 14px;">
-            📩 ارسال درخواست غذا
-          </button>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
+            <button type="submit" class="btn btn-primary" id="btn-submit-food-order">
+              📩 تأیید و ارسال یکجای سفارش اقامت و خوراک
+            </button>
+
+            <button type="button" class="btn btn-outline" id="btn-save-food-return" onclick="saveFoodAndReturnToReservation()">
+              ↩️ ذخیره غذاها و بازگشت به فرم اقامت
+            </button>
+          </div>
         </form>
       </section>
 
@@ -671,22 +702,26 @@
          ======================================================== -->
     <div class="modal-overlay" id="message-modal">
       <div class="modal-box">
-        <h3 class="modal-title" id="modal-title">پیش‌نمایش درخواست</h3>
-        <p class="modal-text" id="modal-subtitle">متن پیام آماده برای ارسال به گروه مدیریت اقامتگاه:</p>
+        <h3 class="modal-title" id="modal-title">پیش‌نمایش درخواست یکپارچه</h3>
+        <p class="modal-text" id="modal-subtitle">متن درخواست شما آماده ارسال به گروه رزرو خانه برزک است:</p>
         
         <div class="telegram-message-preview" id="modal-message-preview"></div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <button class="btn btn-primary" id="btn-modal-send-tg" onclick="sendViaTelegram()">
-            🚀 ارسال به تلگرام خانه برزک
+            🚀 ارسال خودکار به گروه رزرو خانه برزک
+          </button>
+
+          <button class="btn btn-mustard" id="btn-modal-open-group" onclick="sendDirectToReservationGroup()">
+            👥 باز کردن گروه تلگرام (لینک اختصاصی)
           </button>
           
           <button class="btn btn-outline" id="btn-modal-copy" onclick="copyModalMessage()">
-            📋 کپی متن پیام
+            📋 کپی متن کامل درخواست
           </button>
 
           <button class="btn" style="background: transparent; color: var(--brand-text-muted); font-size: 13.5px;" onclick="closeMessageModal()">
-            بستن پنجره
+            انصراف و ویرایش اطلاعات
           </button>
         </div>
       </div>

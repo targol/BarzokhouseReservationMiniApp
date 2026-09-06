@@ -32,7 +32,7 @@ export default {
   <h2 style="color: #1f8578;">اقامتگاه بومگردی خانه برزک</h2>
   <p style="color: #4b6358;">سرویس ارتباطی وب‌هوک و ثبت رزرو یکپارچه فعال است.</p>
   <p style="font-size: 14px; color: #768079;">لینک گروه رزرو: <a href="https://t.me/+wigY6VanuYplYTk8" target="_blank" style="color: #b88648;">گروه رزرو خانه برزک</a></p>
-  <p><a href="${env.MINI_APP_URL || '#'}" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #1f8578; color: #fff; text-decoration: none; border-radius: 8px;">ورود به مینی‌اپ</a></p>
+  <p><a href="${env.MINIAPP_URL || env.MINI_APP_URL || '#'}" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #1f8578; color: #fff; text-decoration: none; border-radius: 8px;">ورود به مینی‌اپ</a></p>
 </body>
 </html>`,
         { headers: { ...CORS_HEADERS, "Content-Type": "text/html; charset=utf-8" } }

@@ -155,25 +155,39 @@
         <div class="detail-specs-grid">
           <div class="spec-item">
             <span class="spec-label">ظرفیت اقامت</span>
-            <span class="spec-value" id="detail-capacity">۲ نفر</span>
+            <div class="spec-value" id="detail-capacity">یک تخت دو نفره</div>
+            <div class="spec-sub spec-extra-capacity" id="detail-capacity-extra">۱ نفر ظرفیت اضافه رختخواب سنتی</div>
           </div>
           <div class="spec-item">
             <span class="spec-label">هزینه اقامت</span>
-            <span class="spec-value" id="detail-price">۱,۳۰۰,۰۰۰ تومان</span>
-            <span class="spec-sub" id="detail-price-note">هر نفر/شب با صبحانه</span>
+            <div class="spec-value spec-price-single-line" id="detail-price">
+              ۱,۳۰۰,۰۰۰ تومان <span class="spec-price-unit">هر نفر/شب</span>
+            </div>
+            <span class="spec-sub" id="detail-price-note" style="display: none;"></span>
           </div>
         </div>
 
-        <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 8px;">امکانات:</h4>
-        <div class="amenities-list" id="detail-amenities"></div>
-
         <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 8px;">حال‌وهوای اتاق:</h4>
-        <p class="welcome-text" id="detail-desc" style="margin-bottom: 20px;"></p>
+        <p class="welcome-text" id="detail-desc" style="margin-bottom: 18px;"></p>
+
+        <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 8px;">امکانات:</h4>
+        <div class="amenities-list" id="detail-amenities" style="margin-bottom: 22px;"></div>
 
         <!-- دکمه درخواست رزرو این اتاق -->
-        <button class="btn btn-mustard" id="btn-request-reservation" onclick="startReservationForCurrentRoom()">
-          رزرو این اتاق ←
-        </button>
+        <div id="detail-actions-box">
+          <button class="btn btn-mustard" id="btn-request-reservation" onclick="handleRoomDetailBookingClick()">
+            رزرو این اتاق ←
+          </button>
+          
+          <div id="detail-room-options" style="display: none; margin-top: 10px; display: none; gap: 8px;">
+            <button type="button" class="btn btn-outline" style="flex: 1; font-size: 13px; padding: 10px;" onclick="navigateTo('screen-rooms')">
+              🏠 انتخاب اتاق دیگر
+            </button>
+            <button type="button" class="btn btn-mustard" style="flex: 1.2; font-size: 13px; padding: 10px;" onclick="openReservationScreen()">
+              ارسال درخواست رزرو ←
+            </button>
+          </div>
+        </div>
       </section>
 
 
@@ -211,8 +225,15 @@
           </h4>
 
           <div class="form-group">
-            <label class="form-label" for="res-room-select">اتاق انتخابی:</label>
-            <select class="form-select" id="res-room-select"></select>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label class="form-label" style="margin-bottom: 0;">اتاق‌های انتخابی شما:</label>
+              <button type="button" class="btn-text-link" onclick="navigateTo('screen-rooms')" style="font-size: 12.5px; color: var(--brand-mustard); font-weight: 700; background: none; border: none; cursor: pointer; text-decoration: underline;">
+                + افزودن اتاق دیگر
+              </button>
+            </div>
+            <div class="selected-rooms-list" id="res-selected-rooms-container">
+              <!-- با جاوااسکریپت رندر می‌شود -->
+            </div>
           </div>
 
           <div class="form-group">
@@ -488,8 +509,8 @@
 
         <div class="content-card">
           <h3>هوای کوهستانی برزک</h3>
-          <p>
-            برزک در دامنه کوه‌های کرکس قرار دارد و هوایش همیشه چند درجه از کاشان خنک‌تر است. بهار و تابستان نسیم مطبوع کوهستانی دارد و پاییز و زمستان هوایی دلچسب و تمیز.
+          <p style="line-height: 1.8;">
+            برزک در دامنه جنوبی کوه‌های کرکس قرار دارد و هوایش همیشه چند درجه از کاشان خنک‌تر است. بهار و پاییز خنک و تابستانش همراه با نسیم مطبوع کوهستان است، زمستان‌ها نیز همراه با برف و سرما هست که گرمای زیر کرسی را دلپذیر می‌کند.
           </p>
 
           <div class="button-stack" style="margin-top: 18px;">
@@ -501,8 +522,8 @@
 
         <div class="content-card">
           <h3>پیشنهاد لباس</h3>
-          <p style="font-size: 13.5px; color: var(--brand-text-muted);">
-            شب‌های برزک حتی در تابستان هم خنک است؛ پیشنهاد می‌کنیم یک بالاپوش یا لباس آستین‌بلند همراه داشته باشید تا هنگام استراحت در ایوان یا حیاط راحت باشید.
+          <p style="line-height: 1.8;">
+            شب‌های برزک به جز از نیمه تیر تا اوایل شهریور خنک است؛ پیشنهاد می‌کنیم یک بالاپوش یا لباس آستین‌بلند همراه داشته باشید تا هنگام استراحت در ایوان یا حیاط راحت باشید. زمستان‌ها که لباس گرم کامل مورد نیاز است.
           </p>
         </div>
       </section>
@@ -520,8 +541,6 @@
         </div>
 
         <div class="content-card">
-          <img src="./assets/images/green-travel.webp" alt="سفر سبز به خانه برزک" class="green-travel-banner" id="green-travel-img" onerror="this.onerror=null; this.src='./assets/images/green-travel.svg';" />
-          
           <h3>با هم برای طبیعت</h3>
           <p style="font-size: 14.5px; font-weight: 500; color: var(--brand-green);">
             «با چند کار ساده می‌توانیم در کنار هم به حفظ طبیعت زیبای برزک کمک کنیم.»
@@ -563,7 +582,7 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-food">
             ← بازگشت
           </button>
-          <span class="screen-title">🍽️ غذاهای محلی</span>
+          <span class="screen-title">🍽️ خوراک‌های محلی خانه برزک</span>
         </div>
 
         <!-- برچسب وضعیت پیوند با رزرو اقامت -->
@@ -571,18 +590,49 @@
           <span id="food-linked-stay-text">🏡 در حال انتخاب غذا برای رزرو اقامت</span>
         </div>
 
-        <div class="content-card" style="padding-bottom: 14px;">
-          <p style="margin-bottom: 12px;">
-            غذاهای خانه برزک با مواد تازه محلی، گوشت گرم و سبزی‌های کوهی به سبک اصیل و خانگی پخته می‌شوند.
+        <!-- کارت معرفی و توضیحات بالای منو -->
+        <div class="food-intro-card" id="food-intro-card">
+          <div class="food-intro-badge">🏡 دست‌پخت خانگی و محلی برزک</div>
+          <p class="food-intro-lead">
+            غذاهای خانه برزک با مواد تازه محلی، گوشت گوسفند سالم، برنج ایرانی با کیفیت و به صورت خانگی پخته می‌شوند.
           </p>
-          <a class="btn btn-outline" id="btn-food-recipes-site" data-config-food-menu href="https://barzokhouse.com/%d8%af%d8%b3%d8%aa%d9%88%d8%b1-%d9%be%d8%ae%d8%aa-%d8%ba%d8%b0%d8%a7%d9%87%d8%a7/" target="_blank" rel="noopener noreferrer">
-            📖 دستور پخت و جزئیات غذاها در وب‌سایت
-          </a>
+          <div class="food-intro-dorchin">
+            🥗 <strong>دورچین رایگان:</strong> همه خوراک‌ها همراه با سالاد یا ماست یا سبزی، ترشی خانگی و دوغ محلی ارایه می‌شوند.
+          </div>
+          <div class="food-intro-notes">
+            <div class="food-note-item">
+              <span class="food-note-icon">☕</span>
+              <span>به خانه برزک خوش آمدید؛ با چای تازه‌دم خستگی راه را در کنید.</span>
+            </div>
+            <div class="food-note-item">
+              <span class="food-note-icon">🍲</span>
+              <span>آشپزخانه ما خانگی است؛ خوراک‌ها روزانه و تا حد ممکن از مواد تازه تهیه می‌شوند، به همین دلیل در هر وعده تنها یک نوع خوراک می‌پزیم (در سفر گروهی تا ۲ نوع). لطفاً از قبل اطلاع دهید.</span>
+            </div>
+            <div class="food-note-item">
+              <span class="food-note-icon">🌿</span>
+              <span>اگر مهمان اقامت ما نیستید، می‌توانید در حیاط مصفای خانه استراحت کنید (هزینه خدمات و پذیرایی نفری ۲۰۰,۰۰۰ تومان).</span>
+            </div>
+          </div>
+          <div style="margin-top: 10px;">
+            <a class="btn btn-outline" id="btn-food-recipes-site" data-config-food-menu href="https://barzokhouse.com/%d8%af%d8%b3%d8%aa%d9%88%d8%b1-%d9%be%d8%ae%d8%aa-%d8%ba%d8%b0%d8%a7%d9%87%d8%a7/" target="_blank" rel="noopener noreferrer" style="font-size: 12px; padding: 8px 12px; width: 100%; text-align: center;">
+              📖 مشاهده دستور پخت و روایت خوراک‌ها در وب‌سایت
+            </a>
+          </div>
         </div>
 
-        <div class="alert alert-warning" style="margin-bottom: 14px;">
-          <span>💡</span>
-          <span><strong>نکته سفارش:</strong> برای اینکه غذاها کاملاً تازه و باکیفیت طبخ شوند، در هر وعده امکان انتخاب <strong>یک نوع غذا</strong> وجود دارد (برای سفرهای گروهی حداکثر <strong>دو غذا</strong>).</span>
+        <!-- تب‌های دسته‌بندی منو -->
+        <div class="food-filter-tabs" id="food-category-tabs">
+          <button type="button" class="food-tab-btn active" onclick="setFoodCategoryFilter('all')">همه (۳۵)</button>
+          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('خوراک‌های گوشتی با برنج')">گوشتی با برنج (۱۱)</button>
+          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('خوراک‌های گوشتی با نان')">گوشتی با نان (۷)</button>
+          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('خوراک‌های گیاهی')">گیاهی (۱۳)</button>
+          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('آش و سوپ')">آش و سوپ (۳)</button>
+          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('صبحانه')">صبحانه (۱)</button>
+        </div>
+
+        <!-- جعبه جستجوی خوراک -->
+        <div class="food-search-box">
+          <input type="text" class="food-search-input" id="food-search-input" placeholder="🔍 جستجو در نام غذا یا مواد تشکیل‌دهنده..." oninput="handleFoodSearch(this.value)" />
         </div>
 
         <!-- انتخاب حالت سفر گروهی -->
@@ -596,8 +646,15 @@
           </label>
         </div>
 
-        <!-- لیست غذاها -->
-        <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 10px;">انتخاب غذاها از منو:</h4>
+        <!-- راهنما و عنوان لیست خوراک‌ها -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h4 style="font-size: 14px; font-weight: 800; color: var(--brand-green); margin: 0;">لیست خوراک‌ها (برای مشاهده جزئیات کلیک کنید):</h4>
+          <button type="button" class="btn-text-link" onclick="toggleAllFoodDetails()" id="btn-toggle-all-food" style="font-size: 11.5px; color: var(--brand-teal); background: none; border: none; cursor: pointer; font-weight: 700;">
+            باز کردن همه ▾
+          </button>
+        </div>
+
+        <!-- لیست بازشونده غذاها -->
         <div id="dishes-list-container"></div>
 
         <!-- فرم درخواست غذا -->
@@ -736,6 +793,20 @@
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- نوار شناور وضعیت رزرو (قابل دسترسی در سراسر مینی‌اپ) -->
+    <div class="floating-booking-bar" id="floating-booking-bar" style="display: none;">
+      <div class="floating-booking-info">
+        <span class="floating-booking-icon">🛎️</span>
+        <div class="floating-booking-text">
+          <strong class="floating-booking-title" id="floating-booking-title">۱ اتاق در لیست رزرو</strong>
+          <small class="floating-booking-sub" id="floating-booking-sub">آماده ارسال درخواست به میزبان</small>
+        </div>
+      </div>
+      <button type="button" class="btn btn-mustard floating-booking-btn" id="btn-floating-booking" onclick="openReservationScreen()">
+        مشاهده و ارسال ←
+      </button>
     </div>
 
     <!-- اعلان معلق (Toast) -->

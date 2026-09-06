@@ -544,7 +544,9 @@ body {
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   gap: 2px;
+  min-height: 84px;
 }
 
 .spec-label {
@@ -557,6 +559,32 @@ body {
   font-weight: 700;
   color: var(--brand-green);
   line-height: 1.5;
+}
+
+.spec-extra-capacity {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--brand-green);
+  line-height: 1.4;
+  margin-top: 3px;
+}
+
+.spec-price-single-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-green);
+  line-height: 1.5;
+}
+
+.spec-price-unit {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--brand-text-muted);
+  display: inline;
 }
 
 .spec-sub {
@@ -604,6 +632,161 @@ body {
   font-size: 12.5px;
   color: #795719;
   line-height: 1.5;
+}
+
+/* Floating Booking Bar (Persistent across mini app) */
+.floating-booking-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 480px;
+  background: var(--brand-surface);
+  border: 1.5px solid var(--brand-green);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(35, 62, 51, 0.22);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 1000;
+  animation: slideUpBar 0.25s ease-out;
+}
+
+@keyframes slideUpBar {
+  from {
+    transform: translate(-50%, 40px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.floating-booking-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.floating-booking-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.floating-booking-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.floating-booking-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--brand-green);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.floating-booking-sub {
+  font-size: 11px;
+  color: var(--brand-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.floating-booking-btn {
+  width: auto !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Selected Rooms List in Form */
+.selected-rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.selected-room-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--brand-surface-subtle);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  gap: 10px;
+}
+
+.selected-room-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.selected-room-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-green);
+}
+
+.selected-room-meta {
+  font-size: 11.5px;
+  color: var(--brand-text-muted);
+}
+
+.selected-room-remove-btn {
+  background: #fde8e8;
+  color: #b23b3b;
+  border: 1px solid #f8b4b4;
+  border-radius: var(--radius-full);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.selected-room-remove-btn:hover {
+  background: #fbd5d5;
+}
+
+.selected-rooms-empty {
+  text-align: center;
+  padding: 16px;
+  background: var(--brand-surface-subtle);
+  border: 1px dashed var(--brand-border);
+  border-radius: var(--radius-md);
+}
+
+.room-card-selected-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--brand-green);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  z-index: 2;
 }
 
 /* Forms (Reservation & Food Request) */
@@ -1108,5 +1291,313 @@ body {
   border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 700;
+}
+
+/* ========================================================
+   استایل‌های جدید صفحه خوراک‌ها (لیست بازشونده، تگ‌ها و فیلترها)
+   ======================================================== */
+.food-intro-card {
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.food-intro-badge {
+  display: inline-block;
+  background: var(--brand-green);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 8px;
+}
+
+.food-intro-lead {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--brand-green);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.food-intro-dorchin {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 12.5px;
+  color: #166534;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.food-intro-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--brand-text-muted);
+  line-height: 1.5;
+  background: #faf8f5;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  border: 1px solid var(--brand-border);
+}
+
+.food-note-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.food-note-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* دکمه‌های فیلتر دسته‌بندی خوراک‌ها */
+.food-filter-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.food-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.food-tab-btn {
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-full);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.food-tab-btn.active {
+  background: var(--brand-green);
+  border-color: var(--brand-green);
+  color: #ffffff;
+}
+
+/* جستجوی خوراک */
+.food-search-box {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.food-search-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  background: var(--brand-surface);
+  color: var(--brand-text);
+  outline: none;
+  font-family: inherit;
+  transition: border-color var(--transition-fast);
+}
+.food-search-input:focus {
+  border-color: var(--brand-green);
+}
+
+/* آیتم‌های آکاردئونی / بازشونده خوراک */
+.food-accordion-item {
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.food-accordion-item.selected {
+  border-color: var(--brand-mustard);
+  background: #fffdf9;
+}
+
+.food-item-header {
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.food-item-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.food-item-name {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--brand-green);
+  line-height: 1.4;
+}
+
+.food-item-price {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--brand-mustard);
+  white-space: nowrap;
+}
+
+.food-item-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.food-item-tags {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* تگ‌های اختصاصی مطابق درخواست کاربر */
+.badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.badge-tag-rice {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-tag-bread {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.badge-tag-soup {
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+
+.badge-tag-breakfast {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #e9d5ff;
+}
+
+.badge-tag-meat {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.badge-tag-veg {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.food-item-toggle-btn {
+  font-size: 12px;
+  color: var(--brand-teal);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-teal-subtle);
+}
+
+.food-item-details {
+  padding: 12px 14px;
+  background: #fcfaf6;
+  border-top: 1px dashed var(--brand-border);
+  font-size: 12.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.food-item-desc {
+  color: var(--brand-text);
+  line-height: 1.6;
+}
+
+.food-item-ingredients-box {
+  background: #ffffff;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.food-item-ingredients-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-text-muted);
+}
+
+.food-item-ingredients-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ingredient-chip {
+  background: #f4f2ee;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  font-size: 11.5px;
+  color: var(--brand-text);
+}
+
+.food-item-image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--brand-border);
+}
+
+.food-item-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-top: 1px solid var(--brand-border);
+  background: #ffffff;
 }
 

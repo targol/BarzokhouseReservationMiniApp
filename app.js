@@ -41,126 +41,812 @@ const ROOMS = [
     id: "shatoot",
     name: "شاتوت",
     capacity: 2,
-    capacityDisplay: "۲ نفر (یک تخت دو نفره) + تا ۱ نفر اضافه با رختخواب سنتی",
-    beds: "یک تخت دو نفره + تا یک نفر اضافه با رختخواب سنتی",
+    shortCapacity: "۲ نفر + ۱ نفر اضافه",
+    mainCapacity: "یک تخت دو نفره",
+    extraCapacity: "۱ نفر ظرفیت اضافه رختخواب سنتی",
+    capacityDisplay: "یک تخت دو نفره و ۱ نفر ظرفیت اضافه رختخواب سنتی",
+    beds: "یک تخت دو نفره + ۱ نفر ظرفیت اضافه رختخواب سنتی",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر/شب با صبحانه محلی",
-    description: "واقع در بخش آرام و جدید خانه؛ دارای یک تخت دو نفره، تا یک نفر اضافه با رختخواب سنتی، پنکه دیواری، بخاری گازی و سرویس بهداشتی ایرانی و حمام اختصاصی.",
-    amenities: ["تخت دو نفره", "سرویس بهداشتی ایرانی", "حمام اختصاصی", "بخاری گازی", "پنکه دیواری", "صبحانه محلی", "وای‌فای رایگان"],
+    priceNote: "هر نفر/شب",
+    description: "واقع در خانه جدید و کنار اتاق قالی قرار دارد. در اتاق رو به درخت شاتوت کهنسال حیاط باز می‌شود. اتاق پنجره ندارد، اما تاریک هم نیست.",
+    amenities: [
+      "یک تخت دو نفره",
+      "سرویس بهداشتی ایرانی",
+      "حمام اختصاصی",
+      "بخاری گازی",
+      "پنکه دیواری",
+      "وای‌فای",
+      "صبحانه محلی"
+    ],
     images: ["./assets/rooms/shatoot.webp"]
   },
   {
     id: "ghaali",
     name: "قالی",
     capacity: 3,
-    capacityDisplay: "۳ نفر (۲ تخت یک‌نفره + ۱ رختخواب سنتی)",
-    beds: "۲ تخت یک نفره + ۱ سرویس سنتی",
+    shortCapacity: "۳ نفر + ۱ نفر اضافه",
+    mainCapacity: "یک تخت دو نفره و یک تخت یک نفره",
+    extraCapacity: "۱ نفر ظرفیت اضافه رختخواب سنتی",
+    capacityDisplay: "یک تخت دو نفره و یک تخت یک نفره و ۱ نفر ظرفیت اضافه رختخواب سنتی",
+    beds: "یک تخت دو نفره و یک تخت یک نفره + ۱ نفر ظرفیت اضافه رختخواب سنتی",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر/شب با صبحانه محلی (همراه با کرسی گرم در زمستان)",
-    description: "یادآور هنر اصیل قالی‌بافی برزک و کاشان با دست‌بافته‌های پشمی و کرسی گرم و سنتی؛ انتخابی دلنشین برای تجربه آرامش کوهستان.",
-    amenities: ["کرسی سنتی در زمستان", "سرویس بهداشتی و حمام اختصاصی", "دست‌بافته‌های اصیل", "سیستم تهویه", "صبحانه محلی"],
+    priceNote: "هر نفر/شب",
+    description: "واقع در خانه جدید و کنار اتاق شاتوت قرار دارد. این اتاق، اتاق قالیبافون خونه بوده که حال و هوای جذابی دارد. با یک پنجره در ارتفاع به حیاط فضای روشنی دارد.",
+    amenities: [
+      "یک تخت دو نفره و یک تخت یک نفره",
+      "سرویس بهداشتی فرنگی",
+      "حمام اختصاصی",
+      "بخاری گازی",
+      "پنکه دیواری",
+      "وای‌فای",
+      "صبحانه محلی"
+    ],
     images: ["./assets/rooms/ghaali.webp"]
   },
   {
     id: "abi",
     name: "آبی",
     capacity: 2,
-    capacityDisplay: "۲ نفر (یک تخت دو نفره)",
-    beds: "۱ تخت دو نفره",
+    shortCapacity: "۲ نفر (رختخواب سنتی)",
+    mainCapacity: "۲ نفر (رختخواب سنتی)",
+    extraCapacity: "",
+    capacityDisplay: "۲ نفر (رختخواب سنتی)",
+    beds: "۲ نفر (رختخواب سنتی)",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر/شب با صبحانه محلی؛ مناسب اقامت دونفره",
-    description: "اتاقی دنج با کاشی‌کاری‌های لاجوردی و فیروزه‌ای الهام‌گرفته از آسمان برزک و نورگیر زیبا با شیشه‌های رنگی به حیاط خانه.",
-    amenities: ["نورگیر زیبا به حیاط مرکزی", "سرویس بهداشتی و حمام اختصاصی", "اسپلیت سرمایشی و گرمایشی", "صبحانه روستایی", "پذیرایی عرقیات گیاهی"],
+    priceNote: "هر نفر/شب",
+    description: "اتاقی با سقف بلند با دیوارهای آبی به یاد اتاق آبی سهراب سپهری. این اتاق با اولین اشعه خورشید روشن می‌شود. این اتاق پنجره‌هایی بلند رو به کوچه بن‌بست دارد.",
+    amenities: [
+      "نورگیر با پنجره‌های بلند",
+      "سرویس بهداشتی ایرانی",
+      "حمام اختصاصی",
+      "بخاری گازی",
+      "کرسی سنتی",
+      "پنکه ایستاده",
+      "وای‌فای",
+      "صبحانه محلی"
+    ],
     images: ["./assets/rooms/abi.webp"]
   },
   {
     id: "sara",
     name: "سرا",
-    capacity: 5,
-    capacityDisplay: "۵ نفر (رختخواب سنتی پنبه‌ای)",
-    beds: "۵ سرویس کف‌خواب سنتی دست‌دوز با تشک و لحاف پنبه‌ای",
+    capacity: 10,
+    shortCapacity: "۳ نفر + تا ۷ نفر اضافه",
+    mainCapacity: "یک تخت دو نفره و یک تخت یک نفره",
+    extraCapacity: "تا ۷ نفر ظرفیت اضافه رختخواب سنتی",
+    capacityDisplay: "یک تخت دو نفره و یک تخت یک نفره و تا ۷ نفر ظرفیت اضافه رختخواب سنتی",
+    beds: "یک تخت دو نفره و یک تخت یک نفره + تا ۷ نفر رختخواب سنتی",
     price: 1300000,
     priceDisplay: "۱,۳۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر/شب با صبحانه محلی؛ مناسب خانواده‌ها و دورهمی‌ها",
-    description: "بزرگ‌ترین و اصیل‌ترین بخش خانه با طاق‌های خشتی، پنج‌دری‌های رو به باغ و فضایی دلباز برای شب‌نشینی‌های صمیمی.",
-    amenities: ["فضای بزرگ نشیمن سنتی", "سرویس بهداشتی و حمام اختصاصی", "لحاف و تشک سنتی پنبه‌ای", "گرمایش و سرمایش", "صبحانه محلی کامل"],
+    priceNote: "هر نفر/شب",
+    description: "بزرگ‌ترین فضای خانه با سه اتاق تو در تو که یک اتاق با نردبان در دسترس است. سقف گنبدی و خشتی این اتاق از زمان صفویه به جای مانده است. این اتاق پنجره ندارد اما یکی از فضاها روشن است و دو فضای دیگر شما را در تاریکی آرامش‌بخش خلسه‌گونه‌ای در تمام روز به دور از هیاهو و آنتن موبایلتان پذیرا است.",
+    amenities: [
+      "یک تخت دو نفره و یک تخت یک نفره",
+      "سرویس بهداشتی فرنگی",
+      "حمام اختصاصی",
+      "بخاری هیزمی",
+      "بخاری برقی",
+      "بخاری گازی",
+      "کرسی سنتی",
+      "وای‌فای",
+      "صبحانه محلی"
+    ],
     images: ["./assets/rooms/sara.webp"]
   },
   {
     id: "balakhoneh",
     name: "بالاخونه",
     capacity: 3,
-    capacityDisplay: "۳ نفر (یک تخت دو نفره + ۱ رختخواب سنتی)",
-    beds: "۱ تخت دو نفره + ۱ سرویس سنتی",
+    shortCapacity: "۳ نفر + ۱ نفر اضافه",
+    mainCapacity: "سه نفر رختخواب سنتی",
+    extraCapacity: "۱ نفر ظرفیت اضافه رختخواب سنتی",
+    capacityDisplay: "سه نفر رختخواب سنتی و یک نفر ظرفیت اضافه رختخواب سنتی",
+    beds: "سه نفر رختخواب سنتی و یک نفر ظرفیت اضافه رختخواب سنتی",
     price: 1200000,
     priceDisplay: "۱,۲۰۰,۰۰۰ تومان",
-    priceNote: "هر نفر/شب با صبحانه محلی؛ دارای ایوان اختصاصی رو به دره و باغات",
-    description: "در بالاترین نقطه خانه تاریخی با ایوان اختصاصی رو به کوهستان و باغات گردوی برزک؛ با نسیم خنک و دلپذیر عصرگاهی.",
-    amenities: ["ایوان اختصاصی با منظره کوهستان", "میز و صندلی در ایوان", "سرویس بهداشتی و حمام اختصاصی", "اسپلیت", "صبحانه سنتی"],
+    priceNote: "هر نفر/شب",
+    description: "این اتاق در طبقه بالا قرار دارد و پله‌هایی باریک و بلند دارد که برای همه توصیه نمی‌شود. اما اگر به منظره و هوای تازه علاقمندید، این اتاق برای شماست.",
+    amenities: [
+      "سه نفر رختخواب سنتی",
+      "سرویس بهداشتی ایرانی و فرنگی عمومی در حیاط",
+      "حمام غیر اختصاصی در حیاط",
+      "بخاری گازی",
+      "پنکه ایستاده",
+      "وای‌فای",
+      "صبحانه محلی"
+    ],
     images: ["./assets/rooms/balakhoneh.webp"]
   }
 ];
 
-// ۳. منوی غذاهای محلی (Food Menu Data)
+// ۳. منوی غذاهای محلی (Food Menu Data) - برگرفته از منوی کامل خانه برزک در denu.app
 const FOOD_MENU = [
   {
-    id: "food_1",
-    name: "گوشت لوبیا کاشان",
-    category: "غذای اصیل سنتی",
-    price: 240000,
-    priceDisplay: "۲۴۰,۰۰۰ تومان",
-    description: "خوراک سنتی گوشت گرم گوسفندی پخته‌شده با لوبیای سفید در دیگ مسی به همراه نان سنگک تازه، ترشی خانگی و سبزی محلی."
+    "id": "63fb20513c3a63646b47849d",
+    "name": "گوشت لوبیا کاشان (غذای اصیل سنتی)",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 900000,
+    "priceDisplay": "۹۰۰,۰۰۰ تومان",
+    "description": "خوراک سنتی گوشت گوسفندی پخته‌شده با لوبیای سفید با دارچین فراوان همراه با شوید پلو",
+    "ingredients": [
+      "گوشت گوسفندی",
+      "لوبیا سفید",
+      "دارچین",
+      "شوید پلو"
+    ],
+    "image": "https://storage.denu.app/storage/00b/761/00b761b3dc115eb8f8630ac3738eda7d12504805c8e7920c410d328c746c9574.jpg"
   },
   {
-    id: "food_2",
-    name: "آبگوشت به و سرکه شیره برزک",
-    category: "غذای ملی ثبت‌شده برزک",
-    price: 260000,
-    priceDisplay: "۲۶۰,۰۰۰ تومان",
-    description: "شاهکار ثبت ملی شده طعم‌های برزک؛ ترکیبی از گوشت گوسفندی، به کوهی برزک و سرکه شیره خانگی با طعم ملس و بی‌نظیر."
+    "id": "63fb20453c3a63646b47849c",
+    "name": "ته چین گوشت و قارچ",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 900000,
+    "priceDisplay": "۹۰۰,۰۰۰ تومان",
+    "description": "ته‌چین زعفرانی برشته با لایه‌های گوشت چرخ کرده گوسفند، قارچ، رب گوجه‌فرنگی و برنج اعلای ایرانی",
+    "ingredients": [
+      "گوشت چرخ کرده گوسفند",
+      "قارچ",
+      "رب گوجه‌فرنگی",
+      "برنج ایرانی",
+      "ماست",
+      "تخم مرغ",
+      "زعفران"
+    ],
+    "image": "https://storage.denu.app/storage/787/360/78736017d582eebc0f8d5b7d310ba54fae9a3048f0f2c4e832d9563936b0b31d.jpg"
   },
   {
-    id: "food_3",
-    name: "شفته سماق برزک",
-    category: "غذای سنتی محلی",
-    price: 210000,
-    priceDisplay: "۲۱۰,۰۰۰ تومان",
-    description: "کوفته‌های ریز و برشته سنتی همراه با سس ترش و ملس سماق کوهی تازه، پیازداغ عسلی و برنج خوش‌عطر ایرانی."
+    "id": "63fb5abd3c3a63646b4784d0",
+    "name": "ته‌چین گوشت و بادمجان",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 900000,
+    "priceDisplay": "۹۰۰,۰۰۰ تومان",
+    "description": "ته‌چین زعفرانی برشته با لایه‌های گوشت چرخ کرده گوسفند، بادمجان، رب گوجه‌فرنگی و برنج اعلای ایرانی",
+    "ingredients": [
+      "گوشت چرخ کرده گوسفند",
+      "بادمجان",
+      "رب گوجه‌فرنگی",
+      "برنج ایرانی",
+      "ماست",
+      "تخم مرغ",
+      "زعفران"
+    ],
+    "image": "https://storage.denu.app/storage/f27/4e6/f274e6886f8890e6bce2dcd92d242c40027c8a76d67489348e2de784c4544977.jpg"
   },
   {
-    id: "food_4",
-    name: "خورش قیمه ریزه با پلو",
-    category: "غذای سنتی",
-    price: 220000,
-    priceDisplay: "۲۲۰,۰۰۰ تومان",
-    description: "کوفته‌ریزه‌های نخودچی لطیف با سس گوجه‌فرنگی ارگانیک و نعناع داغ محلی همراه با چلوی زعفرانی."
+    "id": "63fb7a0b3c3a63646b478504",
+    "name": "ته‌چین گوشت و اسفناج",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 900000,
+    "priceDisplay": "۹۰۰,۰۰۰ تومان",
+    "description": "ته‌چین زعفرانی برشته با لایه‌های گوشت چرخ‌کرده گوسفند، اسفناج، برنج ایرانی و برنج اعلای ایرانی",
+    "ingredients": [
+      "گوشت چرخ‌کرده گوسفند",
+      "اسفناج",
+      "برنج ایرانی",
+      "ماست",
+      "تخم مرغ",
+      "زعفران"
+    ],
+    "image": "https://storage.denu.app/storage/0d3/6e0/0d36e053b8473e1c288210e721f6b97a03f33699e6f3c2291d69ede7c9940241.jpg"
   },
   {
-    id: "food_5",
-    name: "کال‌جوش با گردوی تازه برزک",
-    category: "خوراک مقوی سنتی",
-    price: 180000,
-    priceDisplay: "۱۸۰,۰۰۰ تومان",
-    description: "کشک محلی گوسفندی جوشیده با نعناع داغ، پیازداغ و مغز گردوی اعلای باغات برزک با عطر سرمست‌کننده."
+    "id": "63fb7a7d3c3a63646b478505",
+    "name": "مرغ و هویج و آلو",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "خوراک لذیذ مرغ همراه با خلال هویج، آلو بخارای شیرین و ملس و رب گوجه فرنگی با پلو",
+    "ingredients": [
+      "مرغ",
+      "هویج",
+      "آلو بخارا",
+      "رب گوجه فرنگی",
+      "پلو"
+    ],
+    "image": "https://storage.denu.app/storage/752/85c/75285cb699c0107b7c65ebf38c9b4e84d3689583cdc65fb81d6decd0a1735356.jpg"
   },
   {
-    id: "food_6",
-    name: "کوفته برنجی برزک",
-    category: "کوفته سنتی",
-    price: 210000,
-    priceDisplay: "۲۱۰,۰۰۰ تومان",
-    description: "کوفته پرملات با مغز آلو بخارا، گردو، زرشک کوهی و سبزیجات معطر ارتفاعات برزک."
+    "id": "63fb7a9d3c3a63646b478506",
+    "name": "مرغ کاری",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "مرغ طعم‌دار شده با ماست محلی و ادویه معطر کاری همراه با برنج ایرانی",
+    "ingredients": [
+      "مرغ",
+      "ماست",
+      "ادویه کاری",
+      "پلو"
+    ],
+    "image": "https://storage.denu.app/storage/21d/88c/21d88c2473347998a13f09606766f24c9267baad51ae703720eecdc237511582.jpg"
+  },
+  {
+    "id": "6757294b8ac6754eb7e807b2",
+    "name": "شاتوت پلو",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 900000,
+    "priceDisplay": "۹۰۰,۰۰۰ تومان",
+    "description": "شاتوت تازه باغات برزک همراه با گوشت گوسفندی، رب انار و پلوی زعفرانی اصیل ایرانی",
+    "ingredients": [
+      "شاتوت",
+      "گوشت گوسفندی",
+      "رب انار",
+      "پلو"
+    ],
+    "image": "https://storage.denu.app/storage/e28/3cf/e283cfbdf91d6fbe34015f49eb06d91b4542d37df8cf386bd47d4999d163cb13.jpg"
+  },
+  {
+    "id": "63fb7b3a3c3a63646b478508",
+    "name": "دیزی پلو",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "پلوی لذیذ دم‌پخت شده با گوشت گوسفندی تازه و لوبیای چشم بلبلی",
+    "ingredients": [
+      "گوشت گوسفندی",
+      "لوبیا چشم بلبلی",
+      "پلو"
+    ],
+    "image": "https://storage.denu.app/storage/2e4/769/2e476969888d45db1891d841cb969a769ba0d55ecbf508bbe9f0431172aa3162.jpg"
+  },
+  {
+    "id": "63fb7b583c3a63646b478509",
+    "name": "لوبیا پلو",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "لوبیا پلوی مجلسی با گوشت تکه‌ای گوسفندی، لوبیا سبز تازه و ادویه‌جات معطر",
+    "ingredients": [
+      "لوبیا سبز",
+      "گوشت گوسفندی",
+      "پلو"
+    ],
+    "image": "https://storage.denu.app/storage/3a9/0b2/3a90b23fdadd48d30a93d969c9d36ce556ba07719a1ca2b8f18f0ae697d9974c.jpg"
+  },
+  {
+    "id": "63fb7b823c3a63646b47850a",
+    "name": "تاس کباب",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "تاس‌کباب سنتی با گوشت گوسفندی، بادمجان، گوجه فرنگی، پیاز و سس رب انار ملس همراه با پلو",
+    "ingredients": [
+      "گوشت گوسفندی",
+      "بادمجان",
+      "گوجه فرنگی",
+      "پیاز",
+      "رب انار",
+      "پلو"
+    ],
+    "image": "https://storage.denu.app/storage/4e5/7f0/4e57f0f6649ccc2ff082e8aad3e885aeb172851b52a7b5b1563188915f629819.jpg"
+  },
+  {
+    "id": "679ca48f4b05bf6713eeaae0",
+    "name": "دمپخت",
+    "category": "خوراک‌های گوشتی با برنج",
+    "tags": [
+      "همراه با برنج",
+      "گوشتی"
+    ],
+    "price": 500000,
+    "priceDisplay": "۵۰۰,۰۰۰ تومان",
+    "description": "دمپخت لذیذ با گوشت چرخ‌کرده گوسفند، سبزیجات تازه محلی کوهستان و برنج ایرانی",
+    "ingredients": [
+      "گوشت چرخ کرده گوسفند",
+      "سبزیجات محلی",
+      "برنج ایرانی"
+    ],
+    "image": ""
+  },
+  {
+    "id": "64240e4b3c3a63646b4787a1",
+    "name": "تاس‌کباب",
+    "category": "خوراک‌های گوشتی با نان",
+    "tags": [
+      "نانی",
+      "گوشتی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "تاس‌کباب اصیل گوسفندی با بادمجان و گوجه فرنگی و چاشنی رب انار همراه با نان خشک محلی",
+    "ingredients": [
+      "گوشت گوسفندی",
+      "بادمجان",
+      "پیاز",
+      "گوجه‌فرنگی",
+      "رب انار"
+    ],
+    "image": "https://storage.denu.app/storage/427/df5/427df5b3b0341de8e0b9ec775734694ab300b77caabed92ee4cf5c5286981440.jpg"
+  },
+  {
+    "id": "63fb7c753c3a63646b47850c",
+    "name": "قیمه ریزه سیب زمینی",
+    "category": "خوراک‌های گوشتی با نان",
+    "tags": [
+      "نانی",
+      "گوشتی"
+    ],
+    "price": 550000,
+    "priceDisplay": "۵۵۰,۰۰۰ تومان",
+    "description": "کوفته ریزه‌های گوسفندی با سیب‌زمینی و سس رب گوجه‌فرنگی همراه با نان خشک محلی",
+    "ingredients": [
+      "گوشت چرخ‌کرده گوسفند",
+      "سیب زمینی",
+      "رب گوجه فرنگی",
+      "نان خشک محلی"
+    ],
+    "image": "https://storage.denu.app/storage/ae4/4b1/ae44b120392b83c1df47f01b08f42fb5f23ee23ff397d0c5d94b3e4c45446b17.jpg"
+  },
+  {
+    "id": "63fb7ca63c3a63646b47850d",
+    "name": "قیمه ریزه بادمجان",
+    "category": "خوراک‌های گوشتی با نان",
+    "tags": [
+      "نانی",
+      "گوشتی"
+    ],
+    "price": 550000,
+    "priceDisplay": "۵۵۰,۰۰۰ تومان",
+    "description": "کوفته ریزه‌های خوش‌طعم گوسفندی با بادمجان سرخ‌شده و سبزی خشک معطر همراه با نان محلی",
+    "ingredients": [
+      "گوشت چرخ کرده گوسفند",
+      "بادمجان",
+      "رب گوجه فرنگی",
+      "سبزی خشک",
+      "نان خشک محلی"
+    ],
+    "image": "https://storage.denu.app/storage/3e5/242/3e5242e4ff1f7091d9305725b50771aa33ce618a71c9c678399c9a628a9e9385.jpg"
+  },
+  {
+    "id": "63fb7ccb3c3a63646b47850e",
+    "name": "شفته آب انار",
+    "category": "خوراک‌های گوشتی با نان",
+    "tags": [
+      "نانی",
+      "گوشتی"
+    ],
+    "price": 550000,
+    "priceDisplay": "۵۵۰,۰۰۰ تومان",
+    "description": "کوفته شفته سنتی برزک و کاشان تهیه شده با گوشت گوسفند و سس ترش و ملس آب انار",
+    "ingredients": [
+      "گوشت چرخ کرده گوسفند",
+      "رب انار",
+      "نان خشک محلی"
+    ],
+    "image": "https://storage.denu.app/storage/c99/538/c99538d367163a8fa3f96b7b2a88659dbef9a597a451b4bb2fc1ff9c5399aba9.jpg"
+  },
+  {
+    "id": "63fb7d363c3a63646b478510",
+    "name": "آبگوشت گوشت و نخود و لوبیا",
+    "category": "خوراک‌های گوشتی با نان",
+    "tags": [
+      "نانی",
+      "گوشتی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "آبگوشت اصیل سنتی با گوشت گوسفندی، نخود، لوبیا سفید و سیب‌زمینی در دیزی همراه با نان خشک محلی",
+    "ingredients": [
+      "گوشت گوسفندی",
+      "نخود",
+      "لوبیا سفید",
+      "سیب زمینی",
+      "رب گوجه فرنگی",
+      "نان خشک محلی"
+    ],
+    "image": "https://storage.denu.app/storage/217/ad4/217ad4a9852ee219b4e0c2048c697f47e59d719281f6a296ad61ef91c3a0c997.jpg"
+  },
+  {
+    "id": "63fb7d5d3c3a63646b478511",
+    "name": "گوشت و عدس و بادمجان",
+    "category": "خوراک‌های گوشتی با نان",
+    "tags": [
+      "نانی",
+      "گوشتی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "خوراک مقوی و اصیل گوشت گوسفندی پخته شده با عدس، بادمجان، کشک محلی و پیازداغ",
+    "ingredients": [
+      "گوشت گوسفندی",
+      "عدس",
+      "بادمجان",
+      "کشک",
+      "پیاز داغ"
+    ],
+    "image": "https://storage.denu.app/storage/034/50a/03450ae2ca0e2c2e6e89d13e9bce9b1f2b7e6f1141d52a9a1217c3bf6d007c45.jpg"
+  },
+  {
+    "id": "63fb7d863c3a63646b478512",
+    "name": "کتلت",
+    "category": "خوراک‌های گوشتی با نان",
+    "tags": [
+      "نانی",
+      "گوشتی"
+    ],
+    "price": 550000,
+    "priceDisplay": "۵۵۰,۰۰۰ تومان",
+    "description": "کتلت سنتی برشته و خانگی تهیه شده از گوشت چرخ‌کرده خالص گوسفندی و سیب‌زمینی",
+    "ingredients": [
+      "گوشت چرخ کرده گوسفند",
+      "سیب زمینی",
+      "تخم مرغ"
+    ],
+    "image": "https://storage.denu.app/storage/60c/58e/60c58ebbfe49907f6dcd40b0a62ca33c8bd94573bd4af56c0204e6c27115435c.jpg"
+  },
+  {
+    "id": "63fb7e5f3c3a63646b478515",
+    "name": "ته‌چین قارچ و بادمجان",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "همراه با برنج",
+      "گیاهی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "ته‌چین زعفرانی برشته با لایه‌های قارچ، بادمجان، رب گوجه فرنگی و برنج اعلای ایرانی",
+    "ingredients": [
+      "قارچ",
+      "بادمجان",
+      "رب گوجه فرنگی",
+      "برنج ایرانی",
+      "ماست",
+      "تخم مرغ",
+      "زعفران"
+    ],
+    "image": "https://storage.denu.app/storage/7c9/120/7c9120821a03b5b6fbc43e1ee67b6d84f0ccbbbb45363cd631c5166170c8243e.jpg"
+  },
+  {
+    "id": "63fb7e953c3a63646b478516",
+    "name": "ته‌چین قارچ و اسفناج",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "همراه با برنج",
+      "گیاهی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "ته‌چین زعفرانی برشته با لایه‌های قارچ، اسفناج، رب گوجه فرنگی و برنج اعلای ایرانی",
+    "ingredients": [
+      "قارچ",
+      "اسفناج",
+      "رب گوجه فرنگی",
+      "برنج ایرانی",
+      "ماست",
+      "تخم مرغ",
+      "زعفران"
+    ],
+    "image": "https://storage.denu.app/storage/360/911/36091188a695e689b4bd06ff460c050636fe034f72d83d6ff9d846d8bf18e747.jpg"
+  },
+  {
+    "id": "642428753c3a63646b4787a2",
+    "name": "ته‌چین قارچ و سویا",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "همراه با برنج",
+      "گیاهی"
+    ],
+    "price": 750000,
+    "priceDisplay": "۷۵۰,۰۰۰ تومان",
+    "description": "ته‌چین زعفرانی برشته با لایه‌های قارچ، سویا، رب گوجه‌فرنگی و برنج اعلای ایرانی",
+    "ingredients": [
+      "قارچ",
+      "سویا",
+      "رب گوجه‌فرنگی",
+      "برنج",
+      "ماست",
+      "تخم‌مرغ",
+      "زعفران"
+    ],
+    "image": "https://storage.denu.app/storage/74e/fd1/74efd1bfec1c43b5a03699016dfac46c09860d35453959c431f392290d6032b2.jpg"
+  },
+  {
+    "id": "63fb20033c3a63646b478499",
+    "name": "رشته پلو‍",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "همراه با برنج",
+      "گیاهی"
+    ],
+    "price": 550000,
+    "priceDisplay": "۵۵۰,۰۰۰ تومان",
+    "description": "رشته‌پلو خانگی با بادمجان، گوجه‌فرنگی تازه و برنج اصیل ایرانی",
+    "ingredients": [
+      "گوجه فرنگی",
+      "بادمجان",
+      "رشته خانگی ",
+      "برنج ایرانی"
+    ],
+    "image": "https://storage.denu.app/storage/d38/e21/d38e21a18364de02467b64f74c3f4f36981a5a996c6beb4bd91732573ae79107.jpg"
+  },
+  {
+    "id": "63fb7dd53c3a63646b478513",
+    "name": "لوبیا پلو",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "همراه با برنج",
+      "گیاهی"
+    ],
+    "price": 550000,
+    "priceDisplay": "۵۵۰,۰۰۰ تومان",
+    "description": "خوراک سنتی خانگی تهیه شده از مواد اولیه تازه و محلی برزک",
+    "ingredients": [
+      "لوبیا سبز",
+      "سویا",
+      "برنج ایرانی"
+    ],
+    "image": "https://storage.denu.app/storage/a71/45b/a7145b8347fd4704b5d2ff23a9db5e85534f4b8532712ec4e147b717ec9982d7.jpg"
+  },
+  {
+    "id": "63fb201b3c3a63646b47849a",
+    "name": "کشک بادمجان",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "نانی",
+      "گیاهی"
+    ],
+    "price": 450000,
+    "priceDisplay": "۴۵۰,۰۰۰ تومان",
+    "description": "بادمجان کبابی و سرخ‌شده با کشک محلی گوسفندی، نعناع‌داغ، سیرداغ و پیازداغ عسلی",
+    "ingredients": [
+      "بادمجان",
+      "کشک",
+      "پیاز داغ",
+      "نعنا داغ",
+      "سیرداغ"
+    ],
+    "image": "https://storage.denu.app/storage/ea4/542/ea4542079b7182af324337f96463da8453cf458a09e180294d484fc84d53f272.jpg"
+  },
+  {
+    "id": "63fb7e0a3c3a63646b478514",
+    "name": "کالجوش",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "نانی",
+      "گیاهی"
+    ],
+    "price": 360000,
+    "priceDisplay": "۳۶۰,۰۰۰ تومان",
+    "description": "کالجوش سنتی با کشک محلی اعلا، پیازداغ، نعناع‌داغ و مغز گردوی باغات برزک همراه با نان خشک",
+    "ingredients": [
+      "کشک",
+      "پیاز داغ",
+      "نعنا داغ",
+      "گردو",
+      "نان خشک محلی"
+    ],
+    "image": "https://storage.denu.app/storage/62c/558/62c558755f61ab51ae530cb7ed078888051feb97a468d23e504c3e6b8718daf4.jpg"
+  },
+  {
+    "id": "63fb7ee83c3a63646b478517",
+    "name": "یتیمچه",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "نانی",
+      "گیاهی"
+    ],
+    "price": 420000,
+    "priceDisplay": "۴۲۰,۰۰۰ تومان",
+    "description": "خوراک گیاهی سنتی و سبک با بادمجان، کدو سبز، سیب‌زمینی، گوجه‌فرنگی تازه و سیر",
+    "ingredients": [
+      "بادمجان",
+      "کدو سبز",
+      "سیب زمینی",
+      "گوجه فرنگی",
+      "سیر",
+      "پیاز"
+    ],
+    "image": "https://storage.denu.app/storage/503/2e7/5032e76e63e32bcef7188a8e67427436b393b61a4fe9c643ad22018f96168cc7.jpg"
+  },
+  {
+    "id": "63fb7f183c3a63646b478519",
+    "name": "کوکو سیب زمینی",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "نانی",
+      "گیاهی"
+    ],
+    "price": 400000,
+    "priceDisplay": "۴۰۰,۰۰۰ تومان",
+    "description": "کوکوی خانگی و تازه تهیه شده از مواد اولیه محلی و تازه برزک",
+    "ingredients": [],
+    "image": "https://storage.denu.app/storage/87a/44a/87a44aee661db6a5c4e0974f640f3ad65cc8442bb9401b69f06163ee9587004e.jpg"
+  },
+  {
+    "id": "63fb7f213c3a63646b47851a",
+    "name": "کوکوسبزی",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "نانی",
+      "گیاهی"
+    ],
+    "price": 400000,
+    "priceDisplay": "۴۰۰,۰۰۰ تومان",
+    "description": "کوکوی خانگی و تازه تهیه شده از مواد اولیه محلی و تازه برزک",
+    "ingredients": [],
+    "image": "https://storage.denu.app/storage/6c7/4d7/6c74d785c66d583b83daa4a4a4744b732b28c9cf252b8d101787afca6ea693c8.jpg"
+  },
+  {
+    "id": "640b590c3c3a63646b4785d7",
+    "name": "اشکنه سیب زمینی (دوپیازه آلو)",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "نانی",
+      "گیاهی"
+    ],
+    "price": 250000,
+    "priceDisplay": "۲۵۰,۰۰۰ تومان",
+    "description": "اشکنه سیب‌زمینی سنتی (دوپیازه آلو) با پیازداغ فراوان، سیب‌زمینی و رب گوجه‌فرنگی خانگی",
+    "ingredients": [
+      "سیب زمینی",
+      "پیاز داغ",
+      "رب گوجه فرنگی"
+    ],
+    "image": "https://storage.denu.app/storage/af2/a47/af2a47401e87dab1d2290eed32634b24709b47d02e3ff8d97543e62aba084f3c.jpg"
+  },
+  {
+    "id": "64242ab23c3a63646b4787a5",
+    "name": "چلو",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "همراه با برنج",
+      "گیاهی"
+    ],
+    "price": 250000,
+    "priceDisplay": "۲۵۰,۰۰۰ تومان",
+    "description": "برنج درجه یک ایرانی دم‌کشیده با کره محلی و زعفران",
+    "ingredients": [],
+    "image": "https://storage.denu.app/storage/5bb/c20/5bbc207f574dbbce3763f0b7359b5a5a0b858be453a9c4ae4fbb81de129ef142.jpg"
+  },
+  {
+    "id": "679ca45f4b05bf6713eeaadf",
+    "name": "دمپخت",
+    "category": "خوراک‌های گیاهی",
+    "tags": [
+      "همراه با برنج",
+      "گیاهی"
+    ],
+    "price": 550000,
+    "priceDisplay": "۵۵۰,۰۰۰ تومان",
+    "description": "دمپخت گیاهی مقوی با سبزیجات تازه محلی برزک و برنج ایرانی",
+    "ingredients": [
+      "سبزیجات محلی",
+      "برنج ایرانی"
+    ],
+    "image": ""
+  },
+  {
+    "id": "63fb7f8d3c3a63646b47851c",
+    "name": "آش رشته",
+    "category": "آش و سوپ",
+    "tags": [
+      "آش و سوپ",
+      "گیاهی"
+    ],
+    "price": 350000,
+    "priceDisplay": "۳۵۰,۰۰۰ تومان",
+    "description": "آش رشته سنتی جاافتاده با حبوبات تازه، سبزی محلی و کشک و پیازداغ فراوان",
+    "ingredients": [],
+    "image": "https://storage.denu.app/storage/ffa/1a5/ffa1a597f9477434fe546fd226e2b3d64b1c27c984e24f3081d57a570bde0f8d.jpg"
+  },
+  {
+    "id": "63fb7fb73c3a63646b47851d",
+    "name": "آش برنج",
+    "category": "آش و سوپ",
+    "tags": [
+      "آش و سوپ",
+      "گیاهی"
+    ],
+    "price": 350000,
+    "priceDisplay": "۳۵۰,۰۰۰ تومان",
+    "description": "آش برنج محلی مقوی با برنج، عدس، لپه، زرشک کوهی و بادام",
+    "ingredients": [
+      "برنج",
+      "عدس",
+      "لپه",
+      "زرشک",
+      "بادام"
+    ],
+    "image": "https://storage.denu.app/storage/21d/f20/21df20337f321d54313e1646cb355bc13da9dbf8721beaf073046fcd6b39ebfd.jpg"
+  },
+  {
+    "id": "63fb7fe53c3a63646b47851e",
+    "name": "سوپ شیر",
+    "category": "آش و سوپ",
+    "tags": [
+      "آش و سوپ",
+      "گوشتی"
+    ],
+    "price": 320000,
+    "priceDisplay": "۳۲۰,۰۰۰ تومان",
+    "description": "سوپ شیر لذیذ و لطیف با گوشت مرغ، خلال هویج، ذرت شیرین و سبزی خشک کوهی",
+    "ingredients": [
+      "مرغ",
+      "هویج",
+      "ذرت",
+      "شیر",
+      "سبزی خشک"
+    ],
+    "image": "https://storage.denu.app/storage/5f3/fb4/5f3fb4e08b96eecdcdd2b742606e0448f845df8613fb0d53a5ad72a9051ec005.jpg"
+  },
+  {
+    "id": "63fb5eb53c3a63646b4784ed",
+    "name": "صبحانه",
+    "category": "صبحانه",
+    "tags": [
+      "صبحانه سنتی",
+      "نانی"
+    ],
+    "price": 250000,
+    "priceDisplay": "۲۵۰,۰۰۰ تومان",
+    "description": "صبحانه کامل روستایی: نان گرم، پنیر محلی، کره محلی، انواع مربای خانگی، نیمرو تازه و حلوا ارده",
+    "ingredients": [
+      "نان",
+      "پنیر",
+      "کره محلی",
+      "انواع مربا",
+      "نیمرو",
+      "حلوا ارده"
+    ],
+    "image": "https://storage.denu.app/storage/255/b53/255b53de74fc749669728e41479563f948371ba435cca881a730be9e7cc4b9d4.jpg"
   }
 ];
 
 // ۴. وضعیت کلی برنامه (App State)
 const state = {
-  screenStack: ["screen-home"], // پشته صفحات برای بازگشت دقیق
+  screenStack: ["screen-home"], // پشته صفحات برای بازگشت سلسله‌مراتبی
   selectedRoomId: "shatoot",
+  reservationSourceScreen: "screen-rooms", // صفحه منبع ورود به رزرو (برای بازگشت دقیق)
+  foodReturnToReservation: false, // آیا ورود به صفحه غذا از فرم رزرو اقامت بوده است؟
+  foodCategoryFilter: "all", // فیلتر دسته‌بندی خوراک‌ها ('all' یا نام دسته‌بندی)
+  foodSearchQuery: "", // متن جستجوی خوراک‌ها
+  expandedFoodIds: {}, // لیست خوراک‌های بازشده در آکاردئون: { [dishId]: true }
+  allFoodExpanded: false, // آیا تمام خوراک‌ها باز هستند؟
   reservation: {
+    selectedRoomIds: ["shatoot"], // لیست شناسه‌های اتاق‌های انتخاب شده برای رزرو
     nights: 1,
     guests: 2,
     checkInDate: getTomorrowFormattedDate(),
@@ -258,26 +944,95 @@ function openExternalUrl(url) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-// ۶. مدیریت Navigation و بازگشت یکپارچه (SPA بدون Reload)
-function navigateTo(screenId) {
+// ۶. مدیریت Navigation و بازگشت یکپارچه بر پایه سلسله‌مراتب صفحات (Hierarchical SPA Navigation)
+// مطابق دستور کاربر: دکمه بازگشت بر اساس ساختار درختی مینی‌اپ عمل می‌کند، نه گردش تاریخی تصادفی
+const SCREEN_HIERARCHY = {
+  "screen-rooms": () => "screen-home",
+  "screen-room-detail": () => "screen-rooms",
+  "screen-reservation": () => {
+    if (state.reservationSourceScreen === "screen-room-detail") {
+      return "screen-room-detail";
+    }
+    return "screen-rooms";
+  },
+  "screen-food": () => {
+    if (state.foodReturnToReservation) {
+      return "screen-reservation";
+    }
+    return "screen-home";
+  },
+  "screen-address": () => "screen-home",
+  "screen-contact": () => "screen-home",
+  "screen-social": () => "screen-home",
+  "screen-rules": () => "screen-home",
+  "screen-weather": () => "screen-home",
+  "screen-green-travel": () => "screen-home",
+  "screen-reviews": () => "screen-home",
+};
+
+function updateScreenStackFor(screenId) {
+  if (screenId === "screen-home") {
+    state.screenStack = ["screen-home"];
+  } else if (screenId === "screen-rooms") {
+    state.screenStack = ["screen-home", "screen-rooms"];
+  } else if (screenId === "screen-room-detail") {
+    state.screenStack = ["screen-home", "screen-rooms", "screen-room-detail"];
+  } else if (screenId === "screen-reservation") {
+    if (state.reservationSourceScreen === "screen-room-detail") {
+      state.screenStack = ["screen-home", "screen-rooms", "screen-room-detail", "screen-reservation"];
+    } else {
+      state.screenStack = ["screen-home", "screen-rooms", "screen-reservation"];
+    }
+  } else if (screenId === "screen-food") {
+    if (state.foodReturnToReservation) {
+      state.screenStack = ["screen-home", "screen-rooms", "screen-reservation", "screen-food"];
+    } else {
+      state.screenStack = ["screen-home", "screen-food"];
+    }
+  } else {
+    state.screenStack = ["screen-home", screenId];
+  }
+}
+
+function navigateTo(screenId, source = null) {
   triggerHaptic('light');
-  const currentScreenId = state.screenStack[state.screenStack.length - 1];
+  const currentScreenId = state.screenStack[state.screenStack.length - 1] || "screen-home";
   if (currentScreenId === screenId) return;
 
-  state.screenStack.push(screenId);
+  if (screenId === "screen-food") {
+    if (source === "screen-reservation") {
+      state.foodReturnToReservation = true;
+    } else if (source === "screen-home" || !source) {
+      state.foodReturnToReservation = false;
+    }
+  }
+
+  if (screenId === "screen-reservation" && source) {
+    state.reservationSourceScreen = source;
+  }
+
+  updateScreenStackFor(screenId);
   renderCurrentScreen();
 }
 
 function navigateBack() {
   triggerHaptic('light');
-  if (state.screenStack.length > 1) {
-    state.screenStack.pop();
-    renderCurrentScreen();
+  const currentScreenId = state.screenStack[state.screenStack.length - 1] || "screen-home";
+  if (currentScreenId === "screen-home") return;
+
+  const getParent = SCREEN_HIERARCHY[currentScreenId];
+  const targetParent = getParent ? getParent() : "screen-home";
+
+  if (currentScreenId === "screen-food" && targetParent === "screen-reservation") {
+    state.foodReturnToReservation = false;
   }
+
+  updateScreenStackFor(targetParent);
+  renderCurrentScreen();
 }
 
 function renderCurrentScreen() {
-  const targetId = state.screenStack[state.screenStack.length - 1];
+  const targetId = state.screenStack[state.screenStack.length - 1] || "screen-home";
 
   // مخفی کردن تمامی اسکرین‌ها و نمایش اسکرین فعال
   document.querySelectorAll(".screen").forEach(el => {
@@ -289,9 +1044,23 @@ function renderCurrentScreen() {
     activeEl.classList.add("active");
   }
 
+  // مدیریت نوار شناور وضعیت رزرو (در کل مینی‌اپ)
+  updateFloatingBookingBar();
+
+  if (targetId === "screen-room-detail") {
+    updateRoomDetailButtons();
+  } else if (targetId === "screen-reservation") {
+    renderSelectedRoomsInForm();
+    updateReservationCalculations();
+  } else if (targetId === "screen-rooms") {
+    renderRoomsList();
+  } else if (targetId === "screen-food") {
+    renderFoodSection();
+  }
+
   // مدیریت نمایش یا مخفی‌سازی دکمه Back بومی تلگرام
   if (tg && tg.BackButton) {
-    if (state.screenStack.length > 1) {
+    if (state.screenStack.length > 1 && targetId !== "screen-home") {
       tg.BackButton.show();
     } else {
       tg.BackButton.hide();
@@ -349,23 +1118,29 @@ function renderRoomsList() {
   const container = document.getElementById("rooms-list-container");
   if (!container) return;
 
-  container.innerHTML = ROOMS.map(room => `
-    <div class="room-card" id="room-card-${room.id}">
-      <div class="room-card-img-wrap">
-        <img src="${room.images[0]}" alt="${room.name}" class="room-card-img" loading="lazy" onerror="if(!this.dataset.err){this.dataset.err='1';this.src='./assets/rooms/${room.id}.svg';}" />
-        <span class="room-card-capacity">👥 تا ${formatPersianNumber(room.capacity)} نفر</span>
-      </div>
-      <div class="room-card-body">
-        <div class="room-card-title-row">
-          <h3 class="room-card-title">اتاق ${room.name}</h3>
-          <span class="room-card-price">${formatToman(room.price)} <small style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">/ نفرشب با صبحانه</small></span>
+  const selectedIds = state.reservation.selectedRoomIds || [];
+
+  container.innerHTML = ROOMS.map(room => {
+    const isSelected = selectedIds.includes(room.id);
+    return `
+      <div class="room-card" id="room-card-${room.id}" style="position: relative;">
+        ${isSelected ? '<span class="room-card-selected-badge">✓ در لیست رزرو شما</span>' : ''}
+        <div class="room-card-img-wrap">
+          <img src="${room.images[0]}" alt="${room.name}" class="room-card-img" loading="lazy" onerror="if(!this.dataset.err){this.dataset.err='1';this.src='./assets/rooms/${room.id}.svg';}" />
+          <span class="room-card-capacity">👥 ${room.shortCapacity || room.capacityDisplay}</span>
         </div>
-        <button class="btn btn-outline" onclick="openRoomDetail('${room.id}')" style="margin-top: 8px;">
-          مشاهده مشخصات و عکس‌های اتاق ←
-        </button>
+        <div class="room-card-body">
+          <div class="room-card-title-row">
+            <h3 class="room-card-title">اتاق ${room.name}</h3>
+            <span class="room-card-price">${formatToman(room.price)} <small style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">/ هر نفر شب</small></span>
+          </div>
+          <button class="btn btn-outline" onclick="openRoomDetail('${room.id}')" style="margin-top: 8px;">
+            مشاهده مشخصات و عکس‌های اتاق ←
+          </button>
+        </div>
       </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 function openRoomDetail(roomId) {
@@ -389,7 +1164,17 @@ function openRoomDetail(roomId) {
   }
   const detailCap = document.getElementById("detail-capacity");
   if (detailCap) {
-    detailCap.textContent = room.capacityDisplay || `تا ${formatPersianNumber(room.capacity)} نفر`;
+    detailCap.textContent = room.mainCapacity || room.capacityDisplay || `تا ${formatPersianNumber(room.capacity)} نفر`;
+  }
+  const detailCapExtra = document.getElementById("detail-capacity-extra");
+  if (detailCapExtra) {
+    if (room.extraCapacity) {
+      detailCapExtra.textContent = room.extraCapacity;
+      detailCapExtra.style.display = "block";
+    } else {
+      detailCapExtra.textContent = "";
+      detailCapExtra.style.display = "none";
+    }
   }
   const detailBeds = document.getElementById("detail-beds");
   if (detailBeds) {
@@ -397,11 +1182,11 @@ function openRoomDetail(roomId) {
   }
   const detailPrice = document.getElementById("detail-price");
   if (detailPrice) {
-    detailPrice.textContent = formatToman(room.price);
+    detailPrice.innerHTML = `${formatToman(room.price)} <span class="spec-price-unit">هر نفر/شب</span>`;
   }
   const detailPriceNote = document.getElementById("detail-price-note");
   if (detailPriceNote) {
-    detailPriceNote.textContent = room.priceNote || "هر نفر/شب با صبحانه محلی";
+    detailPriceNote.style.display = "none";
   }
   const detailDesc = document.getElementById("detail-desc");
   if (detailDesc) {
@@ -410,29 +1195,155 @@ function openRoomDetail(roomId) {
 
   // امکانات
   const amenitiesWrap = document.getElementById("detail-amenities");
-  amenitiesWrap.innerHTML = room.amenities.map(a => `
-    <span class="amenity-chip">✓ ${a}</span>
-  `).join("");
+  if (amenitiesWrap) {
+    amenitiesWrap.innerHTML = room.amenities.map(a => `
+      <span class="amenity-chip">✓ ${a}</span>
+    `).join("");
+  }
+
+  // به‌روزرسانی وضعیت دکمه‌های این اتاق
+  updateRoomDetailButtons();
 
   // هدایت به صفحه جزئیات اتاق
   navigateTo("screen-room-detail");
 }
 
-function startReservationForCurrentRoom() {
-  // پر کردن مقدار سلکتور اتاق در فرم رزرو
-  const selectEl = document.getElementById("res-room-select");
-  if (selectEl) {
-    selectEl.value = state.selectedRoomId;
+function updateRoomDetailButtons() {
+  const roomId = state.selectedRoomId;
+  const isAdded = state.reservation.selectedRoomIds && state.reservation.selectedRoomIds.includes(roomId);
+  const btn = document.getElementById("btn-request-reservation");
+  const optionsBox = document.getElementById("detail-room-options");
+
+  if (btn) {
+    if (isAdded) {
+      btn.innerHTML = `✓ اتاق ${ROOMS.find(r => r.id === roomId)?.name || ''} در لیست رزرو شماست`;
+      btn.classList.remove("btn-mustard");
+      btn.classList.add("btn-primary");
+    } else {
+      btn.innerHTML = `رزرو این اتاق ←`;
+      btn.classList.remove("btn-primary");
+      btn.classList.add("btn-mustard");
+    }
   }
+
+  if (optionsBox) {
+    optionsBox.style.display = isAdded ? "flex" : "none";
+  }
+}
+
+function handleRoomDetailBookingClick() {
+  triggerHaptic('medium');
+  const roomId = state.selectedRoomId;
+  const room = ROOMS.find(r => r.id === roomId);
+  if (!room) return;
+
+  if (!state.reservation.selectedRoomIds) {
+    state.reservation.selectedRoomIds = [];
+  }
+
+  if (!state.reservation.selectedRoomIds.includes(roomId)) {
+    state.reservation.selectedRoomIds.push(roomId);
+    showToast(`اتاق ${room.name} به درخواست رزرو اضافه شد. می‌توانید در مینی‌اپ بگردید یا رزرو را نهایی کنید.`);
+  } else {
+    showToast(`اتاق ${room.name} در لیست رزرو شما قرار دارد.`);
+  }
+
+  updateRoomDetailButtons();
+  updateFloatingBookingBar();
+  renderRoomsList();
+}
+
+function startReservationForCurrentRoom() {
+  handleRoomDetailBookingClick();
+  openReservationScreen();
+}
+
+function openReservationScreen() {
+  triggerHaptic('light');
+  if (!state.reservation.selectedRoomIds || state.reservation.selectedRoomIds.length === 0) {
+    if (state.selectedRoomId) {
+      state.reservation.selectedRoomIds = [state.selectedRoomId];
+    } else {
+      state.reservation.selectedRoomIds = ["shatoot"];
+    }
+  }
+  renderSelectedRoomsInForm();
   updateReservationCalculations();
   navigateTo("screen-reservation");
 }
 
+function removeRoomFromReservation(roomId) {
+  triggerHaptic('light');
+  const room = ROOMS.find(r => r.id === roomId);
+  if (state.reservation.selectedRoomIds) {
+    state.reservation.selectedRoomIds = state.reservation.selectedRoomIds.filter(id => id !== roomId);
+  }
+  showToast(`اتاق ${room ? room.name : ''} از لیست رزرو حذف شد.`);
+  renderSelectedRoomsInForm();
+  updateReservationCalculations();
+  updateFloatingBookingBar();
+  updateRoomDetailButtons();
+  renderRoomsList();
+}
+
+function renderSelectedRoomsInForm() {
+  const container = document.getElementById("res-selected-rooms-container");
+  if (!container) return;
+
+  const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
+
+  if (selectedRooms.length === 0) {
+    container.innerHTML = `
+      <div class="selected-rooms-empty">
+        <p style="font-size: 13px; color: var(--brand-text-muted); margin-bottom: 8px;">هنوز اتاقی به درخواست رزرو اضافه نشده است.</p>
+        <button type="button" class="btn btn-mustard" style="font-size: 12.5px; padding: 7px 14px;" onclick="navigateTo('screen-rooms')">
+          🏠 مشاهده و انتخاب اتاق‌ها
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = selectedRooms.map(room => `
+    <div class="selected-room-chip">
+      <div class="selected-room-info">
+        <span class="selected-room-name">🏠 اتاق ${room.name}</span>
+        <span class="selected-room-meta">${formatToman(room.price)} هر نفر/شب • ${room.capacityDisplay || `تا ${formatPersianNumber(room.capacity)} نفر`}</span>
+      </div>
+      <button type="button" class="selected-room-remove-btn" onclick="removeRoomFromReservation('${room.id}')" title="حذف این اتاق از رزرو">
+        ✕
+      </button>
+    </div>
+  `).join("");
+}
+
+function updateFloatingBookingBar() {
+  const bar = document.getElementById("floating-booking-bar");
+  if (!bar) return;
+
+  const currentScreenId = state.screenStack[state.screenStack.length - 1];
+  const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
+
+  if (selectedRooms.length > 0 && currentScreenId !== "screen-reservation") {
+    bar.style.display = "flex";
+    const count = selectedRooms.length;
+    const roomNames = selectedRooms.map(r => r.name).join(" و ");
+    const titleEl = document.getElementById("floating-booking-title");
+    const subEl = document.getElementById("floating-booking-sub");
+    if (titleEl) {
+      titleEl.textContent = `${formatPersianNumber(count)} اتاق در درخواست رزرو (${roomNames})`;
+    }
+    if (subEl) {
+      subEl.textContent = "برای مشاهده و ارسال نهایی کلیک کنید";
+    }
+  } else {
+    bar.style.display = "none";
+  }
+}
+
 // ۹. فرم و محاسبات درخواست رزرو یکپارچه (اقامت + خوراک)
 function updateReservationCalculations() {
-  const roomSelect = document.getElementById("res-room-select");
-  const selectedId = roomSelect ? roomSelect.value : state.selectedRoomId;
-  const room = ROOMS.find(r => r.id === selectedId) || ROOMS[0];
+  const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
 
   const checkInInput = document.getElementById("res-checkin-date");
   const checkInVal = checkInInput ? checkInInput.value : state.reservation.checkInDate;
@@ -479,8 +1390,15 @@ function updateReservationCalculations() {
     guestsValEl.textContent = formatPersianNumber(state.reservation.guests) + " نفر";
   }
 
-  // محاسبه مبلغ اقامت
-  const roomEstimate = state.reservation.nights * state.reservation.guests * room.price;
+  // محاسبه مبلغ اقامت (پشتیبانی از تک اتاق یا چند اتاق)
+  let roomEstimate = 0;
+  if (selectedRooms.length === 1) {
+    roomEstimate = state.reservation.nights * state.reservation.guests * selectedRooms[0].price;
+  } else if (selectedRooms.length > 1) {
+    const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
+    const avgPrice = Math.round(sumPrices / selectedRooms.length);
+    roomEstimate = state.reservation.nights * state.reservation.guests * avgPrice;
+  }
 
   // محاسبه مبلغ غذاهای انتخابی (در صورت وجود)
   const selectedFoodIds = Object.keys(state.foodOrder.selectedDishes);
@@ -558,7 +1476,14 @@ function updateReservationCalculations() {
   const summaryTotalEl = document.getElementById("res-summary-total");
 
   if (summaryRoomEl) {
-    summaryRoomEl.textContent = `اتاق ${room.name} (${formatPersianNumber(state.reservation.guests)} نفر، ${formatPersianNumber(state.reservation.nights)} شب با صبحانه)`;
+    if (selectedRooms.length === 0) {
+      summaryRoomEl.textContent = "اتاقی انتخاب نشده است";
+    } else if (selectedRooms.length === 1) {
+      summaryRoomEl.textContent = `اتاق ${selectedRooms[0].name} (${formatPersianNumber(state.reservation.guests)} نفر، ${formatPersianNumber(state.reservation.nights)} شب با صبحانه)`;
+    } else {
+      const names = selectedRooms.map(r => r.name).join(" + ");
+      summaryRoomEl.textContent = `${formatPersianNumber(selectedRooms.length)} اتاق (${names}) - ${formatPersianNumber(state.reservation.guests)} نفر، ${formatPersianNumber(state.reservation.nights)} شب با صبحانه`;
+    }
   }
   if (summaryRoomPriceEl) {
     summaryRoomPriceEl.textContent = formatToman(roomEstimate);
@@ -592,13 +1517,13 @@ function changeReservationNights(delta) {
 
 function changeReservationGuests(delta) {
   triggerHaptic('light');
-  const roomSelect = document.getElementById("res-room-select");
-  const selectedId = roomSelect ? roomSelect.value : state.selectedRoomId;
-  const room = ROOMS.find(r => r.id === selectedId) || ROOMS[0];
+  const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
+  const totalCap = selectedRooms.reduce((sum, r) => sum + r.capacity, 0) || 2;
+  const maxAllowed = totalCap + (selectedRooms.length || 1) * 2;
 
   let g = state.reservation.guests + delta;
-  if (g < 1) g = 1;
-  if (g > room.capacity + 2) g = room.capacity + 2;
+  if (g < (selectedRooms.length || 1)) g = (selectedRooms.length || 1);
+  if (g > maxAllowed) g = maxAllowed;
   state.reservation.guests = g;
   updateReservationCalculations();
 }
@@ -685,9 +1610,7 @@ function syncFoodToReservationInputs() {
  * تولید متن پیام یکپارچه نهایی (شامل اطلاعات اقامت + خوراک)
  */
 function generateUnifiedOrderMessage() {
-  const roomSelect = document.getElementById("res-room-select");
-  const roomId = roomSelect ? roomSelect.value : state.selectedRoomId;
-  const room = ROOMS.find(r => r.id === roomId) || ROOMS[0];
+  const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
 
   const name = state.reservation.name || state.foodOrder.name || "مهمان گرامی";
   const phone = state.reservation.phone || state.foodOrder.phone || "";
@@ -695,7 +1618,22 @@ function generateUnifiedOrderMessage() {
   const checkOut = state.reservation.checkOutDate || addDaysToDateString(checkIn, state.reservation.nights);
   const nights = state.reservation.nights;
   const guests = state.reservation.guests;
-  const roomTotal = nights * guests * room.price;
+
+  let roomTotal = 0;
+  let roomsDetailText = "";
+
+  if (selectedRooms.length === 0) {
+    roomsDetailText = "• اتاق: انتخاب نشده";
+  } else if (selectedRooms.length === 1) {
+    roomTotal = nights * guests * selectedRooms[0].price;
+    roomsDetailText = `• اتاق: ${selectedRooms[0].name} (${formatToman(selectedRooms[0].price)} هر نفر/شب با صبحانه)`;
+  } else {
+    const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
+    const avgPrice = Math.round(sumPrices / selectedRooms.length);
+    roomTotal = nights * guests * avgPrice;
+    roomsDetailText = `• اتاق‌های انتخابی (${formatPersianNumber(selectedRooms.length)} اتاق):
+${selectedRooms.map(r => `  ▫️ اتاق ${r.name} (${formatToman(r.price)} هر نفر/شب با صبحانه)`).join("\n")}`;
+  }
 
   // بخش غذا
   const selectedFoodIds = Object.keys(state.foodOrder.selectedDishes);
@@ -732,10 +1670,10 @@ ${dishesLines}
 📞 تماس: ${phone}
 
 🏡 اقامت:
-• اتاق: ${room.name}
+${roomsDetailText}
 • ورود: ${formatPersianNumber(checkIn)}
 • مدت: ${formatPersianNumber(nights)} شب (خروج: ${formatPersianNumber(checkOut)})
-• تعداد نفرات: ${formatPersianNumber(guests)} نفر (با صبحانه محلی)
+• تعداد نفرات کل: ${formatPersianNumber(guests)} نفر (با صبحانه محلی)
 • برآورد اقامت: ${formatToman(roomTotal)}
 
 ${foodSectionText}
@@ -752,6 +1690,13 @@ function submitReservationForm(e) {
   if (e) e.preventDefault();
   triggerHaptic('medium');
   syncReservationToFoodInputs();
+
+  const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
+  if (selectedRooms.length === 0) {
+    showToast("لطفاً ابتدا حداقل یک اتاق را به لیست رزرو اضافه کنید.");
+    navigateTo("screen-rooms");
+    return;
+  }
 
   const name = state.reservation.name;
   const phone = state.reservation.phone;
@@ -778,15 +1723,200 @@ function submitReservationForm(e) {
   });
 }
 
-// ۱۱. رندر کردن و مدیریت منوی غذا
+// ۱۱. رندر کردن و مدیریت منوی غذاهای محلی خانه برزک
+function getTagBadgeHtml(tag) {
+  if (tag === "همراه با برنج") {
+    return `<span class="badge-tag badge-tag-rice">🍚 همراه با برنج</span>`;
+  } else if (tag === "نانی") {
+    return `<span class="badge-tag badge-tag-bread">🫓 نانی</span>`;
+  } else if (tag === "آش و سوپ") {
+    return `<span class="badge-tag badge-tag-soup">🥣 آش و سوپ</span>`;
+  } else if (tag === "صبحانه سنتی") {
+    return `<span class="badge-tag badge-tag-breakfast">🍳 صبحانه سنتی</span>`;
+  } else if (tag === "گوشتی") {
+    return `<span class="badge-tag badge-tag-meat">🥩 گوشتی</span>`;
+  } else if (tag === "گیاهی") {
+    return `<span class="badge-tag badge-tag-veg">🌱 گیاهی</span>`;
+  }
+  return `<span class="badge-tag badge-tag-bread">${tag}</span>`;
+}
+
+function setFoodCategoryFilter(cat) {
+  triggerHaptic('light');
+  state.foodCategoryFilter = cat;
+  
+  // به‌روزرسانی استایل دکمه‌های دسته‌بندی
+  const tabs = document.querySelectorAll("#food-category-tabs .food-tab-btn");
+  tabs.forEach(btn => {
+    const isTarget = (cat === 'all' && btn.textContent.includes('همه')) ||
+                     btn.textContent.includes(cat.replace('خوراک‌های ', ''));
+    if (isTarget) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  renderFoodList();
+}
+
+function handleFoodSearch(query) {
+  state.foodSearchQuery = (query || "").trim().toLowerCase();
+  renderFoodList();
+}
+
+function toggleDishDetails(dishId, event) {
+  if (event) {
+    // جلوگیری از تداخل کلیک روی چک‌باکس یا استپر
+    const target = event.target;
+    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON' || target.closest('.stepper')) {
+      return;
+    }
+  }
+  triggerHaptic('light');
+  state.expandedFoodIds[dishId] = !state.expandedFoodIds[dishId];
+  renderFoodList();
+}
+
+function toggleAllFoodDetails() {
+  triggerHaptic('light');
+  state.allFoodExpanded = !state.allFoodExpanded;
+  
+  FOOD_MENU.forEach(dish => {
+    state.expandedFoodIds[dish.id] = state.allFoodExpanded;
+  });
+
+  const toggleAllBtn = document.getElementById("btn-toggle-all-food");
+  if (toggleAllBtn) {
+    toggleAllBtn.textContent = state.allFoodExpanded ? "بستن همه ▴" : "باز کردن همه ▾";
+  }
+
+  renderFoodList();
+}
+
+function renderFoodList() {
+  const container = document.getElementById("dishes-list-container");
+  if (!container) return;
+
+  // فیلتر بر اساس دسته‌بندی
+  let filteredDishes = FOOD_MENU;
+  if (state.foodCategoryFilter && state.foodCategoryFilter !== "all") {
+    filteredDishes = filteredDishes.filter(d => d.category === state.foodCategoryFilter);
+  }
+
+  // فیلتر بر اساس جستجو
+  if (state.foodSearchQuery) {
+    const q = state.foodSearchQuery;
+    filteredDishes = filteredDishes.filter(d => {
+      const nameMatch = d.name.toLowerCase().includes(q);
+      const descMatch = (d.description || "").toLowerCase().includes(q);
+      const ingMatch = (d.ingredients || []).some(ing => ing.toLowerCase().includes(q));
+      const tagMatch = (d.tags || []).some(t => t.toLowerCase().includes(q));
+      return nameMatch || descMatch || ingMatch || tagMatch;
+    });
+  }
+
+  if (filteredDishes.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 30px 15px; background: var(--brand-surface); border: 1px dashed var(--brand-border); border-radius: var(--radius-md); color: var(--brand-text-muted);">
+        <span style="font-size: 26px; display: block; margin-bottom: 6px;">🔍</span>
+        <strong>خوراکی با این مشخصات یافت نشد.</strong>
+        <p style="font-size: 12px; margin-top: 4px;">لطفاً عبارت دیگری را جستجو کنید یا فیلتر دسته‌بندی را تغییر دهید.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filteredDishes.map(dish => {
+    const isSelected = !!state.foodOrder.selectedDishes[dish.id];
+    const qty = state.foodOrder.selectedDishes[dish.id] || 1;
+    const isExpanded = !!state.expandedFoodIds[dish.id];
+
+    return `
+      <div class="food-accordion-item ${isSelected ? 'selected' : ''}" id="dish-card-${dish.id}">
+        <!-- سرستون کلیک‌خور برای باز و بسته شدن مشخصات -->
+        <div class="food-item-header" onclick="toggleDishDetails('${dish.id}', event)">
+          <div class="food-item-title-row">
+            <span class="food-item-name">${dish.name}</span>
+            <span class="food-item-price">${dish.priceDisplay || formatToman(dish.price)}</span>
+          </div>
+          <div class="food-item-meta-row">
+            <div class="food-item-tags">
+              ${(dish.tags || []).map(t => getTagBadgeHtml(t)).join("")}
+            </div>
+            <button type="button" class="food-item-toggle-btn" tabindex="-1">
+              <span>${isExpanded ? 'بستن توضیحات ▴' : 'مشاهده توضیحات و مواد ▾'}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- بخش بازشونده توضیحات، مواد و عکس -->
+        ${isExpanded ? `
+          <div class="food-item-details">
+            <div class="food-item-desc">${dish.description || ''}</div>
+            ${dish.ingredients && dish.ingredients.length > 0 ? `
+              <div class="food-item-ingredients-box">
+                <span class="food-item-ingredients-title">🌿 مواد تشکیل‌دهنده:</span>
+                <div class="food-item-ingredients-chips">
+                  ${dish.ingredients.map(ing => `<span class="ingredient-chip">${ing}</span>`).join("")}
+                </div>
+              </div>
+            ` : ''}
+            ${dish.image ? `
+              <img src="${dish.image}" alt="${dish.name}" class="food-item-image" loading="lazy" onerror="this.style.display='none';" />
+            ` : ''}
+          </div>
+        ` : ''}
+
+        <!-- ردیف انتخاب و تعداد پرس -->
+        <div class="food-item-action-row">
+          <label class="dish-checkbox-wrap" onclick="event.stopPropagation();">
+            <input type="checkbox" id="check-${dish.id}" ${isSelected ? 'checked' : ''} onchange="toggleDishSelection('${dish.id}')" />
+            <span style="font-weight: 700; font-size: 12.5px;">${isSelected ? '✓ انتخاب شده' : 'انتخاب این خوراک'}</span>
+          </label>
+          ${isSelected ? `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 11.5px; color: var(--brand-text-muted);">تعداد:</span>
+              <div class="stepper" style="padding: 2px;">
+                <button type="button" class="stepper-btn" style="width: 28px; height: 28px; font-size: 15px;" onclick="changeDishQty('${dish.id}', -1)">-</button>
+                <span style="min-width: 24px; text-align: center; font-weight: bold; font-size: 13px;">${formatPersianNumber(qty)}</span>
+                <button type="button" class="stepper-btn" style="width: 28px; height: 28px; font-size: 15px;" onclick="changeDishQty('${dish.id}', 1)">+</button>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
 function renderFoodSection() {
   const banner = document.getElementById("food-linked-stay-banner");
   const bannerText = document.getElementById("food-linked-stay-text");
+  const saveReturnBtn = document.getElementById("btn-save-food-return");
   const room = ROOMS.find(r => r.id === state.selectedRoomId) || ROOMS[0];
 
-  if (banner && bannerText) {
-    banner.style.display = "flex";
-    bannerText.textContent = `🏡 در حال انتخاب غذای محلی همراه با اقامت در اتاق «${room.name}» (ورود: ${formatPersianNumber(state.reservation.checkInDate)})`;
+  if (state.foodReturnToReservation) {
+    if (banner && bannerText) {
+      banner.style.display = "flex";
+      bannerText.textContent = `🏡 در حال انتخاب غذای محلی همراه با اقامت در اتاق «${room.name}» (ورود: ${formatPersianNumber(state.reservation.checkInDate)})`;
+    }
+    if (saveReturnBtn) {
+      saveReturnBtn.style.display = "block";
+    }
+  } else {
+    if (banner) {
+      banner.style.display = "none";
+    }
+    if (saveReturnBtn) {
+      saveReturnBtn.style.display = "none";
+    }
+  }
+
+  // هماهنگی وضعیت چک‌باکس سفر گروهی
+  const groupCheckbox = document.getElementById("food-group-travel-checkbox");
+  if (groupCheckbox) {
+    groupCheckbox.checked = !!state.foodOrder.isGroupTravel;
   }
 
   // پر کردن خودکار فیلدهای نام، تلفن و تاریخ در فرم غذا
@@ -804,43 +1934,7 @@ function renderFoodSection() {
     foodDateInput.value = state.reservation.checkInDate;
   }
 
-  const container = document.getElementById("dishes-list-container");
-  if (!container) return;
-
-  container.innerHTML = FOOD_MENU.map(dish => {
-    const isSelected = !!state.foodOrder.selectedDishes[dish.id];
-    const qty = state.foodOrder.selectedDishes[dish.id] || 1;
-
-    return `
-      <div class="dish-card ${isSelected ? 'selected' : ''}" id="dish-card-${dish.id}">
-        <div class="dish-header">
-          <div>
-            <span class="dish-name">${dish.name}</span>
-            <span class="badge badge-gold" style="font-size: 10px; margin-right: 6px;">${dish.category}</span>
-          </div>
-          <span class="dish-price">${dish.priceDisplay}</span>
-        </div>
-        <p class="dish-desc">${dish.description}</p>
-        <div class="dish-selector-row">
-          <label class="dish-checkbox-wrap">
-            <input type="checkbox" id="check-${dish.id}" ${isSelected ? 'checked' : ''} onchange="toggleDishSelection('${dish.id}')" />
-            <span>انتخاب این غذا</span>
-          </label>
-          ${isSelected ? `
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 12px; color: var(--brand-text-muted);">تعداد:</span>
-              <div class="stepper" style="padding: 2px;">
-                <button type="button" class="stepper-btn" style="width: 28px; height: 28px; font-size: 15px;" onclick="changeDishQty('${dish.id}', -1)">-</button>
-                <span style="min-width: 24px; text-align: center; font-weight: bold; font-size: 13px;">${formatPersianNumber(qty)}</span>
-                <button type="button" class="stepper-btn" style="width: 28px; height: 28px; font-size: 15px;" onclick="changeDishQty('${dish.id}', 1)">+</button>
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  }).join("");
-
+  renderFoodList();
   updateFoodOrderSummary();
 }
 
@@ -1324,7 +2418,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // رندر بخش‌ها
   renderRoomsList();
   renderFoodSection();
+  renderSelectedRoomsInForm();
   updateReservationCalculations();
+  updateFloatingBookingBar();
 });
 
 // اکسپورت توابع به پنجره سراسری (Global Window) برای دسترسی آسان در رویدادهای HTML
@@ -1332,13 +2428,24 @@ window.navigateTo = navigateTo;
 window.navigateBack = navigateBack;
 window.openExternalUrl = openExternalUrl;
 window.openRoomDetail = openRoomDetail;
+window.updateRoomDetailButtons = updateRoomDetailButtons;
+window.handleRoomDetailBookingClick = handleRoomDetailBookingClick;
 window.startReservationForCurrentRoom = startReservationForCurrentRoom;
+window.openReservationScreen = openReservationScreen;
+window.removeRoomFromReservation = removeRoomFromReservation;
+window.renderSelectedRoomsInForm = renderSelectedRoomsInForm;
+window.updateFloatingBookingBar = updateFloatingBookingBar;
 window.changeReservationNights = changeReservationNights;
 window.changeReservationGuests = changeReservationGuests;
 window.submitReservationForm = submitReservationForm;
+window.setFoodCategoryFilter = setFoodCategoryFilter;
+window.handleFoodSearch = handleFoodSearch;
+window.toggleDishDetails = toggleDishDetails;
+window.toggleAllFoodDetails = toggleAllFoodDetails;
 window.toggleDishSelection = toggleDishSelection;
 window.toggleGroupTravel = toggleGroupTravel;
 window.changeDishQty = changeDishQty;
+window.saveFoodAndReturnToReservation = saveFoodAndReturnToReservation;
 window.submitFoodOrderForm = submitFoodOrderForm;
 window.closeMessageModal = closeMessageModal;
 window.copyModalMessage = copyModalMessage;

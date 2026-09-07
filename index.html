@@ -625,14 +625,33 @@
           <button type="button" class="food-tab-btn active" onclick="setFoodCategoryFilter('all')">همه (۳۵)</button>
           <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('خوراک‌های گوشتی با برنج')">گوشتی با برنج (۱۱)</button>
           <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('خوراک‌های گوشتی با نان')">گوشتی با نان (۷)</button>
-          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('خوراک‌های گیاهی')">گیاهی (۱۳)</button>
+          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('خوراک‌های گیاهی با برنج')">گیاهی با برنج (۷)</button>
+          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('خوراک‌های گیاهی با نان')">گیاهی با نان (۶)</button>
           <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('آش و سوپ')">آش و سوپ (۳)</button>
-          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('صبحانه')">صبحانه (۱)</button>
+          <button type="button" class="food-tab-btn" onclick="setFoodCategoryFilter('صبحانه')">صبحانه سنتی (۱)</button>
         </div>
 
         <!-- جعبه جستجوی خوراک -->
         <div class="food-search-box">
           <input type="text" class="food-search-input" id="food-search-input" placeholder="🔍 جستجو در نام غذا یا مواد تشکیل‌دهنده..." oninput="handleFoodSearch(this.value)" />
+        </div>
+
+        <!-- کارت ویژه سفارش صبحانه سنتی روستایی (مستقل از اقامت یا مازاد) -->
+        <div class="breakfast-special-card" id="breakfast-special-banner">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span style="font-size: 32px; line-height: 1;">🍳</span>
+            <div style="flex: 1;">
+              <div style="font-size: 14px; font-weight: 800; color: #581c87; margin-bottom: 4px;">
+                سفارش اختصاصی صبحانه سنتی روستایی
+              </div>
+              <p style="font-size: 12px; color: #6b21a8; line-height: 1.6; margin: 0 0 10px;">
+                نان گرم تنوری، پنیر و کره محلی، انواع مربای خانگی، نیمرو تازه و چای آتشی در حیاط مصفای خانه برزک (امکان سفارش مستقل و جدا از روزهای اقامت).
+              </p>
+              <button type="button" class="btn btn-mustard" style="font-size: 12px; padding: 7px 14px; background: #7e22ce; border-color: #6b21a8;" onclick="quickAddBreakfastMeal()">
+                + افزودن صبحانه به برنامه سفارش
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- انتخاب حالت سفر گروهی -->
@@ -657,10 +676,10 @@
         <!-- لیست بازشونده غذاها -->
         <div id="dishes-list-container"></div>
 
-        <!-- فرم درخواست غذا -->
+        <!-- فرم درخواست غذا و تنظیم برنامه چند وعده‌ای -->
         <form class="form-card" id="food-order-form" onsubmit="submitFoodOrderForm(event)" style="margin-top: 20px;">
           <h4 style="font-size: 15px; font-weight: 800; color: var(--brand-green); margin-bottom: 14px;">
-            مشخصات سفارش غذا
+            مشخصات و برنامه غذایی
           </h4>
 
           <div class="form-group">
@@ -673,31 +692,52 @@
             <input type="tel" class="form-input" id="food-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="food-date">تاریخ وعده:</label>
-            <input type="date" class="form-input" id="food-date" required />
+          <!-- بخش تنظیم تاریخ و نوع وعده جاری -->
+          <div style="background: var(--brand-surface-subtle); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--brand-border); margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-size: 13.5px; font-weight: 800; color: var(--brand-green);">تنظیم وعده جاری:</span>
+              <span id="current-meal-badge" style="font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--brand-teal-subtle); color: var(--brand-teal-dark); font-weight: 700;">وعده انتخابی</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label class="form-label" for="food-date">تاریخ وعده:</label>
+              <input type="date" class="form-input" id="food-date" required onchange="handleFoodDateChange(this.value)" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="food-day">روز هفته:</label>
+                <select class="form-select" id="food-day">
+                  <option value="شنبه">شنبه</option>
+                  <option value="یکشنبه">یکشنبه</option>
+                  <option value="دوشنبه">دوشنبه</option>
+                  <option value="سه‌شنبه">سه‌شنبه</option>
+                  <option value="چهارشنبه">چهارشنبه</option>
+                  <option value="پنج‌شنبه">پنج‌شنبه</option>
+                  <option value="جمعه" selected>جمعه</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="food-meal">وعده:</label>
+                <select class="form-select" id="food-meal" onchange="handleFoodMealTypeChange(this.value)">
+                  <option value="ناهار" selected>🍲 ناهار</option>
+                  <option value="شام">🌙 شام</option>
+                  <option value="صبحانه">🍳 صبحانه سنتی</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-mustard" id="btn-add-meal-to-schedule" onclick="addCurrentMealToSchedule()" style="flex: 1; font-size: 12.5px; padding: 9px 12px;">
+                ➕ ثبت این وعده و افزودن وعده بعدی
+              </button>
+            </div>
+            <span class="form-hint" style="margin-top: 6px;">می‌توانید برای چند روز اقامت یا چند وعده در یک روز، وعده‌های مجزا ثبت کنید.</span>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="food-day">روز هفته:</label>
-            <select class="form-select" id="food-day">
-              <option value="شنبه">شنبه</option>
-              <option value="یکشنبه">یکشنبه</option>
-              <option value="دوشنبه">دوشنبه</option>
-              <option value="سه‌شنبه">سه‌شنبه</option>
-              <option value="چهارشنبه">چهارشنبه</option>
-              <option value="پنج‌شنبه">پنج‌شنبه</option>
-              <option value="جمعه" selected>جمعه</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="food-meal">وعده:</label>
-            <select class="form-select" id="food-meal">
-              <option value="ناهار" selected>ناهار</option>
-              <option value="شام">شام</option>
-            </select>
-          </div>
+          <!-- کارت نمایش وعده‌های ثبت‌شده (چند روز / چند وعده) -->
+          <div id="scheduled-meals-container" style="margin-bottom: 16px;"></div>
 
           <!-- خلاصه سفارش غذا -->
           <div class="estimate-box" id="food-order-summary"></div>

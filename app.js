@@ -520,7 +520,7 @@ const FOOD_MENU = [
   {
     "id": "63fb7e5f3c3a63646b478515",
     "name": "ته‌چین قارچ و بادمجان",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با برنج",
     "tags": [
       "همراه با برنج",
       "گیاهی"
@@ -542,7 +542,7 @@ const FOOD_MENU = [
   {
     "id": "63fb7e953c3a63646b478516",
     "name": "ته‌چین قارچ و اسفناج",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با برنج",
     "tags": [
       "همراه با برنج",
       "گیاهی"
@@ -564,7 +564,7 @@ const FOOD_MENU = [
   {
     "id": "642428753c3a63646b4787a2",
     "name": "ته‌چین قارچ و سویا",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با برنج",
     "tags": [
       "همراه با برنج",
       "گیاهی"
@@ -586,7 +586,7 @@ const FOOD_MENU = [
   {
     "id": "63fb20033c3a63646b478499",
     "name": "رشته پلو‍",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با برنج",
     "tags": [
       "همراه با برنج",
       "گیاهی"
@@ -605,7 +605,7 @@ const FOOD_MENU = [
   {
     "id": "63fb7dd53c3a63646b478513",
     "name": "لوبیا پلو",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با برنج",
     "tags": [
       "همراه با برنج",
       "گیاهی"
@@ -623,7 +623,7 @@ const FOOD_MENU = [
   {
     "id": "63fb201b3c3a63646b47849a",
     "name": "کشک بادمجان",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با نان",
     "tags": [
       "نانی",
       "گیاهی"
@@ -643,7 +643,7 @@ const FOOD_MENU = [
   {
     "id": "63fb7e0a3c3a63646b478514",
     "name": "کالجوش",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با نان",
     "tags": [
       "نانی",
       "گیاهی"
@@ -663,7 +663,7 @@ const FOOD_MENU = [
   {
     "id": "63fb7ee83c3a63646b478517",
     "name": "یتیمچه",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با نان",
     "tags": [
       "نانی",
       "گیاهی"
@@ -684,7 +684,7 @@ const FOOD_MENU = [
   {
     "id": "63fb7f183c3a63646b478519",
     "name": "کوکو سیب زمینی",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با نان",
     "tags": [
       "نانی",
       "گیاهی"
@@ -698,7 +698,7 @@ const FOOD_MENU = [
   {
     "id": "63fb7f213c3a63646b47851a",
     "name": "کوکوسبزی",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با نان",
     "tags": [
       "نانی",
       "گیاهی"
@@ -712,7 +712,7 @@ const FOOD_MENU = [
   {
     "id": "640b590c3c3a63646b4785d7",
     "name": "اشکنه سیب زمینی (دوپیازه آلو)",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با نان",
     "tags": [
       "نانی",
       "گیاهی"
@@ -730,7 +730,7 @@ const FOOD_MENU = [
   {
     "id": "64242ab23c3a63646b4787a5",
     "name": "چلو",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با برنج",
     "tags": [
       "همراه با برنج",
       "گیاهی"
@@ -744,7 +744,7 @@ const FOOD_MENU = [
   {
     "id": "679ca45f4b05bf6713eeaadf",
     "name": "دمپخت",
-    "category": "خوراک‌های گیاهی",
+    "category": "خوراک‌های گیاهی با برنج",
     "tags": [
       "همراه با برنج",
       "گیاهی"
@@ -862,7 +862,9 @@ const state = {
     mealType: "ناهار",
     isGroupTravel: false,
     // در هر وعده حداکثر ۱ نوع غذا، و در سفر گروهی حداکثر ۲ نوع غذا: { [foodId]: quantity }
-    selectedDishes: {}
+    selectedDishes: {},
+    // برنامه وعده‌های چندگانه (برای چند روز یا چند وعده در روز یا صبحانه‌های مستقل):
+    scheduledMeals: []
   }
 };
 
@@ -1400,15 +1402,21 @@ function updateReservationCalculations() {
     roomEstimate = state.reservation.nights * state.reservation.guests * avgPrice;
   }
 
-  // محاسبه مبلغ غذاهای انتخابی (در صورت وجود)
-  const selectedFoodIds = Object.keys(state.foodOrder.selectedDishes);
+  // محاسبه سفارش خوراک‌ها (شامل وعده‌های ثبت‌شده در برنامه و اقلام انتخابی جاری)
   let foodEstimate = 0;
-  selectedFoodIds.forEach(id => {
+  const scheduled = state.foodOrder.scheduledMeals || [];
+  scheduled.forEach(m => {
+    foodEstimate += m.subtotal;
+  });
+
+  const currentSelectedFoodIds = Object.keys(state.foodOrder.selectedDishes);
+  currentSelectedFoodIds.forEach(id => {
     const dish = FOOD_MENU.find(d => d.id === id);
     const qty = state.foodOrder.selectedDishes[id] || 1;
     if (dish) foodEstimate += dish.price * qty;
   });
 
+  const totalMealCount = scheduled.length + (currentSelectedFoodIds.length > 0 ? 1 : 0);
   const grandTotal = roomEstimate + foodEstimate;
 
   // به‌روزرسانی کارت تعاملی غذا در فرم رزرو
@@ -1417,50 +1425,67 @@ function updateReservationCalculations() {
   const foodContent = document.getElementById("unified-food-content");
 
   if (foodCard && foodBadge && foodContent) {
-    if (selectedFoodIds.length === 0) {
+    if (totalMealCount === 0) {
       foodCard.classList.remove("has-food");
       foodBadge.textContent = "بدون غذا";
       foodBadge.style.background = "var(--brand-surface-subtle)";
       foodBadge.style.color = "var(--brand-text-muted)";
       foodContent.innerHTML = `
         <p class="unified-food-empty">
-          می‌توانید وعده‌های غذایی سنتی برزک (ناهار یا شام) را نیز به همین درخواست اضافه کنید تا تمام موارد به‌صورت یکجا و هم‌زمان به گروه رزرو ارسال شوند.
+          می‌توانید وعده‌های غذایی سنتی برزک (صبحانه سنتی، ناهار یا شام برای چند روز) را نیز به همین درخواست اضافه کنید تا تمام موارد به‌صورت یکجا ثبت شوند.
         </p>
         <button type="button" class="btn btn-outline" style="font-size: 13px; padding: 8px 14px;" onclick="navigateToFoodFromReservation()">
-          + انتخاب غذاهای محلی از منو
+          + انتخاب غذاهای محلی یا صبحانه از منو
         </button>
       `;
     } else {
       foodCard.classList.add("has-food");
-      foodBadge.textContent = `همراه با غذا (${formatPersianNumber(selectedFoodIds.length)} نوع)`;
+      foodBadge.textContent = `همراه با غذا (${formatPersianNumber(totalMealCount)} وعده)`;
       foodBadge.style.background = "var(--brand-teal-subtle)";
       foodBadge.style.color = "var(--brand-teal-dark)";
 
-      const dishesListHtml = selectedFoodIds.map(id => {
-        const dish = FOOD_MENU.find(d => d.id === id);
-        const qty = state.foodOrder.selectedDishes[id];
-        return `
-          <div class="unified-food-item">
-            <span>🍲 ${dish ? dish.name : id} × ${formatPersianNumber(qty)} پرس</span>
-            <span>${dish ? formatToman(dish.price * qty) : ''}</span>
+      let mealsSummaryHtml = "";
+      if (scheduled.length > 0) {
+        mealsSummaryHtml += scheduled.map((m, idx) => {
+          const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
+          const dishesNames = m.dishes.map(d => `${d.name} (${formatPersianNumber(d.quantity)} پرس)`).join("، ");
+          return `
+            <div class="unified-food-item">
+              <span>${icon} وعده ${formatPersianNumber(idx + 1)} (${m.mealType} ${m.dayOfWeek}): ${dishesNames}</span>
+              <span>${formatToman(m.subtotal)}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      if (currentSelectedFoodIds.length > 0) {
+        const currentDishesNames = currentSelectedFoodIds.map(id => {
+          const d = FOOD_MENU.find(x => x.id === id);
+          return `${d ? d.name : id} (${formatPersianNumber(state.foodOrder.selectedDishes[id])} پرس)`;
+        }).join("، ");
+        const icon = state.foodOrder.mealType === 'صبحانه' ? '🍳' : state.foodOrder.mealType === 'شام' ? '🌙' : '🍲';
+        mealsSummaryHtml += `
+          <div class="unified-food-item" style="color: var(--brand-teal-dark); font-weight: 700;">
+            <span>${icon} وعده جاری (${state.foodOrder.mealType || 'ناهار'}): ${currentDishesNames}</span>
+            <span>در حال انتخاب</span>
           </div>
         `;
-      }).join("");
+      }
 
       foodContent.innerHTML = `
         <div class="unified-food-dishes-list">
-          ${dishesListHtml}
+          ${mealsSummaryHtml}
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 12.5px; color: var(--brand-teal-dark); font-weight: 700;">
-          <span>وعده: ${state.foodOrder.mealType || 'ناهار'} (${state.foodOrder.dayOfWeek || 'جمعه'})</span>
+          <span>مجموع وعده‌های ثبت‌شده: ${formatPersianNumber(totalMealCount)} وعده</span>
           <span>جمع غذا: ${formatToman(foodEstimate)}</span>
         </div>
         <div style="display: flex; gap: 8px; margin-top: 10px;">
           <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px; flex: 1;" onclick="navigateToFoodFromReservation()">
-            ✏️ ویرایش غذاها
+            ✏️ افزودن / ویرایش وعده‌ها
           </button>
           <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px; color: #b23b3b; border-color: #f1cfcf;" onclick="clearFoodFromReservation()">
-            🗑️ حذف غذا از اقامت
+            🗑️ حذف تمام وعده‌ها
           </button>
         </div>
       `;
@@ -1490,10 +1515,10 @@ function updateReservationCalculations() {
   }
 
   if (summaryFoodRowEl && summaryFoodPriceEl) {
-    if (selectedFoodIds.length > 0) {
+    if (totalMealCount > 0) {
       summaryFoodRowEl.style.display = "flex";
       if (summaryFoodTitleEl) {
-        summaryFoodTitleEl.textContent = `سفارش خوراک سنتی (${state.foodOrder.mealType || 'ناهار'}):`;
+        summaryFoodTitleEl.textContent = `سفارش خوراک سنتی (${formatPersianNumber(totalMealCount)} وعده):`;
       }
       summaryFoodPriceEl.textContent = formatToman(foodEstimate);
     } else {
@@ -1548,6 +1573,7 @@ function saveFoodAndReturnToReservation() {
 function clearFoodFromReservation() {
   triggerHaptic('light');
   state.foodOrder.selectedDishes = {};
+  state.foodOrder.scheduledMeals = [];
   updateReservationCalculations();
   renderFoodSection();
   showToast("سفارش غذا از درخواست اقامت حذف شد.");
@@ -1607,7 +1633,7 @@ function syncFoodToReservationInputs() {
 }
 
 /**
- * تولید متن پیام یکپارچه نهایی (شامل اطلاعات اقامت + خوراک)
+ * تولید متن پیام یکپارچه نهایی (شامل اطلاعات اقامت + وعده‌های غذایی چند روزه یا سفارش مستقل غذا)
  */
 function generateUnifiedOrderMessage() {
   const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
@@ -1622,12 +1648,10 @@ function generateUnifiedOrderMessage() {
   let roomTotal = 0;
   let roomsDetailText = "";
 
-  if (selectedRooms.length === 0) {
-    roomsDetailText = "• اتاق: انتخاب نشده";
-  } else if (selectedRooms.length === 1) {
+  if (selectedRooms.length === 1) {
     roomTotal = nights * guests * selectedRooms[0].price;
     roomsDetailText = `• اتاق: ${selectedRooms[0].name} (${formatToman(selectedRooms[0].price)} هر نفر/شب با صبحانه)`;
-  } else {
+  } else if (selectedRooms.length > 1) {
     const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
     const avgPrice = Math.round(sumPrices / selectedRooms.length);
     roomTotal = nights * guests * avgPrice;
@@ -1635,36 +1659,62 @@ function generateUnifiedOrderMessage() {
 ${selectedRooms.map(r => `  ▫️ اتاق ${r.name} (${formatToman(r.price)} هر نفر/شب با صبحانه)`).join("\n")}`;
   }
 
-  // بخش غذا
-  const selectedFoodIds = Object.keys(state.foodOrder.selectedDishes);
-  let foodTotal = 0;
-  let foodSectionText = "";
+  // تجمیع کلیه وعده‌های غذایی (برنامه چند روزه + اقلام در حال انتخاب)
+  const scheduled = [...(state.foodOrder.scheduledMeals || [])];
+  const currentSelectedFoodIds = Object.keys(state.foodOrder.selectedDishes);
 
-  if (selectedFoodIds.length > 0) {
-    const dishesLines = selectedFoodIds.map((id, idx) => {
+  if (currentSelectedFoodIds.length > 0) {
+    let currentMealSubtotal = 0;
+    const dishes = currentSelectedFoodIds.map(id => {
       const dish = FOOD_MENU.find(d => d.id === id);
       const qty = state.foodOrder.selectedDishes[id];
       const lineCost = dish ? dish.price * qty : 0;
-      foodTotal += lineCost;
-      const emoji = idx === 0 ? "🍲" : "🍛";
-      return `  ${emoji} ${dish ? dish.name : id} × ${formatPersianNumber(qty)} پرس (${formatToman(lineCost)})`;
-    }).join("\n");
+      currentMealSubtotal += lineCost;
+      return {
+        id,
+        name: dish ? dish.name : id,
+        price: dish ? dish.price : 0,
+        quantity: qty,
+        total: lineCost
+      };
+    });
 
-    foodSectionText = 
-`🍽️ سفارش غذا:
-• وعده: ${state.foodOrder.mealType || 'ناهار'} (${state.foodOrder.dayOfWeek || 'جمعه'} ${formatPersianNumber(state.foodOrder.date || checkIn)})
-• خوراک‌ها:
+    scheduled.push({
+      id: "current_active_meal",
+      date: state.foodOrder.date || checkIn || getTodayFormattedDate(),
+      dayOfWeek: state.foodOrder.dayOfWeek || "جمعه",
+      mealType: state.foodOrder.mealType || "ناهار",
+      dishes: dishes,
+      subtotal: currentMealSubtotal
+    });
+  }
+
+  let foodTotal = 0;
+  let foodSectionText = "";
+
+  if (scheduled.length > 0) {
+    const mealsTextBlocks = scheduled.map((m, idx) => {
+      foodTotal += m.subtotal;
+      const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
+      const dishesLines = m.dishes.map(d => `    ▫️ ${d.name} × ${formatPersianNumber(d.quantity)} پرس (${formatToman(d.total)})`).join("\n");
+      return `  ${icon} وعده ${formatPersianNumber(idx + 1)}: ${m.mealType} (${m.dayOfWeek} ${formatPersianNumber(m.date)})
 ${dishesLines}
-• برآورد غذا: ${formatToman(foodTotal)}`;
+    جمع وعده: ${formatToman(m.subtotal)}`;
+    }).join("\n\n");
+
+    foodSectionText = `🍽️ برنامه وعده‌های غذایی انتخابی (${formatPersianNumber(scheduled.length)} وعده):
+${mealsTextBlocks}
+• برآورد کل خوراک و پذیرایی: ${formatToman(foodTotal)}`;
   } else {
-    foodSectionText = 
-`🍽️ سفارش غذا:
-• بدون سفارش غذای مازاد (اقامت همراه با صبحانه محلی)`;
+    foodSectionText = `🍽️ سفارش خوراک:
+• بدون سفارش غذای مازاد (اقامت همراه با صبحانه سنتی روستایی)`;
   }
 
   const grandTotal = roomTotal + foodTotal;
 
-  return `🌿 درخواست رزرو در خانه برزک
+  // ۱. در صورتی که کاربر اتاق انتخاب کرده باشد (سفارش یکپارچه اقامت + غذا)
+  if (selectedRooms.length > 0) {
+    return `🌿 درخواست رزرو در خانه برزک
 
 👤 مهمان: ${name}
 📞 تماس: ${phone}
@@ -1673,7 +1723,7 @@ ${dishesLines}
 ${roomsDetailText}
 • ورود: ${formatPersianNumber(checkIn)}
 • مدت: ${formatPersianNumber(nights)} شب (خروج: ${formatPersianNumber(checkOut)})
-• تعداد نفرات کل: ${formatPersianNumber(guests)} نفر (با صبحانه محلی)
+• تعداد نفرات کل: ${formatPersianNumber(guests)} نفر (با صبحانه سنتی روستایی)
 • برآورد اقامت: ${formatToman(roomTotal)}
 
 ${foodSectionText}
@@ -1683,6 +1733,22 @@ ${foodSectionText}
 🌱 این درخواست پس از بررسی میزبان تایید و نهایی می‌شود.
 🔗 گروه رزرو خانه برزک: ${CONFIG.reservationGroupUrl}
 #درخواست_رزرو`;
+  }
+
+  // ۲. در صورتی که سفارش صرفاً برای غذا و صبحانه باشد (مستقل از اقامت)
+  return `🍽️ درخواست سفارش غذای محلی و پذیرایی در خانه برزک
+
+👤 مهمان: ${name}
+📞 تماس: ${phone}
+
+${foodSectionText}
+
+💰 برآورد کل سفارش: ${formatToman(foodTotal)}
+
+✨ تذکر: امکان پذیرایی در حیاط مصفای خانه برزک برای مهمانان آزاد فراهم می‌باشد (هزینه خدمات نفری ۲۰۰,۰۰۰ تومان).
+🌱 سفارش شما پس از بررسی میزبان تایید و آماده‌سازی خواهد شد.
+🔗 گروه خانه برزک: ${CONFIG.reservationGroupUrl}
+#سفارش_غذا`;
 }
 
 // ۱۰. ثبت و ارسال درخواست یکپارچه از فرم اقامت
@@ -1748,8 +1814,23 @@ function setFoodCategoryFilter(cat) {
   // به‌روزرسانی استایل دکمه‌های دسته‌بندی
   const tabs = document.querySelectorAll("#food-category-tabs .food-tab-btn");
   tabs.forEach(btn => {
-    const isTarget = (cat === 'all' && btn.textContent.includes('همه')) ||
-                     btn.textContent.includes(cat.replace('خوراک‌های ', ''));
+    const text = btn.textContent;
+    let isTarget = false;
+    if (cat === 'all' && text.includes('همه')) {
+      isTarget = true;
+    } else if (cat === 'خوراک‌های گوشتی با برنج' && text.includes('گوشتی با برنج')) {
+      isTarget = true;
+    } else if (cat === 'خوراک‌های گوشتی با نان' && text.includes('گوشتی با نان')) {
+      isTarget = true;
+    } else if (cat === 'خوراک‌های گیاهی با برنج' && text.includes('گیاهی با برنج')) {
+      isTarget = true;
+    } else if (cat === 'خوراک‌های گیاهی با نان' && text.includes('گیاهی با نان')) {
+      isTarget = true;
+    } else if (cat === 'آش و سوپ' && text.includes('آش و سوپ')) {
+      isTarget = true;
+    } else if ((cat === 'صبحانه' || cat === 'صبحانه سنتی') && text.includes('صبحانه')) {
+      isTarget = true;
+    }
     if (isTarget) {
       btn.classList.add("active");
     } else {
@@ -1801,7 +1882,13 @@ function renderFoodList() {
   // فیلتر بر اساس دسته‌بندی
   let filteredDishes = FOOD_MENU;
   if (state.foodCategoryFilter && state.foodCategoryFilter !== "all") {
-    filteredDishes = filteredDishes.filter(d => d.category === state.foodCategoryFilter);
+    if (state.foodCategoryFilter === "خوراک‌های گیاهی") {
+      filteredDishes = filteredDishes.filter(d => d.category.includes("گیاهی"));
+    } else if (state.foodCategoryFilter === "صبحانه" || state.foodCategoryFilter === "صبحانه سنتی") {
+      filteredDishes = filteredDishes.filter(d => d.category === "صبحانه" || d.category === "صبحانه سنتی");
+    } else {
+      filteredDishes = filteredDishes.filter(d => d.category === state.foodCategoryFilter);
+    }
   }
 
   // فیلتر بر اساس جستجو
@@ -1919,23 +2006,233 @@ function renderFoodSection() {
     groupCheckbox.checked = !!state.foodOrder.isGroupTravel;
   }
 
-  // پر کردن خودکار فیلدهای نام، تلفن و تاریخ در فرم غذا
+  // پر کردن خودکار فیلدهای نام، تلفن، تاریخ و نوع وعده در فرم غذا
   const foodNameInput = document.getElementById("food-name");
   const foodPhoneInput = document.getElementById("food-phone");
   const foodDateInput = document.getElementById("food-date");
+  const foodDaySelect = document.getElementById("food-day");
+  const foodMealSelect = document.getElementById("food-meal");
+  const currentMealBadge = document.getElementById("current-meal-badge");
 
   if (foodNameInput && !foodNameInput.value && state.reservation.name) {
     foodNameInput.value = state.reservation.name;
+    state.foodOrder.name = state.reservation.name;
   }
   if (foodPhoneInput && !foodPhoneInput.value && state.reservation.phone) {
     foodPhoneInput.value = state.reservation.phone;
+    state.foodOrder.phone = state.reservation.phone;
   }
-  if (foodDateInput && !foodDateInput.value && state.reservation.checkInDate) {
-    foodDateInput.value = state.reservation.checkInDate;
+  if (foodDateInput) {
+    if (!foodDateInput.value && state.reservation.checkInDate) {
+      foodDateInput.value = state.reservation.checkInDate;
+      state.foodOrder.date = state.reservation.checkInDate;
+    } else if (state.foodOrder.date) {
+      foodDateInput.value = state.foodOrder.date;
+    }
+  }
+  if (foodDaySelect && state.foodOrder.dayOfWeek) {
+    foodDaySelect.value = state.foodOrder.dayOfWeek;
+  }
+  if (foodMealSelect && state.foodOrder.mealType) {
+    foodMealSelect.value = state.foodOrder.mealType;
+  }
+  if (currentMealBadge) {
+    const mealIcon = state.foodOrder.mealType === 'صبحانه' ? '🍳' : state.foodOrder.mealType === 'شام' ? '🌙' : '🍲';
+    currentMealBadge.textContent = `${mealIcon} در حال انتخاب: ${state.foodOrder.mealType || 'ناهار'}`;
   }
 
   renderFoodList();
+  renderScheduledMeals();
   updateFoodOrderSummary();
+}
+
+// مدیریت تغییر نوع وعده جاری
+function handleFoodMealTypeChange(meal) {
+  triggerHaptic('light');
+  state.foodOrder.mealType = meal;
+  const currentMealBadge = document.getElementById("current-meal-badge");
+  if (currentMealBadge) {
+    const mealIcon = meal === 'صبحانه' ? '🍳' : meal === 'شام' ? '🌙' : '🍲';
+    currentMealBadge.textContent = `${mealIcon} در حال انتخاب: ${meal}`;
+  }
+  if (meal === 'صبحانه') {
+    setFoodCategoryFilter('صبحانه سنتی');
+  }
+  updateFoodOrderSummary();
+}
+
+// مدیریت تغییر تاریخ وعده جاری
+function handleFoodDateChange(dateVal) {
+  state.foodOrder.date = dateVal;
+  try {
+    const dateObj = new Date(dateVal);
+    if (!isNaN(dateObj.getTime())) {
+      const dayIndex = dateObj.getDay(); // 0 is Sunday, 6 is Saturday
+      const daysMap = { 6: "شنبه", 0: "یکشنبه", 1: "دوشنبه", 2: "سه‌شنبه", 3: "چهارشنبه", 4: "پنج‌شنبه", 5: "جمعه" };
+      const computedDay = daysMap[dayIndex] || "جمعه";
+      state.foodOrder.dayOfWeek = computedDay;
+      const foodDaySelect = document.getElementById("food-day");
+      if (foodDaySelect) foodDaySelect.value = computedDay;
+    }
+  } catch (e) {}
+  updateFoodOrderSummary();
+}
+
+// افزودن سریع صبحانه سنتی روستایی به سفارش
+function quickAddBreakfastMeal() {
+  triggerHaptic('medium');
+  state.foodOrder.mealType = "صبحانه";
+  const foodMealSelect = document.getElementById("food-meal");
+  if (foodMealSelect) foodMealSelect.value = "صبحانه";
+
+  // فعال‌سازی تب صبحانه
+  setFoodCategoryFilter("صبحانه سنتی");
+
+  // باز کردن توضیحات صبحانه سنتی
+  state.expandedFoodIds["breakfast-barzok"] = true;
+
+  // اضافه کردن حداقل یک پرس صبحانه اگر هنوز انتخاب نشده است
+  if (!state.foodOrder.selectedDishes["breakfast-barzok"]) {
+    state.foodOrder.selectedDishes["breakfast-barzok"] = Math.max(1, state.reservation.guests || 2);
+  }
+
+  renderFoodSection();
+  updateReservationCalculations();
+
+  // اسکرول نرم به فرم غذا
+  const formEl = document.getElementById("food-order-form");
+  if (formEl) {
+    formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  showToast("صبحانه سنتی روستایی به سفارش شما اضافه شد. می‌توانید تعداد پرس یا روز را تنظیم کنید.");
+}
+
+// افزودن وعده جاری به لیست برنامه چند روزه/چند وعده‌ای
+function addCurrentMealToSchedule() {
+  triggerHaptic('medium');
+  const selectedIds = Object.keys(state.foodOrder.selectedDishes);
+  if (selectedIds.length === 0) {
+    showToast("لطفاً ابتدا حداقل یک غذا از منوی بالا برای این وعده انتخاب کنید.");
+    return;
+  }
+
+  const dateInput = document.getElementById("food-date");
+  const daySelect = document.getElementById("food-day");
+  const mealSelect = document.getElementById("food-meal");
+
+  const mealDate = (dateInput && dateInput.value) || state.foodOrder.date || getTodayFormattedDate();
+  const mealDay = (daySelect && daySelect.value) || state.foodOrder.dayOfWeek || "جمعه";
+  const mealType = (mealSelect && mealSelect.value) || state.foodOrder.mealType || "ناهار";
+
+  let mealSubtotal = 0;
+  const dishes = selectedIds.map(id => {
+    const dish = FOOD_MENU.find(d => d.id === id);
+    const qty = state.foodOrder.selectedDishes[id];
+    const total = (dish ? dish.price : 0) * qty;
+    mealSubtotal += total;
+    return {
+      id: id,
+      name: dish ? dish.name : id,
+      price: dish ? dish.price : 0,
+      quantity: qty,
+      total: total
+    };
+  });
+
+  const scheduledItem = {
+    id: "meal_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+    date: mealDate,
+    dayOfWeek: mealDay,
+    mealType: mealType,
+    dishes: dishes,
+    subtotal: mealSubtotal
+  };
+
+  if (!state.foodOrder.scheduledMeals) {
+    state.foodOrder.scheduledMeals = [];
+  }
+  state.foodOrder.scheduledMeals.push(scheduledItem);
+
+  // خالی کردن غذاهای وعده جاری جهت تنظیم وعده بعدی
+  state.foodOrder.selectedDishes = {};
+
+  // پیشنهاد هوشمند برای وعده بعدی
+  if (mealType === "صبحانه") {
+    state.foodOrder.mealType = "ناهار";
+  } else if (mealType === "ناهار") {
+    state.foodOrder.mealType = "شام";
+  } else if (mealType === "شام") {
+    state.foodOrder.mealType = "صبحانه";
+    try {
+      state.foodOrder.date = addDaysToDateString(mealDate, 1);
+    } catch (e) {}
+  }
+
+  showToast(`وعده ${mealType} (${mealDay}) ثبت شد! اکنون می‌توانید وعده بعدی را انتخاب نمایید.`);
+  renderFoodSection();
+  updateReservationCalculations();
+}
+
+// حذف یک وعده از لیست وعده‌های ثبت‌شده
+function removeScheduledMeal(mealId) {
+  triggerHaptic('light');
+  if (!state.foodOrder.scheduledMeals) return;
+  state.foodOrder.scheduledMeals = state.foodOrder.scheduledMeals.filter(m => m.id !== mealId);
+  showToast("وعده غذایی از برنامه حذف شد.");
+  renderFoodSection();
+  updateReservationCalculations();
+}
+
+// رندر کارت‌های برنامه وعده‌های غذایی ثبت‌شده
+function renderScheduledMeals() {
+  const container = document.getElementById("scheduled-meals-container");
+  if (!container) return;
+
+  const scheduled = state.foodOrder.scheduledMeals || [];
+  if (scheduled.length === 0) {
+    container.innerHTML = "";
+    return;
+  }
+
+  let totalScheduledSum = 0;
+  const itemsHtml = scheduled.map((m, index) => {
+    totalScheduledSum += m.subtotal;
+    const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
+    const dishesList = m.dishes.map(d => `
+      <div class="scheduled-meal-dish-line">
+        <span>▫️ ${d.name} × ${formatPersianNumber(d.quantity)} پرس</span>
+        <span>${formatToman(d.total)}</span>
+      </div>
+    `).join("");
+
+    return `
+      <div class="scheduled-meal-item">
+        <div class="scheduled-meal-header">
+          <span class="scheduled-meal-badge">
+            ${icon} وعده ${formatPersianNumber(index + 1)}: ${m.mealType} (${m.dayOfWeek} ${formatPersianNumber(m.date)})
+          </span>
+          <button type="button" class="scheduled-meal-delete-btn" onclick="removeScheduledMeal('${m.id}')" title="حذف این وعده">
+            🗑️ حذف
+          </button>
+        </div>
+        ${dishesList}
+        <div class="scheduled-meal-subtotal">
+          <span>هزینه این وعده:</span>
+          <span>${formatToman(m.subtotal)}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  container.innerHTML = `
+    <div class="scheduled-meals-box">
+      <div class="scheduled-meals-title">
+        <span>📅 برنامه وعده‌های غذایی ثبت‌شده (${formatPersianNumber(scheduled.length)} وعده):</span>
+        <span>${formatToman(totalScheduledSum)}</span>
+      </div>
+      ${itemsHtml}
+    </div>
+  `;
 }
 
 // قانون سفارش: در هر وعده حداکثر ۱ نوع غذا، و در سفر گروهی حداکثر ۲ نوع غذا
@@ -1984,7 +2281,7 @@ function changeDishQty(dishId, delta) {
   if (!state.foodOrder.selectedDishes[dishId]) return;
   let q = state.foodOrder.selectedDishes[dishId] + delta;
   if (q < 1) q = 1;
-  if (q > 20) q = 20;
+  if (q > 50) q = 50;
   state.foodOrder.selectedDishes[dishId] = q;
   renderFoodSection();
   updateReservationCalculations();
@@ -1994,35 +2291,60 @@ function updateFoodOrderSummary() {
   const summaryBox = document.getElementById("food-order-summary");
   if (!summaryBox) return;
 
-  const selectedIds = Object.keys(state.foodOrder.selectedDishes);
-  if (selectedIds.length === 0) {
+  const scheduled = state.foodOrder.scheduledMeals || [];
+  const currentSelectedIds = Object.keys(state.foodOrder.selectedDishes);
+
+  if (scheduled.length === 0 && currentSelectedIds.length === 0) {
     summaryBox.innerHTML = `
       <div style="font-size: 12.5px; color: var(--brand-text-muted); text-align: center;">
-        هنوز غذایی انتخاب نشده است. از منوی بالا ${state.foodOrder.isGroupTravel ? 'تا ۲ نوع غذا' : 'یک نوع غذا'} انتخاب کنید.
+        هنوز غذایی انتخاب نشده است. از منوی بالا غذاهای محلی یا صبحانه را انتخاب کنید و برای ثبت چند روز یا چند وعده، دکمه «ثبت این وعده» را بزنید.
       </div>
     `;
     return;
   }
 
-  let totalSum = 0;
-  const rows = selectedIds.map((id, index) => {
-    const dish = FOOD_MENU.find(d => d.id === id);
-    const qty = state.foodOrder.selectedDishes[id];
-    const lineTotal = dish ? dish.price * qty : 0;
-    totalSum += lineTotal;
-    return `
-      <div class="estimate-row">
-        <span>🍲 غذای ${formatPersianNumber(index + 1)}: ${dish ? dish.name : id} × ${formatPersianNumber(qty)}</span>
-        <span>${formatToman(lineTotal)}</span>
+  let grandTotal = 0;
+  let summaryRows = "";
+
+  // ۱. وعده‌های ثبت‌شده قبلی
+  if (scheduled.length > 0) {
+    scheduled.forEach((m, idx) => {
+      grandTotal += m.subtotal;
+      const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
+      summaryRows += `
+        <div class="estimate-row">
+          <span>${icon} وعده ${formatPersianNumber(idx + 1)} (${m.mealType} ${m.dayOfWeek}):</span>
+          <span>${formatToman(m.subtotal)}</span>
+        </div>
+      `;
+    });
+  }
+
+  // ۲. اقلام انتخابی در وعده جاری (هنوز دکمه ثبت زده نشده است)
+  if (currentSelectedIds.length > 0) {
+    let currentMealTotal = 0;
+    currentSelectedIds.forEach((id) => {
+      const dish = FOOD_MENU.find(d => d.id === id);
+      const qty = state.foodOrder.selectedDishes[id];
+      const lineTotal = dish ? dish.price * qty : 0;
+      currentMealTotal += lineTotal;
+    });
+    grandTotal += currentMealTotal;
+
+    const icon = state.foodOrder.mealType === 'صبحانه' ? '🍳' : state.foodOrder.mealType === 'شام' ? '🌙' : '🍲';
+    summaryRows += `
+      <div class="estimate-row" style="color: var(--brand-teal-dark); font-weight: 700;">
+        <span>${icon} وعده جاری (${state.foodOrder.mealType || 'ناهار'} - در حال انتخاب):</span>
+        <span>${formatToman(currentMealTotal)}</span>
       </div>
     `;
-  }).join("");
+  }
 
   summaryBox.innerHTML = `
-    ${rows}
+    ${summaryRows}
     <div class="estimate-row estimate-total">
-      <span>برآورد سفارش غذا:</span>
-      <span>${formatToman(totalSum)}</span>
+      <span>جمع کل برآورد سفارش غذا:</span>
+      <span>${formatToman(grandTotal)}</span>
     </div>
   `;
 }
@@ -2035,7 +2357,8 @@ function submitFoodOrderForm(e) {
 
   const name = state.foodOrder.name;
   const phone = state.foodOrder.phone;
-  const selectedIds = Object.keys(state.foodOrder.selectedDishes);
+  const scheduled = state.foodOrder.scheduledMeals || [];
+  const currentSelectedIds = Object.keys(state.foodOrder.selectedDishes);
 
   if (!name) {
     showToast("لطفاً نام مهمان را وارد کنید.");
@@ -2047,8 +2370,8 @@ function submitFoodOrderForm(e) {
     document.getElementById("food-phone")?.focus();
     return;
   }
-  if (selectedIds.length === 0) {
-    showToast("لطفاً حداقل یک غذا از منو انتخاب کنید.");
+  if (scheduled.length === 0 && currentSelectedIds.length === 0) {
+    showToast("لطفاً حداقل یک غذا از منو یا برنامه وعده‌ها انتخاب کنید.");
     return;
   }
 

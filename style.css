@@ -1601,3 +1601,96 @@ body {
   background: #ffffff;
 }
 
+/* کارت ویژه سفارش صبحانه سنتی روستایی */
+.breakfast-special-card {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border: 1px solid #d8b4fe;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(126, 34, 206, 0.08);
+}
+
+/* کارت‌های نمایش برنامه وعده‌های غذایی ثبت‌شده (چند روز یا چند وعده) */
+.scheduled-meals-box {
+  background: #ffffff;
+  border: 1.5px solid var(--brand-teal);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.scheduled-meals-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--brand-teal-dark);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.scheduled-meal-item {
+  background: var(--brand-surface-subtle);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.scheduled-meal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.scheduled-meal-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-green);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.scheduled-meal-delete-btn {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.scheduled-meal-delete-btn:hover {
+  background: #fee2e2;
+}
+
+.scheduled-meal-dish-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--brand-text);
+  padding: 2px 0;
+}
+
+.scheduled-meal-subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-mustard);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--brand-border);
+}
+
+

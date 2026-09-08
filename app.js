@@ -872,7 +872,7 @@ const state = {
     roomCounts: { "shatoot": 1 }, // حفظ سازگاری
     nights: 1,
     guests: 2, // مجموع کل نفرات اتاق‌ها
-    checkInDate: getTomorrowFormattedDate(),
+    checkInDate: "", // ابتدا خالی است تا کاربر از تقویم شمسی انتخاب کند
     checkOutDate: "",
     name: "",
     phone: ""
@@ -1531,6 +1531,20 @@ function calculateStayDiscount(checkInDateStr, nights, guests, customNightCost) 
   let totalDiscount = 0;
   const breakdown = [];
 
+  if (!checkInDateStr) {
+    return {
+      nightBaseCost,
+      totalBaseRoom,
+      totalDiscount: 0,
+      finalRoomTotal: totalBaseRoom,
+      breakdown: [],
+      hasDiscount: false,
+      hasMidweekDiscount: false,
+      hasSecondNightDiscount: false,
+      summaryText: ""
+    };
+  }
+
   for (let i = 0; i < nights; i++) {
     const curDateStr = addDaysToDateString(checkInDateStr, i);
     const details = getJalaliDetails(curDateStr);
@@ -1840,7 +1854,11 @@ function renderSelectedRoomsInForm() {
     return;
   }
 
-  container.innerHTML = selectedRooms.map(room => {
+  const totalGuests = selectedRooms.reduce((sum, r) => {
+    return sum + ((state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2);
+  }, 0);
+
+  const roomsListHtml = selectedRooms.map(room => {
     const guests = (state.reservation.roomGuests && state.reservation.roomGuests[room.id]) || room.baseCapacity || 2;
     const costInfo = calculateRoomNightCost(room, guests);
     const isExtra = costInfo.extraGuests > 0;
@@ -1883,6 +1901,15 @@ function renderSelectedRoomsInForm() {
       </div>
     `;
   }).join("");
+
+  const summaryFooterHtml = `
+    <div style="display: flex; justify-content: space-between; align-items: center; background: #edf7ee; border: 1px solid #c9e8cd; padding: 8px 12px; border-radius: 8px; margin-top: 2px; margin-bottom: 6px;">
+      <span style="font-size: 12.5px; font-weight: 800; color: #276749;">👥 مجموع کل نفرات اقامت:</span>
+      <span style="font-size: 13.5px; font-weight: 800; color: #276749; background: #ffffff; padding: 2px 10px; border-radius: 6px; border: 1px solid #c9e8cd;">${formatPersianNumber(totalGuests)} نفر</span>
+    </div>
+  `;
+
+  container.innerHTML = roomsListHtml + summaryFooterHtml;
 }
 
 function updateFloatingBookingBar() {
@@ -1914,29 +1941,37 @@ function updateReservationCalculations() {
   const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
 
   const checkInInput = document.getElementById("res-checkin-date");
-  const checkInVal = checkInInput ? checkInInput.value : state.reservation.checkInDate;
+  const checkInVal = (checkInInput && checkInInput.value) ? checkInInput.value : state.reservation.checkInDate;
   
-  // محاسبه خودکار تاریخ خروج
-  const checkOutVal = addDaysToDateString(checkInVal, state.reservation.nights);
-  state.reservation.checkOutDate = checkOutVal;
-
-  // به‌روزرسانی تاریخ‌های شمسی و روزهای هفته در رابط کاربری
-  const checkInJalali = getJalaliDetails(checkInVal);
-  const checkOutJalali = getJalaliDetails(checkOutVal);
-
   const checkInShamsiText = document.getElementById("res-checkin-shamsi-text");
-  if (checkInShamsiText) {
-    checkInShamsiText.textContent = `${checkInJalali.fullString} (${checkInJalali.numericDate})`;
-  }
-
   const checkOutShamsiText = document.getElementById("res-checkout-shamsi-text");
-  if (checkOutShamsiText) {
-    checkOutShamsiText.textContent = checkOutJalali.fullString;
-  }
 
-  const checkOutDayBadge = document.getElementById("res-checkout-day-badge");
-  if (checkOutDayBadge) {
-    checkOutDayBadge.textContent = `روز خروج: ${checkOutJalali.weekday}`;
+  if (checkInVal) {
+    // محاسبه خودکار تاریخ خروج بر اساس تاریخ ورود و تعداد شب
+    const checkOutVal = addDaysToDateString(checkInVal, state.reservation.nights);
+    state.reservation.checkInDate = checkInVal;
+    state.reservation.checkOutDate = checkOutVal;
+
+    const checkInJalali = getJalaliDetails(checkInVal);
+    const checkOutJalali = getJalaliDetails(checkOutVal);
+
+    if (checkInShamsiText) {
+      checkInShamsiText.textContent = `${checkInJalali.fullString} (${checkInJalali.numericDate})`;
+      checkInShamsiText.style.color = "var(--brand-teal-dark)";
+    }
+
+    if (checkOutShamsiText) {
+      checkOutShamsiText.textContent = `${checkOutJalali.weekday} ${checkOutJalali.day} ${checkOutJalali.monthName}`;
+    }
+  } else {
+    state.reservation.checkOutDate = "";
+    if (checkInShamsiText) {
+      checkInShamsiText.textContent = "انتخاب در تقویم شمسی...";
+      checkInShamsiText.style.color = "var(--brand-text-muted)";
+    }
+    if (checkOutShamsiText) {
+      checkOutShamsiText.textContent = "محاسبه بر اساس ورود";
+    }
   }
 
   // همگام‌سازی فیلدهای مشترک با فرم سفارش غذا
@@ -1992,7 +2027,12 @@ function updateReservationCalculations() {
   const discountStatusBadge = document.getElementById("res-discount-status-badge");
   if (discountStatusBadge) {
     discountStatusBadge.style.display = "block";
-    if (discountData.hasDiscount) {
+    if (!checkInVal) {
+      discountStatusBadge.style.background = "#fdfbf7";
+      discountStatusBadge.style.color = "#825e1a";
+      discountStatusBadge.style.borderColor = "#ebd9b5";
+      discountStatusBadge.innerHTML = `ℹ️ با انتخاب تاریخ ورود از تقویم، تخفیف‌های احتمالی روزهای اقامت (شنبه تا سه‌شنبه ۱۰٪ و اقامت بیش از یک شب ۲۰٪ در شب دوم) به صورت خودکار محاسبه می‌شوند.`;
+    } else if (discountData.hasDiscount) {
       discountStatusBadge.style.background = "#eef7f2";
       discountStatusBadge.style.color = "var(--brand-green)";
       discountStatusBadge.style.borderColor = "#c7e6d5";
@@ -2438,6 +2478,12 @@ function submitReservationForm(e) {
   if (selectedRooms.length === 0) {
     showToast("لطفاً ابتدا حداقل یک اتاق را به لیست رزرو اضافه کنید.");
     navigateTo("screen-rooms");
+    return;
+  }
+
+  if (!state.reservation.checkInDate) {
+    showToast("لطفاً ابتدا تاریخ ورود را از تقویم انتخاب فرمایید.");
+    openShamsiDatePicker('reservation');
     return;
   }
 

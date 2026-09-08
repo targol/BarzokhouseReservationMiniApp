@@ -244,56 +244,43 @@
             </div>
           </div>
 
-          <!-- تاریخ‌های ورود و خروج زیر هم با تقویم اختصاصی شمسی (بدون تاریخ میلادی) -->
+          <!-- کارت انتخاب تاریخ‌های اقامت با تقویم شمسی -->
           <div class="stay-dates-card" style="background: var(--brand-surface-subtle); border: 1px solid var(--brand-border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px;">
             <!-- ۱. تاریخ و روز ورود -->
             <div class="form-group" style="margin-bottom: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                <label class="form-label" style="margin-bottom: 0; font-size: 13px; font-weight: 800; color: var(--brand-green);">
-                  📅 تاریخ و روز ورود:
-                </label>
-                <button type="button" class="btn-text-link" onclick="openShamsiDatePicker('reservation')" style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 800; background: var(--brand-mustard-subtle); padding: 3px 8px; border-radius: 6px; border: 1px solid #ebd9b5; cursor: pointer;">
-                  🗓️ تقویم شمسی
-                </button>
-              </div>
-              <div id="res-checkin-display-box" onclick="openShamsiDatePicker('reservation')" style="background: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--brand-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center;" title="جهت تغییر تاریخ با تقویم شمسی کلیک کنید">
-                <span id="res-checkin-shamsi-text" style="font-size: 13.5px; font-weight: 800; color: var(--brand-teal-dark);">--</span>
-                <span style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 700;">انتخاب در تقویم ▾</span>
+              <label class="form-label" style="margin-bottom: 5px; font-size: 13px; font-weight: 800; color: var(--brand-green);">
+                📅 تاریخ و روز ورود:
+              </label>
+              <div id="res-checkin-display-box" onclick="openShamsiDatePicker('reservation')" style="background: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--brand-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center;" title="جهت انتخاب یا تغییر تاریخ با تقویم شمسی کلیک کنید">
+                <span id="res-checkin-shamsi-text" style="font-size: 13px; font-weight: 800; color: var(--brand-text-muted);">انتخاب در تقویم شمسی...</span>
+                <span style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 700;">🗓️ انتخاب تقویم ▾</span>
               </div>
               <input type="hidden" id="res-checkin-date" />
             </div>
 
-            <!-- مدت اقامت (تعداد شب) -->
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px dashed var(--brand-border); border-bottom: 1px dashed var(--brand-border); margin-bottom: 10px;">
-              <span style="font-size: 12.5px; font-weight: 700; color: var(--brand-text);">مدت اقامت (تعداد شب):</span>
-              <div class="stepper" style="margin: 0;">
-                <button type="button" class="stepper-btn" onclick="changeReservationNights(-1)">-</button>
-                <span class="stepper-val" id="res-nights-val" style="min-width: 50px;">۱ شب</span>
-                <button type="button" class="stepper-btn" onclick="changeReservationNights(1)">+</button>
+            <!-- دو ستون کنار هم برای فشردگی: مدت اقامت (تعداد شب) و تاریخ و روز خروج -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch;">
+              <!-- ستون ۱: مدت اقامت -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="margin-bottom: 5px; font-size: 12.5px; font-weight: 800; color: var(--brand-green);">
+                  🌙 مدت اقامت (شب):
+                </label>
+                <div class="stepper" style="margin: 0; width: 100%; height: 40px; display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid var(--brand-border); border-radius: 8px; padding: 2px 6px;">
+                  <button type="button" class="stepper-btn" onclick="changeReservationNights(-1)" style="width: 30px; height: 30px; font-size: 16px;">-</button>
+                  <span class="stepper-val" id="res-nights-val" style="min-width: 44px; font-size: 13px; font-weight: 800;">۱ شب</span>
+                  <button type="button" class="stepper-btn" onclick="changeReservationNights(1)" style="width: 30px; height: 30px; font-size: 16px;">+</button>
+                </div>
               </div>
-            </div>
 
-            <!-- ۲. تاریخ و روز خروج (زیر هم) -->
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label" style="margin-bottom: 5px; font-size: 13px; font-weight: 800; color: var(--brand-green);">
-                📅 تاریخ و روز خروج (محاسبه خودکار):
-              </label>
-              <div style="background: #ffffff; padding: 10px 12px; border-radius: 8px; font-weight: 700; color: var(--brand-green); border: 1px solid var(--brand-border); display: flex; justify-content: space-between; align-items: center;" id="res-checkout-display">
-                <span id="res-checkout-shamsi-text" style="font-size: 13.5px; font-weight: 800; color: var(--brand-teal-dark);">--</span>
-                <span id="res-checkout-day-badge" style="background: var(--brand-mustard-subtle); color: var(--brand-mustard-dark); padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 800;">--</span>
+              <!-- ستون ۲: تاریخ و روز خروج -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="margin-bottom: 5px; font-size: 12.5px; font-weight: 800; color: var(--brand-green);">
+                  📅 تاریخ و روز خروج:
+                </label>
+                <div style="background: #ffffff; height: 40px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--brand-border); display: flex; align-items: center;" id="res-checkout-display">
+                  <span id="res-checkout-shamsi-text" style="font-size: 12.5px; font-weight: 800; color: var(--brand-teal-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">--</span>
+                </div>
               </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-              <label class="form-label" style="margin-bottom: 0;">مجموع کل نفرات اقامت:</label>
-              <span style="font-size: 11.5px; color: var(--brand-text-muted);">(حاصل‌جمع نفرات اتاق‌ها)</span>
-            </div>
-            <div class="stepper">
-              <button type="button" class="stepper-btn" onclick="changeReservationGuests(-1)">-</button>
-              <span class="stepper-val" id="res-guests-val">۲ نفر</span>
-              <button type="button" class="stepper-btn" onclick="changeReservationGuests(1)">+</button>
             </div>
           </div>
 

@@ -46,7 +46,10 @@ const ROOMS = [
   {
     id: "shatoot",
     name: "شاتوت",
-    capacity: 2,
+    baseCapacity: 2,
+    extraCapacityCount: 1,
+    maxCapacity: 3,
+    capacity: 3,
     shortCapacity: "۲ نفر + ۱ نفر اضافه",
     mainCapacity: "یک تخت دو نفره",
     extraCapacity: "۱ نفر ظرفیت اضافه رختخواب سنتی",
@@ -70,7 +73,10 @@ const ROOMS = [
   {
     id: "ghaali",
     name: "قالی",
-    capacity: 3,
+    baseCapacity: 3,
+    extraCapacityCount: 1,
+    maxCapacity: 4,
+    capacity: 4,
     shortCapacity: "۳ نفر + ۱ نفر اضافه",
     mainCapacity: "یک تخت دو نفره و یک تخت یک نفره",
     extraCapacity: "۱ نفر ظرفیت اضافه رختخواب سنتی",
@@ -94,6 +100,9 @@ const ROOMS = [
   {
     id: "abi",
     name: "آبی",
+    baseCapacity: 2,
+    extraCapacityCount: 0,
+    maxCapacity: 2,
     capacity: 2,
     shortCapacity: "۲ نفر (رختخواب سنتی)",
     mainCapacity: "۲ نفر (رختخواب سنتی)",
@@ -119,6 +128,9 @@ const ROOMS = [
   {
     id: "sara",
     name: "سرا",
+    baseCapacity: 3,
+    extraCapacityCount: 7,
+    maxCapacity: 10,
     capacity: 10,
     shortCapacity: "۳ نفر + تا ۷ نفر اضافه",
     mainCapacity: "یک تخت دو نفره و یک تخت یک نفره",
@@ -145,7 +157,10 @@ const ROOMS = [
   {
     id: "balakhoneh",
     name: "بالاخونه",
-    capacity: 3,
+    baseCapacity: 3,
+    extraCapacityCount: 1,
+    maxCapacity: 4,
+    capacity: 4,
     shortCapacity: "۳ نفر + ۱ نفر اضافه",
     mainCapacity: "سه نفر رختخواب سنتی",
     extraCapacity: "۱ نفر ظرفیت اضافه رختخواب سنتی",
@@ -853,9 +868,10 @@ const state = {
   allFoodExpanded: false, // آیا تمام خوراک‌ها باز هستند؟
   reservation: {
     selectedRoomIds: ["shatoot"], // لیست شناسه‌های اتاق‌های انتخاب شده برای رزرو
-    roomCounts: { "shatoot": 1 }, // تعداد رزرو برای هر اتاق: { [roomId]: count }
+    roomGuests: { "shatoot": 2 }, // تعداد نفرات برای هر اتاق: { [roomId]: guestsCount }
+    roomCounts: { "shatoot": 1 }, // حفظ سازگاری
     nights: 1,
-    guests: 2,
+    guests: 2, // مجموع کل نفرات اتاق‌ها
     checkInDate: getTomorrowFormattedDate(),
     checkOutDate: "",
     name: "",
@@ -1458,20 +1474,57 @@ function getJalaliNowString() {
 }
 
 /**
+ * محاسبه هزینه یک شب برای یک اتاق بر اساس تعداد نفرات انتخابی:
+ * - تا سقف ظرفیت اصلی (پایه) با نرخ اصلی هر نفر/شب
+ * - نفرات اضافه (مازاد بر ظرفیت اصلی تا سقف ظرفیت کل) با ۱۰٪ تخفیف نسبت به ظرفیت اصلی
+ */
+function calculateRoomNightCost(room, guestsCount) {
+  if (!room) return { cost: 0, baseGuests: 0, extraGuests: 0, actualGuests: 0, basePrice: 0, extraPrice: 0, baseCap: 0, extraCap: 0, maxCap: 0 };
+  const baseCap = room.baseCapacity || room.capacity || 2;
+  const extraCap = room.extraCapacityCount !== undefined ? room.extraCapacityCount : 0;
+  const maxCap = room.maxCapacity || (baseCap + extraCap);
+  
+  const g = typeof guestsCount === "number" && !isNaN(guestsCount) ? guestsCount : baseCap;
+  const actualGuests = Math.min(Math.max(1, g), maxCap);
+  
+  const baseGuests = Math.min(actualGuests, baseCap);
+  const extraGuests = Math.max(0, actualGuests - baseCap);
+  
+  const basePrice = room.price || 1300000;
+  const extraPrice = Math.round(basePrice * 0.90); // ۱۰ درصد کمتر از ظرفیت اصلی
+  
+  const cost = (baseGuests * basePrice) + (extraGuests * extraPrice);
+  return {
+    cost,
+    baseGuests,
+    extraGuests,
+    actualGuests,
+    basePrice,
+    extraPrice,
+    baseCap,
+    extraCap,
+    maxCap
+  };
+}
+
+/**
  * محاسبه تخفیف اقامت طبق ضوابط خانه برزک:
  * "برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه شنبه ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۲۰ درصد تخفیف درشب دوم در نظر گرفته میشود.)"
  */
-function calculateStayDiscount(checkInDateStr, nights, guests, roomPricePerGuest) {
+function calculateStayDiscount(checkInDateStr, nights, guests, customNightCost) {
   const selectedRooms = (state.reservation && state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
 
   let nightBaseCost = 0;
-  if (selectedRooms.length > 0) {
+  if (typeof customNightCost === "number" && customNightCost > 0) {
+    nightBaseCost = customNightCost;
+  } else if (selectedRooms.length > 0) {
     nightBaseCost = selectedRooms.reduce((sum, r) => {
-      const count = (state.reservation.roomCounts && state.reservation.roomCounts[r.id]) || 1;
-      return sum + (r.price * count * Math.max(1, Math.round(guests / selectedRooms.length)));
+      const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+      const breakdown = calculateRoomNightCost(r, g);
+      return sum + breakdown.cost;
     }, 0);
   } else {
-    nightBaseCost = Math.max(0, guests * roomPricePerGuest);
+    nightBaseCost = Math.max(0, (guests || 2) * 1300000);
   }
 
   const totalBaseRoom = Math.max(0, nights * nightBaseCost);
@@ -1512,6 +1565,7 @@ function calculateStayDiscount(checkInDateStr, nights, guests, roomPricePerGuest
 
   const finalRoomTotal = Math.max(0, totalBaseRoom - totalDiscount);
   return {
+    nightBaseCost,
     totalBaseRoom,
     totalDiscount,
     finalRoomTotal,
@@ -1663,23 +1717,26 @@ function handleRoomDetailBookingClick() {
   if (!state.reservation.selectedRoomIds) {
     state.reservation.selectedRoomIds = [];
   }
-
+  if (!state.reservation.roomGuests) {
+    state.reservation.roomGuests = {};
+  }
   if (!state.reservation.roomCounts) {
     state.reservation.roomCounts = {};
   }
 
   if (!state.reservation.selectedRoomIds.includes(roomId)) {
     state.reservation.selectedRoomIds.push(roomId);
+    state.reservation.roomGuests[roomId] = room.baseCapacity || 2;
     state.reservation.roomCounts[roomId] = 1;
-    showToast(`اتاق ${room.name} به درخواست رزرو اضافه شد.`);
+    showToast(`اتاق ${room.name} (${formatPersianNumber(state.reservation.roomGuests[roomId])} نفر) به لیست رزرو اضافه شد.`);
   } else {
-    state.reservation.roomCounts[roomId] = (state.reservation.roomCounts[roomId] || 1) + 1;
-    showToast(`تعداد رزرو برای اتاق ${room.name} به ${formatPersianNumber(state.reservation.roomCounts[roomId])} باب افزایش یافت.`);
+    showToast(`اتاق ${room.name} در لیست رزرو شماست (${formatPersianNumber(state.reservation.roomGuests[roomId] || room.baseCapacity)} نفر).`);
   }
 
   updateRoomDetailButtons();
   updateFloatingBookingBar();
   renderRoomsList();
+  updateReservationCalculations();
 }
 
 function startReservationForCurrentRoom() {
@@ -1691,29 +1748,58 @@ function openReservationScreen() {
   triggerHaptic('light');
   if (!state.reservation.selectedRoomIds || state.reservation.selectedRoomIds.length === 0) {
     const defaultId = state.selectedRoomId || "shatoot";
-    state.reservation.selectedRoomIds = [defaultId];
+    const defaultRoom = ROOMS.find(r => r.id === defaultId) || ROOMS[0];
+    state.reservation.selectedRoomIds = [defaultRoom.id];
+    if (!state.reservation.roomGuests) state.reservation.roomGuests = {};
     if (!state.reservation.roomCounts) state.reservation.roomCounts = {};
-    state.reservation.roomCounts[defaultId] = 1;
+    state.reservation.roomGuests[defaultRoom.id] = defaultRoom.baseCapacity || 2;
+    state.reservation.roomCounts[defaultRoom.id] = 1;
   }
   renderSelectedRoomsInForm();
   updateReservationCalculations();
   navigateTo("screen-reservation");
 }
 
-function changeRoomCount(roomId, delta) {
+function changeRoomGuests(roomId, delta) {
   triggerHaptic('light');
-  if (!state.reservation.roomCounts) {
-    state.reservation.roomCounts = {};
+  if (!state.reservation.roomGuests) {
+    state.reservation.roomGuests = {};
   }
-  const current = state.reservation.roomCounts[roomId] || 1;
+  const room = ROOMS.find(r => r.id === roomId);
+  if (!room) return;
+
+  const baseCap = room.baseCapacity || room.capacity || 2;
+  const extraCap = room.extraCapacityCount !== undefined ? room.extraCapacityCount : 0;
+  const maxCap = room.maxCapacity || (baseCap + extraCap);
+
+  const current = state.reservation.roomGuests[roomId] || baseCap;
   const next = current + delta;
+
   if (next < 1) {
     removeRoomFromReservation(roomId);
     return;
   }
-  state.reservation.roomCounts[roomId] = next;
+  if (next > maxCap) {
+    showToast(`حداکثر ظرفیت اتاق ${room.name} برابر ${formatPersianNumber(maxCap)} نفر (${formatPersianNumber(baseCap)} نفر اصلی + ${formatPersianNumber(extraCap)} نفر اضافه) است.`);
+    return;
+  }
+
+  state.reservation.roomGuests[roomId] = next;
+  if (state.reservation.roomCounts) {
+    state.reservation.roomCounts[roomId] = 1;
+  }
+
+  if (delta > 0 && next > baseCap) {
+    showToast(`${formatPersianNumber(next - baseCap)} نفر اضافه در اتاق ${room.name} (با ۱۰٪ تخفیف) محاسبه شد.`);
+  }
+
   renderSelectedRoomsInForm();
   updateReservationCalculations();
+}
+
+// تابع جایگزین جهت حفظ سازگاری با فراخوانی‌های قبلی
+function changeRoomCount(roomId, delta) {
+  changeRoomGuests(roomId, delta);
 }
 
 function removeRoomFromReservation(roomId) {
@@ -1721,6 +1807,9 @@ function removeRoomFromReservation(roomId) {
   const room = ROOMS.find(r => r.id === roomId);
   if (state.reservation.selectedRoomIds) {
     state.reservation.selectedRoomIds = state.reservation.selectedRoomIds.filter(id => id !== roomId);
+  }
+  if (state.reservation.roomGuests) {
+    delete state.reservation.roomGuests[roomId];
   }
   if (state.reservation.roomCounts) {
     delete state.reservation.roomCounts[roomId];
@@ -1752,22 +1841,45 @@ function renderSelectedRoomsInForm() {
   }
 
   container.innerHTML = selectedRooms.map(room => {
-    const count = (state.reservation.roomCounts && state.reservation.roomCounts[room.id]) || 1;
+    const guests = (state.reservation.roomGuests && state.reservation.roomGuests[room.id]) || room.baseCapacity || 2;
+    const costInfo = calculateRoomNightCost(room, guests);
+    const isExtra = costInfo.extraGuests > 0;
+    const isAtMax = guests >= costInfo.maxCap;
+    const isAtMin = guests <= 1;
+
     return `
-      <div class="selected-room-chip" style="flex-wrap: wrap; gap: 8px; align-items: center;">
-        <div class="selected-room-info" style="flex: 1; min-width: 140px;">
-          <span class="selected-room-name" style="font-weight: 800;">🏠 اتاق ${room.name}</span>
-          <span class="selected-room-meta">${formatToman(room.price)} هر نفر/شب • ${room.capacityDisplay || `تا ${formatPersianNumber(room.capacity)} نفر`}</span>
+      <div class="selected-room-chip" style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: #ffffff; border: 1px solid var(--brand-border); border-radius: var(--radius-md); margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-weight: 800; font-size: 14px; color: var(--brand-green);">🏠 اتاق ${room.name}</span>
+            <span style="font-size: 11px; color: var(--brand-text-muted); margin-right: 6px;">(ظرفیت پایه: ${formatPersianNumber(costInfo.baseCap)} نفر${costInfo.extraCap > 0 ? ` + تا ${formatPersianNumber(costInfo.extraCap)} نفر اضافه` : ''})</span>
+          </div>
+          <button type="button" class="selected-room-remove-btn" onclick="removeRoomFromReservation('${room.id}')" title="حذف این اتاق از رزرو" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #e2ddd3; background: #faf8f5; color: #8a8275; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">✕</button>
         </div>
-        <div class="room-booking-counter" title="تعداد رزرو اتاق ${room.name}" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.04); padding: 2px 6px; border-radius: 6px;">
-          <button type="button" class="room-counter-btn" onclick="changeRoomCount('${room.id}', -1)" title="کاهش تعداد" style="width: 24px; height: 24px; border-radius: 4px; border: 1px solid #ddd; background: #fff; font-weight: bold; cursor: pointer;">-</button>
-          <span class="room-counter-val" style="font-weight: 800; font-size: 13px; min-width: 16px; text-align: center;">${formatPersianNumber(count)}</span>
-          <span style="font-size: 11px; font-weight: 700; color: var(--brand-text-muted);">باب</span>
-          <button type="button" class="room-counter-btn" onclick="changeRoomCount('${room.id}', 1)" title="افزایش تعداد" style="width: 24px; height: 24px; border-radius: 4px; border: 1px solid #ddd; background: #fff; font-weight: bold; cursor: pointer;">+</button>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #fbf9f4; border: 1px solid #edd9b8; padding: 8px 12px; border-radius: 8px;">
+          <div>
+            <span style="font-size: 12.5px; font-weight: 800; color: var(--brand-green);">تعداد نفرات این اتاق:</span>
+            <span style="font-size: 10.5px; color: var(--brand-text-muted); display: block;">(حداکثر ${formatPersianNumber(costInfo.maxCap)} نفر)</span>
+          </div>
+          <div class="room-booking-counter" title="تعداد نفرات اتاق ${room.name}" style="display: inline-flex; align-items: center; gap: 6px;">
+            <button type="button" class="room-counter-btn" onclick="changeRoomGuests('${room.id}', -1)" title="کاهش نفرات" style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;">−</button>
+            <span style="font-weight: 800; font-size: 14.5px; color: var(--brand-green); min-width: 46px; text-align: center;">${formatPersianNumber(guests)} نفر</span>
+            <button type="button" class="room-counter-btn" onclick="changeRoomGuests('${room.id}', 1)" title="افزایش نفرات" ${isAtMax ? 'style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e5e5e5; background: #f3f3f3; color: #bbb; font-weight: bold; font-size: 15px; cursor: not-allowed; display: flex; align-items: center; justify-content: center;"' : 'style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;"'}>+</button>
+          </div>
         </div>
-        <button type="button" class="selected-room-remove-btn" onclick="removeRoomFromReservation('${room.id}')" title="حذف این اتاق از رزرو">
-          ✕
-        </button>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; padding: 2px 4px 0 4px;">
+          <div>
+            ${isExtra 
+              ? `<span style="color: #276749; font-weight: 700; background: #edf7ee; padding: 2px 7px; border-radius: 5px; border: 1px solid #c9e8cd;">${formatPersianNumber(costInfo.baseGuests)} نفر پایه + ${formatPersianNumber(costInfo.extraGuests)} نفر اضافه (۱۰٪ تخفیف)</span>`
+              : `<span style="color: var(--brand-text-muted);">${formatPersianNumber(costInfo.baseGuests)} نفر (ظرفیت پایه با صبحانه)</span>`
+            }
+          </div>
+          <div style="font-weight: 800; color: var(--brand-green);">
+            ${formatToman(costInfo.cost)} <small style="font-size: 10.5px; font-weight: normal; color: var(--brand-text-muted);">/ شب</small>
+          </div>
+        </div>
       </div>
     `;
   }).join("");
@@ -1849,6 +1961,16 @@ function updateReservationCalculations() {
     if (foodDateInput && !foodDateInput.value) foodDateInput.value = checkInVal;
   }
 
+  // ۱. محاسبه و تجمیع کل نفرات از اتاق‌های انتخاب شده
+  let calculatedTotalGuests = 0;
+  if (selectedRooms.length > 0) {
+    selectedRooms.forEach(r => {
+      const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+      calculatedTotalGuests += g;
+    });
+    state.reservation.guests = calculatedTotalGuests;
+  }
+
   // نمایش تعداد شب و نفرات در استپرها
   const nightsValEl = document.getElementById("res-nights-val");
   if (nightsValEl) {
@@ -1861,15 +1983,7 @@ function updateReservationCalculations() {
   }
 
   // محاسبه مبلغ اقامت و تخفیف اقامت (وسط هفته غیرتعطیل ۱۰٪ و اقامت بیش از ۱ شب ۲۰٪ در شب دوم)
-  let avgPrice = 0;
-  if (selectedRooms.length === 1) {
-    avgPrice = selectedRooms[0].price;
-  } else if (selectedRooms.length > 1) {
-    const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
-    avgPrice = Math.round(sumPrices / selectedRooms.length);
-  }
-
-  const discountData = calculateStayDiscount(checkInVal, state.reservation.nights, state.reservation.guests, avgPrice);
+  const discountData = calculateStayDiscount(checkInVal, state.reservation.nights, state.reservation.guests);
   const roomEstimate = discountData.finalRoomTotal;
   const roomBaseTotal = discountData.totalBaseRoom;
   const totalDiscount = discountData.totalDiscount;
@@ -1998,10 +2112,15 @@ function updateReservationCalculations() {
     if (selectedRooms.length === 0) {
       summaryRoomEl.textContent = "اتاقی انتخاب نشده است";
     } else if (selectedRooms.length === 1) {
-      summaryRoomEl.textContent = `اتاق ${selectedRooms[0].name} (${formatPersianNumber(state.reservation.guests)} نفر، ${formatPersianNumber(state.reservation.nights)} شب با صبحانه)`;
+      const r = selectedRooms[0];
+      const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+      summaryRoomEl.textContent = `اتاق ${r.name} (${formatPersianNumber(g)} نفر، ${formatPersianNumber(state.reservation.nights)} شب با صبحانه)`;
     } else {
-      const names = selectedRooms.map(r => r.name).join(" + ");
-      summaryRoomEl.textContent = `${formatPersianNumber(selectedRooms.length)} اتاق (${names}) - ${formatPersianNumber(state.reservation.guests)} نفر، ${formatPersianNumber(state.reservation.nights)} شب با صبحانه`;
+      const roomDetails = selectedRooms.map(r => {
+        const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+        return `${r.name} (${formatPersianNumber(g)} نفر)`;
+      }).join(" + ");
+      summaryRoomEl.textContent = `${formatPersianNumber(selectedRooms.length)} اتاق (${roomDetails}) - مجموعاً ${formatPersianNumber(state.reservation.guests)} نفر، ${formatPersianNumber(state.reservation.nights)} شب با صبحانه`;
     }
   }
 
@@ -2051,12 +2170,17 @@ function changeReservationNights(delta) {
 function changeReservationGuests(delta) {
   triggerHaptic('light');
   const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
-  const totalCap = selectedRooms.reduce((sum, r) => sum + r.capacity, 0) || 2;
-  const maxAllowed = totalCap + (selectedRooms.length || 1) * 2;
-
-  let g = state.reservation.guests + delta;
-  if (g < (selectedRooms.length || 1)) g = (selectedRooms.length || 1);
-  if (g > maxAllowed) g = maxAllowed;
+  if (selectedRooms.length === 1) {
+    changeRoomGuests(selectedRooms[0].id, delta);
+    return;
+  }
+  if (selectedRooms.length > 1) {
+    showToast("برای تغییر تعداد نفرات هر اتاق، از دکمه‌های + و − همان اتاق در بالا استفاده فرمایید.");
+    return;
+  }
+  let g = (state.reservation.guests || 2) + delta;
+  if (g < 1) g = 1;
+  if (g > 20) g = 20;
   state.reservation.guests = g;
   updateReservationCalculations();
 }
@@ -2175,20 +2299,24 @@ function generateUnifiedOrderMessage() {
   const checkOutJalali = getJalaliDetails(checkOut);
   const stayDaysText = `${checkInJalali.weekday} تا ${checkOutJalali.weekday}`;
 
-  let avgPrice = 0;
   let roomsDetailText = "";
 
   if (selectedRooms.length > 0) {
-    const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
-    avgPrice = Math.round(sumPrices / selectedRooms.length);
     roomsDetailText = selectedRooms.map(r => {
-      const count = (state.reservation.roomCounts && state.reservation.roomCounts[r.id]) || 1;
-      return `• اتاق ${r.name}: ${formatPersianNumber(count)} باب رزرو شده (${formatToman(r.price)} هر نفر/شب با صبحانه)`;
+      const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+      const costInfo = calculateRoomNightCost(r, g);
+      let guestText = `${formatPersianNumber(g)} نفر`;
+      if (costInfo.extraGuests > 0) {
+        guestText += ` (${formatPersianNumber(costInfo.baseGuests)} نفر پایه + ${formatPersianNumber(costInfo.extraGuests)} نفر اضافه با ۱۰٪ تخفیف: هر نفر ${formatToman(costInfo.extraPrice)})`;
+      } else {
+        guestText += ` (${formatToman(costInfo.basePrice)} هر نفر/شب پایه با صبحانه)`;
+      }
+      return `• اتاق ${r.name}: ${guestText} • هزینه هر شب: ${formatToman(costInfo.cost)}`;
     }).join("\n");
   }
 
   // محاسبه دقیق تخفیف اقامت
-  const discountData = calculateStayDiscount(checkIn, nights, guests, avgPrice);
+  const discountData = calculateStayDiscount(checkIn, nights, guests);
   const roomTotal = discountData.finalRoomTotal;
 
   // تجمیع کلیه وعده‌های غذایی (برنامه چند روزه + اقلام در حال انتخاب)
@@ -3205,17 +3333,21 @@ function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
 
   if (selectedRooms.length > 0) {
     if (previewRoomsCard) previewRoomsCard.style.display = "block";
-    const totalRoomCount = selectedRooms.reduce((sum, r) => sum + ((state.reservation.roomCounts && state.reservation.roomCounts[r.id]) || 1), 0);
-    if (previewRoomsBadge) previewRoomsBadge.textContent = `${formatPersianNumber(totalRoomCount)} باب اتاق`;
+    const totalGuests = state.reservation.guests || selectedRooms.reduce((sum, r) => sum + ((state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2), 0);
+    if (previewRoomsBadge) previewRoomsBadge.textContent = `${formatPersianNumber(selectedRooms.length)} اتاق (${formatPersianNumber(totalGuests)} نفر)`;
 
     if (previewRoomsList) {
       previewRoomsList.innerHTML = selectedRooms.map(r => {
-        const count = (state.reservation.roomCounts && state.reservation.roomCounts[r.id]) || 1;
+        const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+        const costInfo = calculateRoomNightCost(r, g);
         return `
           <div class="preview-room-item" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed rgba(0,0,0,0.06);">
-            <span style="font-weight: 800; color: var(--brand-green); font-size: 13.5px;">🏠 اتاق ${r.name}</span>
+            <div>
+              <span style="font-weight: 800; color: var(--brand-green); font-size: 13.5px;">🏠 اتاق ${r.name}</span>
+              ${costInfo.extraGuests > 0 ? `<span style="font-size: 11px; color: var(--brand-text-muted); display: block;">${formatPersianNumber(costInfo.baseGuests)} نفر اصلی + ${formatPersianNumber(costInfo.extraGuests)} نفر اضافه (با ۱۰٪ تخفیف)</span>` : ''}
+            </div>
             <span style="font-weight: 800; color: var(--brand-mustard-dark); font-size: 12.5px; background: rgba(220,165,70,0.12); padding: 3px 8px; border-radius: 6px;">
-              ${formatPersianNumber(count)} باب رزرو شده
+              ${formatPersianNumber(g)} نفر
             </span>
           </div>
         `;

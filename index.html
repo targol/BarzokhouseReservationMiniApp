@@ -234,7 +234,7 @@
 
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <label class="form-label" style="margin-bottom: 0;">اتاق‌های انتخابی و تعداد رزرو هر اتاق:</label>
+              <label class="form-label" style="margin-bottom: 0;">اتاق‌های انتخابی و تعداد نفرات هر اتاق:</label>
               <button type="button" class="btn-text-link" onclick="navigateTo('screen-rooms')" style="font-size: 12.5px; color: var(--brand-mustard); font-weight: 700; background: none; border: none; cursor: pointer; text-decoration: underline;">
                 + افزودن اتاق دیگر
               </button>
@@ -286,7 +286,10 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">تعداد نفرات:</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+              <label class="form-label" style="margin-bottom: 0;">مجموع کل نفرات اقامت:</label>
+              <span style="font-size: 11.5px; color: var(--brand-text-muted);">(حاصل‌جمع نفرات اتاق‌ها)</span>
+            </div>
             <div class="stepper">
               <button type="button" class="stepper-btn" onclick="changeReservationGuests(-1)">-</button>
               <span class="stepper-val" id="res-guests-val">۲ نفر</span>

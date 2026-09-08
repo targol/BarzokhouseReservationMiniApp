@@ -84,10 +84,10 @@ async function handleDirectReservation(payload, env) {
   const messageText = payload.message || "درخواست رزرو جدید ثبت شد.";
 
   if (!token) {
-    return { ok: false, note: "BOT_TOKEN تنظیم نشده است." };
+    return { ok: false, note: "BOT_TOKEN در متغیرهای Cloudflare Worker تنظیم نشده است." };
   }
 
-  // اگر شناسه گروه رزرو تنظیم شده باشد، پیام مستقیماً به گروه ارسال می‌شود
+  // اگر شناسه گروه یا اکانت ادمین تنظیم شده باشد، پیام مستقیماً ارسال می‌شود
   if (groupId) {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
@@ -99,13 +99,13 @@ async function handleDirectReservation(payload, env) {
       })
     });
     const resData = await res.json();
-    return { ok: resData.ok, forwarded_to_group: true, telegram_res: resData };
+    return { ok: resData.ok === true, forwarded_to_group: resData.ok === true, telegram_res: resData };
   }
 
   return { 
-    ok: true, 
+    ok: false, 
     forwarded_to_group: false, 
-    note: "شناسه گروه (RESERVATION_CHAT_ID) در ورکر تعریف نشده است؛ پیام آماده ارسال از طریق لینک اختصاصی گروه است." 
+    note: "شناسه گفتگوی تلگرام (RESERVATION_CHAT_ID یا CHAT_ID) در تنظیمات Worker مشخص نشده است. لطفاً آن را در متغیرهای Cloudflare وارد کنید." 
   };
 }
 

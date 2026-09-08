@@ -16,6 +16,8 @@ const CONFIG = {
   phone: "09354868840",                  // پشتیبانی از کد‌های قدیمی
   phoneDisplay: "0935 486 8840",
   telegram: "https://t.me/barzokhouse",   // آدرس چنل یا پشتیبانی تلگرام
+  telegramUsername: "barzokhouse",        // آیدی اکانت تلگرام خانه برزک
+  telegramAccountUrl: "https://t.me/barzokhouse", // لینک مستقیم به اکانت تلگرام
   instagram: "https://instagram.com/barzokhouse", // آدرس اینستاگرام
   website: "https://barzokhouse.com",     // وب‌سایت رسمی خانه برزک
   address: "استان اصفهان، شهرستان کاشان، شهر برزک، محله سَرِدُل، بعد از اداره آب، اقامتگاه بومگردی خانه برزک",
@@ -1731,6 +1733,7 @@ ${foodSectionText}
 💰 جمع کل برآورد: ${formatToman(grandTotal)}
 
 🌱 این درخواست پس از بررسی میزبان تایید و نهایی می‌شود.
+💬 اکانت تلگرام خانه برزک: @barzokhouse (https://t.me/barzokhouse)
 🔗 گروه رزرو خانه برزک: ${CONFIG.reservationGroupUrl}
 #درخواست_رزرو`;
   }
@@ -1747,6 +1750,7 @@ ${foodSectionText}
 
 ✨ تذکر: امکان پذیرایی در حیاط مصفای خانه برزک برای مهمانان آزاد فراهم می‌باشد (هزینه خدمات نفری ۲۰۰,۰۰۰ تومان).
 🌱 سفارش شما پس از بررسی میزبان تایید و آماده‌سازی خواهد شد.
+💬 اکانت تلگرام خانه برزک: @barzokhouse (https://t.me/barzokhouse)
 🔗 گروه خانه برزک: ${CONFIG.reservationGroupUrl}
 #سفارش_غذا`;
 }
@@ -2439,14 +2443,106 @@ function fallbackCopy(text) {
 }
 
 /**
- * ارسال هوشمند به گروه رزرو خانه برزک (از طریق ورکر، ربات یا لینک تلگرام)
+ * ۱. ارسال مستقیم به اکانت تلگرام خانه برزک (@barzokhouse)
+ * متن پیام به کلیپ‌بورد کپی شده و گفتگوی مستقیم تلگرام با اکانت @barzokhouse باز می‌شود.
+ */
+function sendToBarzokTelegramAccount() {
+  triggerHaptic('medium');
+  copyModalMessage();
+  const accountUrl = CONFIG.telegramAccountUrl || "https://t.me/barzokhouse";
+
+  showToast("متن درخواست کپی شد! در حال باز کردن چت با اکانت تلگرام خانه برزک (@barzokhouse)...");
+  
+  setTimeout(() => {
+    if (tg && tg.openTelegramLink) {
+      try {
+        tg.openTelegramLink(accountUrl);
+        closeMessageModal();
+        return;
+      } catch (e) {
+        console.warn("tg.openTelegramLink failed, using window.open", e);
+      }
+    }
+    window.open(accountUrl, '_blank');
+    closeMessageModal();
+  }, 450);
+}
+
+/**
+ * ۲. ارسال سریع در تلگرام با پیش‌نویس خودکار (Telegram Direct Share)
+ * با این قابلیت پروتکل تلگرام، متن کامل درخواست از پیش در کادر پیام قرار گرفته
+ * و کاربر تنها با انتخاب اکانت @barzokhouse یا گروه، دکمه ارسال را لمس می‌کند.
+ */
+function shareViaTelegram() {
+  triggerHaptic('medium');
+  copyModalMessage();
+  const shareUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(currentModalMessage)}`;
+  
+  showToast("در حال باز کردن تلگرام با متن آماده و پیش‌نویس رزرو...");
+  
+  setTimeout(() => {
+    if (tg && tg.openTelegramLink) {
+      try {
+        tg.openTelegramLink(shareUrl);
+        closeMessageModal();
+        return;
+      } catch (e) {
+        console.warn("tg.openTelegramLink failed, using window.open", e);
+      }
+    }
+    window.open(shareUrl, '_blank');
+    closeMessageModal();
+  }, 350);
+}
+
+/**
+ * ۳. باز کردن مستقیم لینک اختصاصی گروه رزرو خانه برزک
+ */
+function sendDirectToReservationGroup() {
+  triggerHaptic('medium');
+  copyModalMessage();
+  const groupUrl = CONFIG.reservationGroupUrl || "https://t.me/+wigY6VanuYplYTk8";
+
+  showToast("متن درخواست کپی شد! در حال باز کردن گروه رزرو خانه برزک...");
+  setTimeout(() => {
+    if (tg && tg.openTelegramLink) {
+      try {
+        tg.openTelegramLink(groupUrl);
+        closeMessageModal();
+        return;
+      } catch (e) {
+        console.warn("tg.openTelegramLink failed", e);
+      }
+    }
+    window.open(groupUrl, '_blank');
+    closeMessageModal();
+  }, 450);
+}
+
+/**
+ * ۴. ارسال مستقیم متن رزرو از طریق پیامک (SMS) به شماره میزبان
+ */
+function sendViaSMS(e) {
+  if (e) e.preventDefault();
+  triggerHaptic('medium');
+  copyModalMessage();
+  const phone = CONFIG.phone1 || "09354868840";
+  const smsUrl = `sms:${phone}?body=${encodeURIComponent(currentModalMessage)}`;
+  showToast("متن کپی شد؛ در حال انتقال به پیامک گوشی...");
+  setTimeout(() => {
+    window.location.href = smsUrl;
+  }, 300);
+}
+
+/**
+ * ۵. ارسال خودکار از طریق سرور یا ربات (با بازگشت امن به اکانت تلگرام در صورت در دسترس نبودن وب‌هوک)
  */
 function sendViaTelegram() {
   triggerHaptic('medium');
 
-  // تلاش برای ارسال از طریق Cloudflare Worker
+  // تلاش برای ارسال از طریق Cloudflare Worker در صورت دسترسی به اندپوینت فعال
   if (CONFIG.workerUrl) {
-    showToast("در حال ارسال درخواست به گروه رزرو خانه برزک...");
+    showToast("در حال پردازش و ثبت درخواست...");
     
     fetch(`${CONFIG.workerUrl}/api/reserve`, {
       method: "POST",
@@ -2462,73 +2558,27 @@ function sendViaTelegram() {
         }
       })
     })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
     .then(data => {
       if (data && data.ok) {
-        showToast("درخواست شما با موفقیت به گروه رزرو خانه برزک ارسال شد.");
-        // در صورت اجرای درون تلگرام وب‌اپ با tg.sendData نیز به چت ارسال می‌شود
-        if (tg && tg.sendData) {
-          try { tg.sendData(currentModalMessage); } catch (e) {}
-        }
+        showToast("درخواست شما با موفقیت به سیستم رزرو خانه برزک ارسال شد.");
         setTimeout(() => closeMessageModal(), 1500);
       } else {
-        fallbackOpenTelegramGroup();
+        sendToBarzokTelegramAccount();
       }
     })
     .catch(err => {
       console.warn("Worker submission notice:", err);
-      fallbackOpenTelegramGroup();
+      // در صورت عدم پاسخ‌گویی سرور یا محدودیت وب‌هوک، مستقیماً به اکانت تلگرام هدایت می‌شود
+      sendToBarzokTelegramAccount();
     });
     return;
   }
 
-  fallbackOpenTelegramGroup();
-}
-
-/**
- * باز کردن مستقیم لینک اختصاصی گروه رزرو خانه برزک
- */
-function sendDirectToReservationGroup() {
-  triggerHaptic('medium');
-  copyModalMessage();
-  const groupUrl = CONFIG.reservationGroupUrl || "https://t.me/+wigY6VanuYplYTk8";
-
-  showToast("متن درخواست کپی شد. در حال باز کردن گروه رزرو خانه برزک...");
-  setTimeout(() => {
-    if (tg && tg.openTelegramLink) {
-      try {
-        tg.openTelegramLink(groupUrl);
-        closeMessageModal();
-        return;
-      } catch (e) {}
-    }
-    window.open(groupUrl, '_blank');
-    closeMessageModal();
-  }, 600);
-}
-
-function fallbackOpenTelegramGroup() {
-  const groupUrl = CONFIG.reservationGroupUrl || "https://t.me/+wigY6VanuYplYTk8";
-  
-  if (tg && tg.sendData) {
-    try {
-      tg.sendData(currentModalMessage);
-      showToast("درخواست شما با موفقیت ارسال گردید.");
-      closeMessageModal();
-      return;
-    } catch (e) {}
-  }
-
-  copyModalMessage();
-  showToast("متن درخواست کپی شد. گروه رزرو را باز کنید و ارسال فرمایید.");
-  setTimeout(() => {
-    if (tg && tg.openTelegramLink) {
-      tg.openTelegramLink(groupUrl);
-    } else {
-      window.open(groupUrl, '_blank');
-    }
-    closeMessageModal();
-  }, 700);
+  sendToBarzokTelegramAccount();
 }
 
 // نمایش پیام Toast
@@ -2772,6 +2822,10 @@ window.saveFoodAndReturnToReservation = saveFoodAndReturnToReservation;
 window.submitFoodOrderForm = submitFoodOrderForm;
 window.closeMessageModal = closeMessageModal;
 window.copyModalMessage = copyModalMessage;
+window.sendToBarzokTelegramAccount = sendToBarzokTelegramAccount;
+window.shareViaTelegram = shareViaTelegram;
+window.sendDirectToReservationGroup = sendDirectToReservationGroup;
+window.sendViaSMS = sendViaSMS;
 window.sendViaTelegram = sendViaTelegram;
 window.showToast = showToast;
 window.CONFIG = CONFIG;

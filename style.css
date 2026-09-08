@@ -1693,4 +1693,261 @@ body {
   border-top: 1px dashed var(--brand-border);
 }
 
+/* ========================================================
+   فرم فشرده دو ستونه برای کاهش ارتفاع و اسکرول کمتر
+   ======================================================== */
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 380px) {
+  .form-row-2col {
+    gap: 8px;
+  }
+}
+
+/* ========================================================
+   کارت‌های فشرده پیش‌نمایش در مدال نهایی
+   ======================================================== */
+.preview-summary-card {
+  background: #ffffff;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-md);
+  padding: 11px 13px;
+  margin-bottom: 10px;
+}
+
+.preview-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: #fdfbf7;
+  border: 1px solid #ebd9b5;
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  margin-bottom: 10px;
+}
+
+.preview-grid-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #825e1a;
+  margin-bottom: 2px;
+}
+
+.preview-field-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--brand-green);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-date-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--brand-border);
+}
+
+.preview-date-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.preview-room-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  background: var(--brand-surface-subtle);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 5px;
+}
+
+.preview-room-item:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================================
+   تقویم اختصاصی خورشیدی (شمسی)
+   ======================================================== */
+.shamsi-cal-modal-box {
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-lg);
+  max-width: 360px;
+  width: 100%;
+  padding: 16px;
+  box-shadow: var(--shadow-lg);
+  animation: modalPop 0.22s ease;
+  position: relative;
+}
+
+.shamsi-cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--brand-surface-subtle);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.shamsi-cal-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--brand-border);
+  background: #ffffff;
+  color: var(--brand-green);
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shamsi-cal-nav-btn:hover {
+  background: var(--brand-mustard-subtle);
+  border-color: var(--brand-mustard);
+}
+
+.shamsi-cal-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--brand-green);
+  text-align: center;
+}
+
+.shamsi-weekdays-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-text-muted);
+  margin-bottom: 6px;
+}
+
+.shamsi-weekdays-row span.friday {
+  color: #dc2626;
+}
+
+.shamsi-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.shamsi-day-btn {
+  height: 38px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.shamsi-day-btn:hover {
+  background: var(--brand-surface-subtle);
+  border-color: var(--brand-border);
+}
+
+.shamsi-day-btn.selected {
+  background: var(--brand-green) !important;
+  color: #ffffff !important;
+  border-color: var(--brand-green) !important;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.25);
+}
+
+.shamsi-day-btn.today {
+  border-color: var(--brand-mustard) !important;
+  font-weight: 800;
+}
+
+.shamsi-day-btn.friday {
+  color: #dc2626;
+}
+
+.shamsi-day-btn.empty {
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
+.shamsi-day-btn.midweek::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  background: #15803d;
+  border-radius: 50%;
+}
+
+.shamsi-day-btn.selected.midweek::after {
+  background: #ffffff;
+}
+
+/* کنترل تعداد رزرو هر اتاق */
+.room-booking-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--brand-surface-subtle);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+}
+
+.room-counter-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--brand-border);
+  background: #ffffff;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--brand-green);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.room-counter-val {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--brand-green);
+  min-width: 18px;
+  text-align: center;
+}
+
+
 

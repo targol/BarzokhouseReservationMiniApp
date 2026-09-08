@@ -215,25 +215,26 @@
             مشخصات شما
           </h4>
 
-          <div class="form-group">
-            <label class="form-label" for="res-name">نام و نام خانوادگی:</label>
-            <input type="text" class="form-input" id="res-name" placeholder="مثال: مریم علوی" required />
-            <span class="form-hint">نام شما برای هماهنگی اقامت توسط میزبان</span>
+          <!-- مشخصات مهمان در دو ستون جهت کاهش فضای اشغال‌شده و اسکرول کمتر -->
+          <div class="form-row-2col">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="res-name">نام و نام خانوادگی:</label>
+              <input type="text" class="form-input" id="res-name" placeholder="مثال: مریم علوی" required />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="res-phone">شماره تماس (موبایل):</label>
+              <input type="tel" class="form-input" id="res-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="res-phone">شماره تماس (موبایل):</label>
-            <input type="tel" class="form-input" id="res-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
-            <span class="form-hint">برای تماس میزبان و تایید رزرو</span>
-          </div>
-
-          <h4 style="font-size: 14.5px; font-weight: 800; color: var(--brand-green); margin: 20px 0 14px;">
+          <h4 style="font-size: 14.5px; font-weight: 800; color: var(--brand-green); margin: 16px 0 12px;">
             جزییات اقامت
           </h4>
 
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <label class="form-label" style="margin-bottom: 0;">اتاق‌های انتخابی شما:</label>
+              <label class="form-label" style="margin-bottom: 0;">اتاق‌های انتخابی و تعداد رزرو هر اتاق:</label>
               <button type="button" class="btn-text-link" onclick="navigateTo('screen-rooms')" style="font-size: 12.5px; color: var(--brand-mustard); font-weight: 700; background: none; border: none; cursor: pointer; text-decoration: underline;">
                 + افزودن اتاق دیگر
               </button>
@@ -243,24 +244,44 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="res-checkin-date">تاریخ ورود:</label>
-            <input type="date" class="form-input" id="res-checkin-date" required />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">تعداد شب اقامت:</label>
-            <div class="stepper">
-              <button type="button" class="stepper-btn" onclick="changeReservationNights(-1)">-</button>
-              <span class="stepper-val" id="res-nights-val">۱ شب</span>
-              <button type="button" class="stepper-btn" onclick="changeReservationNights(1)">+</button>
+          <!-- تاریخ‌های ورود و خروج زیر هم با تقویم اختصاصی شمسی (بدون تاریخ میلادی) -->
+          <div class="stay-dates-card" style="background: var(--brand-surface-subtle); border: 1px solid var(--brand-border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px;">
+            <!-- ۱. تاریخ و روز ورود -->
+            <div class="form-group" style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <label class="form-label" style="margin-bottom: 0; font-size: 13px; font-weight: 800; color: var(--brand-green);">
+                  📅 تاریخ و روز ورود:
+                </label>
+                <button type="button" class="btn-text-link" onclick="openShamsiDatePicker('reservation')" style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 800; background: var(--brand-mustard-subtle); padding: 3px 8px; border-radius: 6px; border: 1px solid #ebd9b5; cursor: pointer;">
+                  🗓️ تقویم شمسی
+                </button>
+              </div>
+              <div id="res-checkin-display-box" onclick="openShamsiDatePicker('reservation')" style="background: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--brand-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center;" title="جهت تغییر تاریخ با تقویم شمسی کلیک کنید">
+                <span id="res-checkin-shamsi-text" style="font-size: 13.5px; font-weight: 800; color: var(--brand-teal-dark);">--</span>
+                <span style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 700;">انتخاب در تقویم ▾</span>
+              </div>
+              <input type="hidden" id="res-checkin-date" />
             </div>
-          </div>
 
-          <div class="form-group">
-            <label class="form-label">تاریخ خروج (محاسبه خودکار):</label>
-            <div style="background: var(--brand-surface-subtle); padding: 12px 14px; border-radius: var(--radius-md); font-weight: 700; color: var(--brand-green); border: 1px solid var(--brand-border);" id="res-checkout-display">
-              --
+            <!-- مدت اقامت (تعداد شب) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px dashed var(--brand-border); border-bottom: 1px dashed var(--brand-border); margin-bottom: 10px;">
+              <span style="font-size: 12.5px; font-weight: 700; color: var(--brand-text);">مدت اقامت (تعداد شب):</span>
+              <div class="stepper" style="margin: 0;">
+                <button type="button" class="stepper-btn" onclick="changeReservationNights(-1)">-</button>
+                <span class="stepper-val" id="res-nights-val" style="min-width: 50px;">۱ شب</span>
+                <button type="button" class="stepper-btn" onclick="changeReservationNights(1)">+</button>
+              </div>
+            </div>
+
+            <!-- ۲. تاریخ و روز خروج (زیر هم) -->
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="margin-bottom: 5px; font-size: 13px; font-weight: 800; color: var(--brand-green);">
+                📅 تاریخ و روز خروج (محاسبه خودکار):
+              </label>
+              <div style="background: #ffffff; padding: 10px 12px; border-radius: 8px; font-weight: 700; color: var(--brand-green); border: 1px solid var(--brand-border); display: flex; justify-content: space-between; align-items: center;" id="res-checkout-display">
+                <span id="res-checkout-shamsi-text" style="font-size: 13.5px; font-weight: 800; color: var(--brand-teal-dark);">--</span>
+                <span id="res-checkout-day-badge" style="background: var(--brand-mustard-subtle); color: var(--brand-mustard-dark); padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 800;">--</span>
+              </div>
             </div>
           </div>
 
@@ -270,6 +291,20 @@
               <button type="button" class="stepper-btn" onclick="changeReservationGuests(-1)">-</button>
               <span class="stepper-val" id="res-guests-val">۲ نفر</span>
               <button type="button" class="stepper-btn" onclick="changeReservationGuests(1)">+</button>
+            </div>
+          </div>
+
+          <!-- کادر ویژه اطلاع‌رسانی تخفیف‌های اقامت خانه برزک -->
+          <div class="discount-policy-card" style="background: #fdfbf7; border: 1px solid #ebd9b5; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 800; color: #825e1a; margin-bottom: 5px;">
+              <span>🏷️</span>
+              <span>تخفیف‌های اقامت خانه برزک:</span>
+            </div>
+            <p style="font-size: 12.5px; color: #6b4d11; line-height: 1.6; margin: 0;">
+              برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه شنبه ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۲۰ درصد تخفیف درشب دوم در نظر گرفته میشود.)
+            </p>
+            <div id="res-discount-status-badge" style="display: none; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--brand-green); background: #eef7f2; padding: 5px 10px; border-radius: 6px; border: 1px solid #c7e6d5;">
+              <!-- وضعیت تخفیف برای تاریخ انتخابی -->
             </div>
           </div>
 
@@ -294,6 +329,10 @@
             <div class="estimate-row">
               <span id="res-summary-room">اتاق شاتوت (۲ نفر، ۱ شب)</span>
               <span id="res-summary-room-price">۲,۶۰۰,۰۰۰ تومان</span>
+            </div>
+            <div class="estimate-row" id="res-summary-discount-row" style="display: none; color: #b23b3b; font-weight: 700;">
+              <span id="res-summary-discount-title">تخفیف اقامت (وسط هفته / شب دوم):</span>
+              <span id="res-summary-discount-price">- ۰ تومان</span>
             </div>
             <div class="estimate-row" id="res-summary-food-row" style="display: none;">
               <span id="res-summary-food-title">سفارش غذای سنتی:</span>
@@ -691,14 +730,17 @@
             مشخصات و برنامه غذایی
           </h4>
 
-          <div class="form-group">
-            <label class="form-label" for="food-name">نام شما:</label>
-            <input type="text" class="form-input" id="food-name" placeholder="نام و نام خانوادگی" required />
-          </div>
+          <!-- مشخصات در دو ستون جهت اشغال فضای کمتر و کاهش اسکرول -->
+          <div class="form-row-2col">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="food-name">نام شما:</label>
+              <input type="text" class="form-input" id="food-name" placeholder="نام و نام خانوادگی" required />
+            </div>
 
-          <div class="form-group">
-            <label class="form-label" for="food-phone">شماره تماس:</label>
-            <input type="tel" class="form-input" id="food-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="food-phone">شماره تماس:</label>
+              <input type="tel" class="form-input" id="food-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+            </div>
           </div>
 
           <!-- بخش تنظیم تاریخ و نوع وعده جاری -->
@@ -709,8 +751,19 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 10px;">
-              <label class="form-label" for="food-date">تاریخ وعده:</label>
-              <input type="date" class="form-input" id="food-date" required onchange="handleFoodDateChange(this.value)" />
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <label class="form-label" style="margin-bottom: 0; font-size: 13px; font-weight: 800; color: var(--brand-green);">
+                  📅 تاریخ وعده غذایی:
+                </label>
+                <button type="button" class="btn-text-link" onclick="openShamsiDatePicker('food')" style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 800; background: var(--brand-mustard-subtle); padding: 3px 8px; border-radius: 6px; border: 1px solid #ebd9b5; cursor: pointer;">
+                  🗓️ تقویم شمسی
+                </button>
+              </div>
+              <div id="food-date-display-box" onclick="openShamsiDatePicker('food')" style="background: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--brand-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <span id="food-date-shamsi-display" style="font-size: 13.5px; font-weight: 800; color: var(--brand-teal-dark);">--</span>
+                <span style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 700;">انتخاب در تقویم ▾</span>
+              </div>
+              <input type="hidden" id="food-date" />
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
@@ -815,48 +868,152 @@
     </div><!-- /app-container -->
 
     <!-- ========================================================
-         مدال پیش‌نمایش پیام تلگرام (Telegram Message Modal)
+         مدال پیش‌نمایش پیام و ارسال درخواست (Message Preview Modal)
          ======================================================== -->
     <div class="modal-overlay" id="message-modal">
-      <div class="modal-box">
-        <h3 class="modal-title" id="modal-title">پیش‌نمایش و ارسال درخواست</h3>
-        <p class="modal-text" id="modal-subtitle">خلاصه درخواست شما آماده ارسال به گروه رزرو خانه برزک است:</p>
-        
-        <div class="telegram-message-preview" id="modal-message-preview"></div>
+      <div class="modal-box" style="max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h3 class="modal-title" id="modal-title" style="margin-bottom: 0; font-size: 16px;">پیش‌نمایش درخواست شما</h3>
+          <button type="button" onclick="closeMessageModal()" style="background: none; border: none; font-size: 19px; color: var(--brand-text-muted); cursor: pointer; padding: 2px 6px;">✕</button>
+        </div>
 
-        <div style="display: flex; flex-direction: column; gap: 9px;">
-          <!-- ۱. ارسال خودکار و مستقیم به گروه رزرو خانه برزک (متصل به بات و ورکر کلادفلر) -->
-          <button class="btn btn-primary" id="btn-modal-send-tg" onclick="sendViaTelegram()" style="font-size: 14px; font-weight: 800; padding: 12px 16px;">
+        <!-- کارت مشخصات مهمان: در دو ستون کنار هم جهت کاهش اسکرول و اشغال فضای کمتر -->
+        <div class="preview-grid-2col">
+          <div class="preview-grid-col">
+            <span class="preview-field-label">👤 نام و نام خانوادگی:</span>
+            <span class="preview-field-val" id="preview-guest-name">--</span>
+          </div>
+          <div class="preview-grid-col">
+            <span class="preview-field-label">📞 شماره تماس همراه:</span>
+            <span class="preview-field-val" id="preview-guest-phone" style="direction: ltr; text-align: right;">--</span>
+          </div>
+        </div>
+
+        <!-- کارت تاریخ‌های ورود و خروج زیر هم -->
+        <div class="preview-summary-card" id="preview-dates-card">
+          <div class="preview-date-item">
+            <span style="font-size: 12px; color: var(--brand-text-muted); font-weight: 700;">📅 تاریخ و روز ورود:</span>
+            <span style="font-size: 13px; font-weight: 800; color: var(--brand-teal-dark);" id="preview-checkin-date">--</span>
+          </div>
+          <div class="preview-date-item">
+            <span style="font-size: 12px; color: var(--brand-text-muted); font-weight: 700;">📅 تاریخ و روز خروج:</span>
+            <span style="font-size: 13px; font-weight: 800; color: var(--brand-teal-dark);" id="preview-checkout-date">--</span>
+          </div>
+          <div class="preview-date-item" style="padding-top: 6px;">
+            <span style="font-size: 11.5px; color: var(--brand-text-muted);">مدت اقامت:</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--brand-mustard-dark);" id="preview-stay-duration">--</span>
+          </div>
+        </div>
+
+        <!-- کارت اتاق‌ها با نام هر اتاق و تعداد رزرو شده آن اتاق -->
+        <div class="preview-summary-card" id="preview-rooms-card">
+          <div style="font-size: 12px; font-weight: 800; color: var(--brand-green); margin-bottom: 7px; display: flex; justify-content: space-between; align-items: center;">
+            <span>🏠 اتاق‌های رزرو شده و تعداد:</span>
+            <span style="font-size: 11px; color: var(--brand-mustard-dark);" id="preview-rooms-count-badge"></span>
+          </div>
+          <div id="preview-rooms-list">
+            <!-- اتاق‌ها همراه با نام و تعداد رزرو رندر می‌شوند -->
+          </div>
+        </div>
+
+        <!-- کارت سفارش خوراک در صورت وجود -->
+        <div class="preview-summary-card" id="preview-food-card" style="display: none;">
+          <div style="font-size: 12px; font-weight: 800; color: var(--brand-green); margin-bottom: 6px;">
+            🍲 سفارش غذاهای سنتی:
+          </div>
+          <div id="preview-food-list" style="font-size: 12px; color: var(--brand-text); line-height: 1.6;"></div>
+        </div>
+
+        <!-- کادر جمع کل برآورد و تخفیف -->
+        <div style="background: #fdfbf7; border: 1px solid #ebd9b5; border-radius: var(--radius-md); padding: 9px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12.5px; font-weight: 800; color: #825e1a;">💰 جمع کل برآورد نهایی:</span>
+          <span style="font-size: 14.5px; font-weight: 900; color: var(--brand-green);" id="preview-grand-total">--</span>
+        </div>
+
+        <!-- جزئیات متن کامل پیام (جهت مشاهده یا کپی) -->
+        <details style="margin-bottom: 12px; font-size: 11.5px; color: var(--brand-text-muted);">
+          <summary style="cursor: pointer; font-weight: 700; color: var(--brand-mustard-dark); padding: 3px 0;">
+            📝 متن ارسالی به تلگرام (برای مشاهده کلیک کنید)
+          </summary>
+          <div class="telegram-message-preview" id="modal-message-preview" style="margin-top: 6px; max-height: 120px; overflow-y: auto; font-size: 11.5px;"></div>
+        </details>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- ۱. ارسال خودکار و مستقیم به گروه رزرو خانه برزک -->
+          <button class="btn btn-primary" id="btn-modal-send-tg" onclick="sendViaTelegram()" style="font-size: 13.5px; font-weight: 800; padding: 11px 16px;">
             🚀 ارسال خودکار به گروه رزرو خانه برزک
           </button>
 
-          <!-- ۲. باز کردن لینک اختصاصی گروه تلگرام خانه برزک -->
-          <button class="btn btn-mustard" id="btn-modal-open-group" onclick="sendDirectToReservationGroup()" style="font-size: 13.5px; font-weight: 700; padding: 11px 16px;">
-            👥 باز کردن گروه رزرو خانه برزک در تلگرام
-          </button>
-
-          <!-- ۳. ارسال مستقیم به اکانت تلگرام خانه برزک (@barzokhouse) -->
-          <button class="btn btn-outline" id="btn-modal-send-account" onclick="sendToBarzokTelegramAccount()" style="font-size: 13px; padding: 9px 14px;">
-            💬 ارسال به اکانت تلگرام خانه برزک (@barzokhouse)
-          </button>
-
-          <!-- ۴. ارسال سریع در تلگرام با پیش‌نویس خودکار -->
-          <button class="btn btn-outline" id="btn-modal-share-tg" onclick="shareViaTelegram()" style="font-size: 13px; padding: 9px 14px;">
+          <!-- ۲. ارسال سریع متن در تلگرام -->
+          <button class="btn btn-outline" id="btn-modal-share-tg" onclick="shareViaTelegram()" style="font-size: 12.5px; padding: 9px 14px;">
             ✈️ اشتراک سریع متن در تلگرام
           </button>
           
-          <!-- ۵. کپی متن کامل درخواست -->
-          <button class="btn btn-outline" id="btn-modal-copy" onclick="copyModalMessage()" style="font-size: 13px; padding: 9px 14px;">
+          <!-- ۳. کپی متن کامل درخواست -->
+          <button class="btn btn-outline" id="btn-modal-copy" onclick="copyModalMessage()" style="font-size: 12.5px; padding: 9px 14px;">
             📋 کپی متن درخواست
           </button>
 
-          <!-- ۶. ارسال از طریق پیامک (SMS) به شماره میزبان -->
-          <button class="btn btn-outline" id="btn-modal-sms" onclick="sendViaSMS(event)" style="font-size: 12.5px; padding: 8px 12px; color: var(--brand-text-muted);">
+          <!-- ۴. ارسال از طریق پیامک به میزبان -->
+          <button class="btn btn-outline" id="btn-modal-sms" onclick="sendViaSMS(event)" style="font-size: 12px; padding: 8px 12px; color: var(--brand-text-muted);">
             📱 ارسال پیامک مستقیم به میزبان (۰۹۳۵۴۸۶۸۸۴۰)
           </button>
 
-          <button class="btn" id="btn-modal-cancel" style="background: transparent; color: var(--brand-text-muted); font-size: 13px; padding: 6px 10px;" onclick="closeMessageModal()">
+          <button class="btn" id="btn-modal-cancel" style="background: transparent; color: var(--brand-text-muted); font-size: 12px; padding: 5px 10px;" onclick="closeMessageModal()">
             انصراف و ویرایش اطلاعات
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         مدال تقویم اختصاصی خورشیدی (Pure Shamsi Calendar Picker)
+         ======================================================== -->
+    <div class="modal-overlay" id="shamsi-datepicker-modal">
+      <div class="shamsi-cal-modal-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 class="modal-title" style="margin-bottom: 0; font-size: 15px;">🗓️ تقویم خورشیدی (شمسی)</h3>
+          <button type="button" onclick="closeShamsiDatePicker()" style="background: none; border: none; font-size: 18px; color: var(--brand-text-muted); cursor: pointer; padding: 2px 6px;">✕</button>
+        </div>
+
+        <!-- کنترل ناوبری ماه و سال شمسی -->
+        <div class="shamsi-cal-header">
+          <button type="button" class="shamsi-cal-nav-btn" onclick="changeShamsiCalendarMonth(1)" title="ماه بعد">❯</button>
+          <div class="shamsi-cal-title" id="shamsi-cal-header-title">شهریور ۱۴۰۵</div>
+          <button type="button" class="shamsi-cal-nav-btn" onclick="changeShamsiCalendarMonth(-1)" title="ماه قبل">❮</button>
+        </div>
+
+        <!-- روزهای هفته (شنبه تا جمعه) -->
+        <div class="shamsi-weekdays-row">
+          <span>ش</span>
+          <span>ی</span>
+          <span>د</span>
+          <span>س</span>
+          <span>چ</span>
+          <span>پ</span>
+          <span class="friday">ج</span>
+        </div>
+
+        <!-- شبکه روزهای تقویم شمسی -->
+        <div class="shamsi-days-grid" id="shamsi-cal-days-grid">
+          <!-- با جاوااسکریپت پر می‌شود -->
+        </div>
+
+        <!-- راهنمای تخفیف روزهای وسط هفته -->
+        <div style="font-size: 11px; color: #825e1a; background: #fdfbf7; padding: 6px 10px; border-radius: 6px; border: 1px solid #ebd9b5; margin-bottom: 12px; line-height: 1.5;">
+          🏷️ روزهای شنبه تا سه‌شنبه (نقطه سبز) مشمول ۱۰٪ تخفیف اقامت می‌باشند.
+        </div>
+
+        <!-- دکمه‌های سریع تقویم -->
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-mustard" style="flex: 1; font-size: 12px; padding: 7px;" onclick="pickQuickShamsiDate(0)">
+            امروز
+          </button>
+          <button type="button" class="btn btn-outline" style="flex: 1; font-size: 12px; padding: 7px;" onclick="pickQuickShamsiDate(1)">
+            فردا
+          </button>
+          <button type="button" class="btn" style="font-size: 12px; padding: 7px 12px; background: transparent; color: var(--brand-text-muted);" onclick="closeShamsiDatePicker()">
+            انصراف
           </button>
         </div>
       </div>

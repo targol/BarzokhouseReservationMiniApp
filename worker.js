@@ -10,7 +10,7 @@
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization"
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
 };
 
 export default {
@@ -23,9 +23,77 @@ export default {
       });
     }
 
-    if (request.method === "GET") {
-      return new Response(
-        `<!DOCTYPE html>
+    const url = new URL(request.url);
+
+    // ۱. هندل کردن مسیر اختصاصی API ثبت رزرو مینی‌اپ (/api/reserve)
+    if (url.pathname === "/api/reserve" || url.pathname.startsWith("/api/reserve")) {
+      if (request.method === "POST") {
+        try {
+          const payload = await request.json();
+          const result = await handleDirectReservation(payload, env);
+          return new Response(JSON.stringify(result), {
+            status: result.ok ? 200 : 400,
+            headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({ ok: false, error: err.message, note: "خطا در خواندن داده‌های ارسالی" }), {
+            status: 400,
+            headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
+          });
+        }
+      }
+      // در صورت درخواست GET برای تست سلامت اندپوینت
+      return new Response(JSON.stringify({ 
+        ok: true, 
+        service: "سرویس ثبت رزرو خانه برزک",
+        has_bot_token: !!(env.BOT_TOKEN || env.TELEGRAM_BOT_TOKEN),
+        has_chat_id: !!(env.RESERVATION_CHAT_ID || env.CHAT_ID)
+      }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
+      });
+    }
+
+    // ۲. دریافت آپدیت‌ها و درخواست‌های POST از وب‌هوک یا روت اصلی
+    if (request.method === "POST") {
+      try {
+        const payload = await request.json();
+
+        // اگر مینی‌اپ مستقیماً به روت اصلی درخواست داده باشد
+        if (payload.action === "submit_reservation" || payload.isMiniAppOrder || payload.message) {
+          const result = await handleDirectReservation(payload, env);
+          return new Response(JSON.stringify(result), {
+            status: result.ok ? 200 : 400,
+            headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
+          });
+        }
+
+        // پردازش آپدیت‌های تلگرام
+        if (payload.update_id || payload.my_chat_member) {
+          await handleTelegramUpdate(payload, env);
+        }
+
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
+        });
+      } catch (err) {
+        console.error("Worker error:", err);
+        return new Response(JSON.stringify({ ok: false, error: err.message }), {
+          status: 500,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
+        });
+      }
+    }
+
+    // ۳. پشتیبانی از فایل‌های ایستا در صورت استقرار از طریق Cloudflare Workers with Assets
+    if (env.ASSETS && typeof env.ASSETS.fetch === "function") {
+      return env.ASSETS.fetch(request);
+    }
+
+    // ۴. صفحه وضعیت برای متد GET در روت اصلی
+    return new Response(
+      `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head><meta charset="utf-8"><title>سرویس رزرو خانه برزک</title></head>
 <body style="font-family: sans-serif; text-align: center; padding: 40px; background: #faf8f5; color: #1c2b24;">
@@ -35,43 +103,8 @@ export default {
   <p><a href="${env.MINIAPP_URL || env.MINI_APP_URL || '#'}" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #1f8578; color: #fff; text-decoration: none; border-radius: 8px;">ورود به مینی‌اپ</a></p>
 </body>
 </html>`,
-        { headers: { ...CORS_HEADERS, "Content-Type": "text/html; charset=utf-8" } }
-      );
-    }
-
-    if (request.method !== "POST") {
-      return new Response("Method not allowed", { status: 405, headers: CORS_HEADERS });
-    }
-
-    try {
-      const url = new URL(request.url);
-      const payload = await request.json();
-
-      // ۱. دریافت درخواست مستقیم از فرانت‌اند مینی‌اپ (API Reservation Endpoint)
-      if (url.pathname.includes("/api/reserve") || payload.action === "submit_reservation" || payload.isMiniAppOrder) {
-        const result = await handleDirectReservation(payload, env);
-        return new Response(JSON.stringify(result), {
-          status: 200,
-          headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
-        });
-      }
-
-      // ۲. دریافت آپدیت‌های تلگرام از Webhook
-      if (payload.message || payload.my_chat_member) {
-        await handleTelegramUpdate(payload, env);
-      }
-
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
-      });
-    } catch (err) {
-      console.error("Worker error:", err);
-      return new Response(JSON.stringify({ ok: false, error: err.message }), {
-        status: 500,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
-      });
-    }
+      { headers: { ...CORS_HEADERS, "Content-Type": "text/html; charset=utf-8" } }
+    );
   }
 };
 
@@ -79,33 +112,90 @@ export default {
  * پردازش درخواست ثبت یکپارچه ارسالی مستقیم از مینی‌اپ
  */
 async function handleDirectReservation(payload, env) {
-  const token = env.BOT_TOKEN;
-  const groupId = env.CHAT_ID || env.RESERVATION_CHAT_ID;
+  const token = env.BOT_TOKEN || env.TELEGRAM_BOT_TOKEN || env.TOKEN || env.TELEGRAM_TOKEN || "691903257:AAfeOUEmpfHkElZUb8JFUTmOhLU79b6--zQ";
+  let configuredGroupId = env.RESERVATION_CHAT_ID || env.CHAT_ID || env.TELEGRAM_CHAT_ID || env.GROUP_ID || env.CHATID || "-1004485664573";
   const messageText = payload.message || "درخواست رزرو جدید ثبت شد.";
 
   if (!token) {
-    return { ok: false, note: "BOT_TOKEN در متغیرهای Cloudflare Worker تنظیم نشده است." };
+    return { 
+      ok: false, 
+      error: "BOT_TOKEN_NOT_CONFIGURED",
+      note: "توکن بات تلگرام (BOT_TOKEN) در متغیرهای Cloudflare یافت نشد. لطفاً در Settings > Variables کلادفلر آن را ثبت نمایید." 
+    };
   }
 
-  // اگر شناسه گروه یا اکانت ادمین تنظیم شده باشد، پیام مستقیماً ارسال می‌شود
-  if (groupId) {
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: groupId,
-        text: messageText,
-        disable_web_page_preview: true
-      })
-    });
-    const resData = await res.json();
-    return { ok: resData.ok === true, forwarded_to_group: resData.ok === true, telegram_res: resData };
+  configuredGroupId = String(configuredGroupId).trim();
+  // هشدار در صورت وارد کردن لینک دعوت به جای Chat ID
+  if (configuredGroupId.includes("t.me") || configuredGroupId.startsWith("+")) {
+    return {
+      ok: false,
+      error: "INVALID_CHAT_ID",
+      note: "در متغیر RESERVATION_CHAT_ID لینک تلگرام وارد شده است. شناسه عددی صحیح گروه -1004485664573 یا -4485664573 می‌باشد."
+    };
+  }
+
+  // آماده‌سازی کاندیداهای شناسه گروه (پشتیبانی از هر دو فرمت سوپرگروه -100 و گروه عادی -)
+  const candidateIds = [configuredGroupId];
+  if (configuredGroupId.startsWith("-100")) {
+    const rawId = "-" + configuredGroupId.slice(4);
+    if (!candidateIds.includes(rawId)) candidateIds.push(rawId);
+  } else if (configuredGroupId.startsWith("-")) {
+    const superId = "-100" + configuredGroupId.slice(1);
+    if (!candidateIds.includes(superId)) candidateIds.push(superId);
+  }
+
+  // تلاش برای ارسال از طریق کاندیداها
+  let lastResData = null;
+  let lastError = null;
+
+  for (const targetChatId of candidateIds) {
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: targetChatId,
+          text: messageText,
+          disable_web_page_preview: true
+        })
+      });
+
+      const resData = await res.json().catch(() => ({}));
+      if (resData && resData.ok === true) {
+        return { 
+          ok: true, 
+          forwarded_to_group: true, 
+          used_chat_id: targetChatId,
+          message_id: resData.result?.message_id,
+          note: "پیام با موفقیت در گروه رزرو تلگرام خانه برزک ثبت گردید." 
+        };
+      }
+      lastResData = resData;
+    } catch (netErr) {
+      lastError = netErr;
+    }
+  }
+
+  // در صورت عدم موفقیت، تشخیص دقیق علت جهت راهنمایی کاربر
+  let userFriendlyNote = "تلگرام پیام را ثبت نکرد.";
+  const errDesc = (lastResData && lastResData.description) || (lastError && lastError.message) || "";
+  const errCode = (lastResData && lastResData.error_code) || 0;
+
+  if (errCode === 401 || errDesc.toLowerCase().includes("unauthorized")) {
+    userFriendlyNote = "توکن ربات تلگرام نامعتبر است (Error 401 Unauthorized). لطفاً توکن دریافتی از BotFather را در متغیر BOT_TOKEN بررسی فرمایید.";
+  } else if (errCode === 400 && errDesc.toLowerCase().includes("chat not found")) {
+    userFriendlyNote = `شناسه گروه رزرو تلگرام (${configuredGroupId}) یافت نشد. لطفاً مطمئن شوید ربات در این گروه عضو شده است (لینک گروه: https://web.telegram.org/k/#-4485664573).`;
+  } else if (errCode === 403 || errDesc.toLowerCase().includes("bot is not a member")) {
+    userFriendlyNote = "ربات در گروه رزرو عضو نیست یا دسترسی ارسال پیام ندارد. لطفاً ربات را به این گروه اضافه کرده و دسترسی ادمین دهید.";
+  } else if (errDesc) {
+    userFriendlyNote = `پاسخ تلگرام: ${errDesc}`;
   }
 
   return { 
     ok: false, 
-    forwarded_to_group: false, 
-    note: "شناسه گفتگوی تلگرام (RESERVATION_CHAT_ID یا CHAT_ID) در تنظیمات Worker مشخص نشده است. لطفاً آن را در متغیرهای Cloudflare وارد کنید." 
+    error: errDesc || "خطای ارسال به تلگرام",
+    telegram_error_code: errCode,
+    note: userFriendlyNote
   };
 }
 

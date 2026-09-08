@@ -32,7 +32,11 @@ const CONFIG = {
   googleMapsReviewUrl: "https://maps.app.goo.gl/aC1vyJ9T5Q4jJkMy6",
   tripAdvisorUrl: "https://www.tripadvisor.com/Hotel_Review-g680023-d8618364-Reviews-Barzok_House-Kashan_Isfahan_Province.html",
   // لینک اختصاصی گروه تلگرام برای ارسال درخواست‌های رزرو خانه برزک
-  reservationGroupUrl: "https://t.me/+wigY6VanuYplYTk8",
+  reservationGroupUrl: "https://web.telegram.org/k/#-4485664573",
+  reservationGroupId: "-1004485664573",
+  reservationGroupRawId: "-4485664573",
+  reservationGroupDeepLink: "https://t.me/c/4485664573",
+  reservationGroupInviteUrl: "https://t.me/+wigY6VanuYplYTk8",
   // آدرس Cloudflare Worker برای پردازش درخواست و ارسال مستقیم به گروه تلگرام
   workerUrl: "https://barzokhousereservationminiapp.targol.workers.dev"
 };
@@ -1565,6 +1569,20 @@ function navigateToFoodFromReservation() {
 // ذخیره انتخاب غذا و بازگشت به فرم اقامت
 function saveFoodAndReturnToReservation() {
   triggerHaptic('medium');
+  const selectedIds = Object.keys(state.foodOrder.selectedDishes);
+  if (selectedIds.length > 1) {
+    const isValid = checkGroupRuleViolation(() => {
+      executeSaveFoodAndReturnToReservation();
+    });
+    if (isValid) {
+      executeSaveFoodAndReturnToReservation();
+    }
+    return;
+  }
+  executeSaveFoodAndReturnToReservation();
+}
+
+function executeSaveFoodAndReturnToReservation() {
   syncFoodToReservationInputs();
   updateReservationCalculations();
   navigateTo("screen-reservation");
@@ -2111,6 +2129,160 @@ function quickAddBreakfastMeal() {
   showToast("صبحانه سنتی روستایی به سفارش شما اضافه شد. می‌توانید تعداد پرس یا روز را تنظیم کنید.");
 }
 
+// متغیر نگه‌دارنده عملیات معلق جهت اجرا پس از حل مغایرت گروهی
+let pendingGroupAction = null;
+
+/**
+ * بررسی قانون انتخاب ۲ نوع غذا:
+ * برای انتخاب ۲ نوع غذا در یک وعده، باید حتماً گروه بالای ۱۰ نفر باشد،
+ * یعنی اقامت بالای ۱۰ نفر درخواست شده باشد یا برای بالای ۱۰ نفر غذا درخواستش ثبت شود.
+ * اگر زیر ۱۰ نفر باشد، پنجره انتخاب هوشمند باز می‌شود.
+ */
+function checkGroupRuleViolation(callbackIfValid) {
+  const selectedDishIds = Object.keys(state.foodOrder.selectedDishes);
+  
+  // اگر ۱ نوع غذا یا کمتر انتخاب شده، هیچ محدودیتی در تعداد نفرات وجود ندارد
+  if (selectedDishIds.length <= 1) {
+    if (typeof callbackIfValid === "function") callbackIfValid();
+    return true;
+  }
+
+  // در صورت انتخاب ۲ نوع غذا، تعداد نفرات اقامت و تعداد پرس‌های این وعده بررسی می‌شود
+  const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
+  const portionsCount = selectedDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
+
+  // شرط قانون: اقامت بالای ۱۰ نفر (> 10) یا مجموع پرس‌های غذا در این وعده بالای ۱۰ (> 10)
+  const isAboveTen = (guestsCount > 10) || (portionsCount > 10);
+
+  if (isAboveTen) {
+    if (typeof callbackIfValid === "function") callbackIfValid();
+    return true;
+  }
+
+  // در صورتی که تعداد زیر ۱۰ نفر باشد (۱۰ یا کمتر):
+  triggerHaptic('warning');
+  openGroupRuleModal({
+    selectedDishIds,
+    guestsCount,
+    portionsCount,
+    onSuccess: callbackIfValid
+  });
+  return false;
+}
+
+function openGroupRuleModal({ selectedDishIds, guestsCount, portionsCount, onSuccess }) {
+  pendingGroupAction = onSuccess;
+  
+  const modal = document.getElementById("group-rule-modal");
+  const statusBox = document.getElementById("group-rule-status-box");
+  const actionButtons = document.getElementById("group-rule-action-buttons");
+  if (!modal || !statusBox || !actionButtons) return;
+
+  const dishId1 = selectedDishIds[0];
+  const dishId2 = selectedDishIds[1];
+  const dish1 = FOOD_MENU.find(d => d.id === dishId1) || { name: "غذای اول" };
+  const dish2 = FOOD_MENU.find(d => d.id === dishId2) || { name: "غذای دوم" };
+  const qty1 = Number(state.foodOrder.selectedDishes[dishId1]) || 1;
+  const qty2 = Number(state.foodOrder.selectedDishes[dishId2]) || 1;
+  const totalQty = qty1 + qty2;
+
+  statusBox.innerHTML = `
+    <div style="font-weight: 700; margin-bottom: 6px; color: #c2410c;">
+      📊 وضعیت فعلی سفارش شما (${formatPersianNumber(Math.max(guestsCount, totalQty))} نفر / زیر ۱۰ نفر):
+    </div>
+    <div style="line-height: 1.8;">
+      • نفرات اقامت ثبت‌شده: <strong>${guestsCount > 0 ? formatPersianNumber(guestsCount) + ' نفر' : 'ثبت نشده'}</strong><br/>
+      • مجموع پرس‌های این وعده: <strong>${formatPersianNumber(totalQty)} پرس</strong> (${dish1.name}: ${formatPersianNumber(qty1)} پرس + ${dish2.name}: ${formatPersianNumber(qty2)} پرس)
+    </div>
+    <div style="margin-top: 8px; font-size: 11.5px; color: #7c2d12; border-top: 1px dashed #fdba74; padding-top: 6px;">
+      💡 طبق ضوابط بومگردی، طبخ ۲ نوع غذا در یک وعده تنها مختص گروه‌های <strong>بالای ۱۰ نفر</strong> است.
+    </div>
+  `;
+
+  actionButtons.innerHTML = `
+    <button type="button" class="btn btn-primary" onclick="resolveGroupConflictKeepSingle('${dishId1}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
+      <span>🍛 انتخاب ۱ نوع غذا: فقط «${dish1.name}»</span>
+      <span style="opacity: 0.9;">(${formatPersianNumber(qty1)} پرس) ←</span>
+    </button>
+
+    <button type="button" class="btn btn-primary" onclick="resolveGroupConflictKeepSingle('${dishId2}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
+      <span>🥘 انتخاب ۱ نوع غذا: فقط «${dish2.name}»</span>
+      <span style="opacity: 0.9;">(${formatPersianNumber(qty2)} پرس) ←</span>
+    </button>
+
+    <button type="button" class="btn btn-mustard" onclick="resolveGroupConflictIncreaseToAboveTen()" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
+      <span>👥 افزایش تعداد به بالای ۱۰ نفر (سفارش گروهی)</span>
+      <span>۱۱ پرس ←</span>
+    </button>
+
+    <button type="button" class="btn btn-outline" onclick="closeGroupRuleModal()" style="font-size: 12.5px; padding: 8px 12px; color: var(--brand-text-muted);">
+      ✏️ انصراف و تنظیم دستی در منو
+    </button>
+  `;
+
+  modal.classList.add("active");
+}
+
+function closeGroupRuleModal() {
+  triggerHaptic('light');
+  const modal = document.getElementById("group-rule-modal");
+  if (modal) modal.classList.remove("active");
+  pendingGroupAction = null;
+}
+
+function resolveGroupConflictKeepSingle(dishIdToKeep) {
+  triggerHaptic('medium');
+  const currentKeys = Object.keys(state.foodOrder.selectedDishes);
+  const dishToRemove = currentKeys.find(id => id !== dishIdToKeep);
+  if (dishToRemove) {
+    delete state.foodOrder.selectedDishes[dishToRemove];
+  }
+  
+  const keptDish = FOOD_MENU.find(d => d.id === dishIdToKeep);
+  const dishName = keptDish ? keptDish.name : "غذای انتخابی";
+  
+  closeGroupRuleModal();
+  renderFoodSection();
+  updateReservationCalculations();
+  showToast(`تنها «${dishName}» در این وعده ثبت شد.`);
+
+  if (typeof pendingGroupAction === "function") {
+    const action = pendingGroupAction;
+    pendingGroupAction = null;
+    action();
+  }
+}
+
+function resolveGroupConflictIncreaseToAboveTen() {
+  triggerHaptic('medium');
+  const currentKeys = Object.keys(state.foodOrder.selectedDishes);
+  if (currentKeys.length >= 2) {
+    const q1 = Number(state.foodOrder.selectedDishes[currentKeys[0]]) || 1;
+    const q2 = Number(state.foodOrder.selectedDishes[currentKeys[1]]) || 1;
+    const currentSum = q1 + q2;
+    if (currentSum <= 10) {
+      const needed = 11 - currentSum;
+      const add1 = Math.ceil(needed / 2);
+      const add2 = needed - add1;
+      state.foodOrder.selectedDishes[currentKeys[0]] = q1 + add1;
+      state.foodOrder.selectedDishes[currentKeys[1]] = q2 + add2;
+    }
+  } else if (currentKeys.length === 1) {
+    state.foodOrder.selectedDishes[currentKeys[0]] = Math.max(11, Number(state.foodOrder.selectedDishes[currentKeys[0]]) || 11);
+  }
+
+  closeGroupRuleModal();
+  renderFoodSection();
+  updateReservationCalculations();
+  showToast("تعداد پرس‌های غذا به بالای ۱۰ نفر (۱۱ پرس) افزایش یافت و ثبت شد.");
+
+  if (typeof pendingGroupAction === "function") {
+    const action = pendingGroupAction;
+    pendingGroupAction = null;
+    action();
+  }
+}
+
 // افزودن وعده جاری به لیست برنامه چند روزه/چند وعده‌ای
 function addCurrentMealToSchedule() {
   triggerHaptic('medium');
@@ -2119,6 +2291,19 @@ function addCurrentMealToSchedule() {
     showToast("لطفاً ابتدا حداقل یک غذا از منوی بالا برای این وعده انتخاب کنید.");
     return;
   }
+
+  // اعتبارسنجی قانون انتخاب ۲ نوع غذا: اگر زیر ۱۰ نفر باشد باید اصلاح شود
+  const isValid = checkGroupRuleViolation(() => {
+    executeAddCurrentMealToSchedule();
+  });
+  if (isValid) {
+    executeAddCurrentMealToSchedule();
+  }
+}
+
+function executeAddCurrentMealToSchedule() {
+  const selectedIds = Object.keys(state.foodOrder.selectedDishes);
+  if (selectedIds.length === 0) return;
 
   const dateInput = document.getElementById("food-date");
   const daySelect = document.getElementById("food-day");
@@ -2379,12 +2564,27 @@ function submitFoodOrderForm(e) {
     return;
   }
 
+  // اعتبارسنجی قانون گروهی (در صورت انتخاب ۲ نوع غذا در وعده جاری)
+  if (currentSelectedIds.length > 1) {
+    const isValid = checkGroupRuleViolation(() => {
+      executeSubmitFoodOrderForm();
+    });
+    if (isValid) {
+      executeSubmitFoodOrderForm();
+    }
+    return;
+  }
+
+  executeSubmitFoodOrderForm();
+}
+
+function executeSubmitFoodOrderForm() {
   updateReservationCalculations();
   const messageText = generateUnifiedOrderMessage();
 
   openMessagePreviewModal({
     title: "پیش‌نمایش درخواست شما",
-    subtitle: "خلاصه درخواست شما آماده ارسال به میزبان است:",
+    subtitle: "خلاصه درخواست شما آماده ارسال به گروه رزرو خانه برزک است:",
     messageText: messageText,
     actionType: "unified"
   });
@@ -2501,20 +2701,27 @@ function shareViaTelegram() {
 function sendDirectToReservationGroup() {
   triggerHaptic('medium');
   copyModalMessage();
-  const groupUrl = CONFIG.reservationGroupUrl || "https://t.me/+wigY6VanuYplYTk8";
+  const groupWebUrl = CONFIG.reservationGroupUrl || "https://web.telegram.org/k/#-4485664573";
+  const groupDeepLink = CONFIG.reservationGroupDeepLink || "https://t.me/c/4485664573";
+  const groupInviteUrl = CONFIG.reservationGroupInviteUrl || "https://t.me/+wigY6VanuYplYTk8";
 
   showToast("متن درخواست کپی شد! در حال باز کردن گروه رزرو خانه برزک...");
   setTimeout(() => {
     if (tg && tg.openTelegramLink) {
       try {
-        tg.openTelegramLink(groupUrl);
+        tg.openTelegramLink(groupDeepLink);
         closeMessageModal();
         return;
       } catch (e) {
-        console.warn("tg.openTelegramLink failed", e);
+        console.warn("tg.openTelegramLink failed, trying invite/web", e);
+        try {
+          tg.openTelegramLink(groupInviteUrl);
+          closeMessageModal();
+          return;
+        } catch (e2) {}
       }
     }
-    window.open(groupUrl, '_blank');
+    window.open(groupWebUrl, '_blank');
     closeMessageModal();
   }, 450);
 }
@@ -2535,50 +2742,107 @@ function sendViaSMS(e) {
 }
 
 /**
- * ۵. ارسال خودکار از طریق سرور یا ربات (با بازگشت امن به اکانت تلگرام در صورت در دسترس نبودن وب‌هوک)
+ * ۵. ارسال خودکار و مستقیم به گروه رزرو خانه برزک از طریق بات و ورکر کلادفلر
  */
 function sendViaTelegram() {
   triggerHaptic('medium');
+  copyModalMessage();
 
-  // تلاش برای ارسال از طریق Cloudflare Worker در صورت دسترسی به اندپوینت فعال
-  if (CONFIG.workerUrl) {
-    showToast("در حال پردازش و ثبت درخواست...");
-    
-    fetch(`${CONFIG.workerUrl}/api/reserve`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "submit_reservation",
-        isMiniAppOrder: true,
-        message: currentModalMessage,
-        initData: tg ? tg.initData : "",
-        data: {
-          reservation: state.reservation,
-          foodOrder: state.foodOrder
-        }
-      })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      if (data && data.ok) {
-        showToast("درخواست شما با موفقیت به سیستم رزرو خانه برزک ارسال شد.");
-        setTimeout(() => closeMessageModal(), 1500);
-      } else {
-        sendToBarzokTelegramAccount();
-      }
-    })
-    .catch(err => {
-      console.warn("Worker submission notice:", err);
-      // در صورت عدم پاسخ‌گویی سرور یا محدودیت وب‌هوک، مستقیماً به اکانت تلگرام هدایت می‌شود
-      sendToBarzokTelegramAccount();
-    });
-    return;
+  const isDirectWorkerHost = window.location.hostname.includes("workers.dev") || window.location.hostname.includes("pages.dev");
+  const primaryUrl = isDirectWorkerHost ? "/api/reserve" : `${CONFIG.workerUrl}/api/reserve`;
+  const fallbackUrl = isDirectWorkerHost ? "/" : `${CONFIG.workerUrl}/`;
+
+  showToast("در حال ارسال درخواست به گروه رزرو خانه برزک...");
+
+  const sendBtn = document.getElementById("btn-modal-send-tg");
+  const originalBtnHtml = sendBtn ? sendBtn.innerHTML : "";
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = "⏳ در حال ارسال به گروه رزرو...";
   }
 
-  sendToBarzokTelegramAccount();
+  const reqBody = JSON.stringify({
+    action: "submit_reservation",
+    isMiniAppOrder: true,
+    message: currentModalMessage,
+    initData: (tg && tg.initData) ? tg.initData : "",
+    data: {
+      reservation: state.reservation,
+      foodOrder: state.foodOrder
+    }
+  });
+
+  const sendRequest = async (url) => {
+    return fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: reqBody
+    });
+  };
+
+  sendRequest(primaryUrl)
+  .then(async (res) => {
+    if (res.status === 404 || res.status === 405) {
+      // تلاش مجدد با روت اصلی ورکر
+      return sendRequest(fallbackUrl);
+    }
+    return res;
+  })
+  .then(async (res) => {
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (e) {}
+
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = originalBtnHtml || "🚀 ارسال خودکار به گروه رزرو خانه برزک";
+    }
+
+    if (res.ok && data && (data.ok === true || data.forwarded_to_group === true)) {
+      triggerHaptic('success');
+      showToast("✅ درخواست با موفقیت در گروه رزرو خانه برزک ثبت شد.");
+      const previewEl = document.getElementById("modal-message-preview");
+      if (previewEl) {
+        previewEl.innerHTML = `
+          <div style="background: #e6f7f4; border: 1px solid #1f8578; color: #13524a; padding: 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 6px;">🎉</div>
+            <div style="font-size: 15px; font-weight: 800; margin-bottom: 6px;">درخواست با موفقیت در گروه رزرو خانه برزک ثبت گردید!</div>
+            <div style="font-size: 12.5px; line-height: 1.6; color: #2d4d42;">
+              پیام شما توسط بات در گروه رزرو خانه برزک قرار گرفت. میزبان اقامتگاه پیام شما را بررسی کرده و به زودی با شما هماهنگ خواهد شد.
+            </div>
+          </div>
+        `;
+      }
+      setTimeout(() => closeMessageModal(), 3500);
+    } else {
+      triggerHaptic('warning');
+      const errNote = (data && data.note) || (data && data.error) || (res.status === 405 ? "کد ۴۰۵ (ورکر در این دامنه فعال نشده است)" : `خطای سرور (${res.status})`);
+      showToast(`توجه: ${errNote}`);
+      
+      const previewEl = document.getElementById("modal-message-preview");
+      if (previewEl) {
+        previewEl.innerHTML = `
+          <div style="background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 14px; border-radius: 8px; text-align: right; margin-bottom: 12px; font-size: 12.5px; line-height: 1.6;">
+            <strong>⚠️ وضعیت ارسال به گروه تلگرام:</strong><br/>
+            ${errNote}<br/>
+            <span style="font-size: 11.5px; color: #7c2d12;">متن کامل درخواست در حافظه کپی شد؛ می‌توانید از دکمه زیر برای باز کردن مستقیم گروه تلگرام استفاده کنید.</span>
+          </div>
+          <div style="white-space: pre-wrap; font-family: monospace; font-size: 12px; max-height: 120px; overflow-y: auto;">${currentModalMessage}</div>
+        `;
+      }
+    }
+  })
+  .catch(err => {
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = originalBtnHtml || "🚀 ارسال خودکار به گروه رزرو خانه برزک";
+    }
+    console.warn("Worker submission network notice:", err);
+    triggerHaptic('warning');
+    showToast("متن کپی شد. در حال هدایت به گروه تلگرام خانه برزک...");
+    sendDirectToReservationGroup();
+  });
 }
 
 // نمایش پیام Toast
@@ -2820,6 +3084,9 @@ window.toggleGroupTravel = toggleGroupTravel;
 window.changeDishQty = changeDishQty;
 window.saveFoodAndReturnToReservation = saveFoodAndReturnToReservation;
 window.submitFoodOrderForm = submitFoodOrderForm;
+window.closeGroupRuleModal = closeGroupRuleModal;
+window.resolveGroupConflictKeepSingle = resolveGroupConflictKeepSingle;
+window.resolveGroupConflictIncreaseToAboveTen = resolveGroupConflictIncreaseToAboveTen;
 window.closeMessageModal = closeMessageModal;
 window.copyModalMessage = copyModalMessage;
 window.sendToBarzokTelegramAccount = sendToBarzokTelegramAccount;

@@ -2366,7 +2366,7 @@ function saveFoodAndReturnToReservation() {
   triggerHaptic('medium');
   const selectedIds = Object.keys(state.foodOrder.selectedDishes);
   if (selectedIds.length > 1) {
-    if (!checkGroupRuleViolation()) return;
+    if (!checkGroupRuleViolation(() => executeSaveFoodAndReturnToReservation())) return;
   }
   executeSaveFoodAndReturnToReservation();
 }
@@ -2639,7 +2639,7 @@ function submitReservationForm(e) {
   // در صورت انتخاب ۲ نوع خوراک همراه با اقامت، بررسی قانون حداقل ۱۰ پرس
   const selectedDishIds = Object.keys(state.foodOrder.selectedDishes);
   if (selectedDishIds.length > 1) {
-    if (!checkGroupRuleViolation()) return;
+    if (!checkGroupRuleViolation(() => submitReservationForm())) return;
   }
 
   const messageText = generateUnifiedOrderMessage();
@@ -2980,9 +2980,9 @@ let pendingGroupAction = null;
 
 /**
  * بررسی قانون انتخاب دو نوع خوراک:
- * برای انتخاب دو نوع خوراک، شرط این است که مجموع دو خوراک ۱۰ و بالاتر باشد وگرنه یک نوع خوراک باید انتخاب شود.
+ * برای انتخاب دو نوع خوراک، شرط این است که مجموع دو خوراک ۱۰ و بالاتر باشد وگرنه یک نوع خوراک باید حذف شود.
  */
-function checkGroupRuleViolation() {
+function checkGroupRuleViolation(onSuccess) {
   const selectedDishIds = Object.keys(state.foodOrder.selectedDishes);
   
   // اگر ۱ نوع غذا یا کمتر انتخاب شده، هیچ محدودیتی وجود ندارد
@@ -2990,7 +2990,7 @@ function checkGroupRuleViolation() {
     return true;
   }
 
-  // در صورت انتخاب ۲ نوع خوراک، مجموع تعداد پرس‌ها بررسی می‌شود
+  // در صورت انتخاب ۲ نوع خوراک (یا بیشتر)، مجموع تعداد پرس‌ها بررسی می‌شود
   const portionsCount = selectedDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
 
   // شرط قانون: مجموع دو خوراک ۱۰ و بالاتر باشد (>= 10)
@@ -2998,14 +2998,13 @@ function checkGroupRuleViolation() {
     return true;
   }
 
-  // در صورتی که مجموع کمتر از ۱۰ باشد:
+  // در صورتی که مجموع کمتر از ۱۰ باشد، مدال رفع مغایرت باز می‌شود تا کاربر یک نوع غذا را حذف کند یا به ۱۰ افزایش دهد
   triggerHaptic('warning');
-  showToast(`⚠️ برای انتخاب ۲ نوع خوراک، مجموع تعداد پرس‌ها باید حداقل ۱۰ پرس باشد (مجموع فعلی: ${formatPersianNumber(portionsCount)} پرس). لطفاً با دکمه‌های + تعداد پرس‌ها را افزایش دهید.`);
-  
-  const summaryBox = document.getElementById("food-order-summary");
-  if (summaryBox) {
-    summaryBox.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
+  openGroupRuleModal({
+    selectedDishIds: selectedDishIds,
+    portionsCount: portionsCount,
+    onSuccess: onSuccess
+  });
   return false;
 }
 
@@ -3030,11 +3029,11 @@ function openGroupRuleModal({ selectedDishIds, guestsCount, portionsCount, newDi
     </div>
     <div style="line-height: 1.8; font-size: 12.5px;">
       • خوراک انتخابی اول: <strong>«${dish1.name}»</strong> (${formatPersianNumber(qty1)} پرس)<br/>
-      ${dishId2 ? `• خوراک انتخابی دوم: <strong>«${dish2.name}»</strong><br/>` : ''}
+      ${dishId2 ? `• خوراک انتخابی دوم: <strong>«${dish2.name}»</strong> (${formatPersianNumber(qty2)} پرس)<br/>` : ''}
       • مجموع پرس‌های ثبت‌شده: <strong>${formatPersianNumber(portionsCount)} پرس</strong>
     </div>
     <div style="margin-top: 8px; font-size: 12px; color: #7c2d12; border-top: 1px dashed #fdba74; padding-top: 6px; font-weight: 700;">
-      💡 ضوابط پذیرایی: برای انتخاب دو نوع خوراک، مجموع دو خوراک باید ۱۰ و بالاتر باشد وگرنه یک نوع خوراک باید انتخاب شود.
+      💡 ضابطه پذیرایی: برای انتخاب دو نوع خوراک، مجموع دو خوراک باید حداقل ۱۰ پرس باشد، در غیر این صورت یکی از دو خوراک باید حذف شود.
     </div>
   `;
 
@@ -3056,16 +3055,16 @@ function openGroupRuleModal({ selectedDishIds, guestsCount, portionsCount, newDi
       </button>
     `;
   } else {
-    // هنگام ثبت فرم یا ذخیره
+    // هنگام ثبت فرم یا ارسال نهایی
     actionButtons.innerHTML = `
       <button type="button" class="btn btn-primary" onclick="resolveGroupConflictKeepSingle('${dishId1}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
-        <span>🍛 انتخاب ۱ نوع خوراک: فقط «${dish1.name}»</span>
-        <span style="opacity: 0.9;">(${formatPersianNumber(qty1)} پرس) ←</span>
+        <span>🍛 حذف خوراک دوم (فقط «${dish1.name}» به تعداد ${formatPersianNumber(qty1)} پرس بماند)</span>
+        <span style="opacity: 0.9;">۱ نوع خوراک ←</span>
       </button>
 
       <button type="button" class="btn btn-primary" onclick="resolveGroupConflictKeepSingle('${dishId2}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
-        <span>🥘 انتخاب ۱ نوع خوراک: فقط «${dish2.name}»</span>
-        <span style="opacity: 0.9;">(${formatPersianNumber(qty2)} پرس) ←</span>
+        <span>🥘 حذف خوراک اول (فقط «${dish2.name}» به تعداد ${formatPersianNumber(qty2)} پرس بماند)</span>
+        <span style="opacity: 0.9;">۱ نوع خوراک ←</span>
       </button>
 
       <button type="button" class="btn btn-mustard" onclick="resolveGroupConflictIncreaseToAboveTen()" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
@@ -3194,7 +3193,7 @@ function addCurrentMealToSchedule() {
 
   // اعتبارسنجی قانون انتخاب ۲ نوع غذا: مجموع باید حداقل ۱۰ پرس باشد
   if (selectedIds.length > 1) {
-    if (!checkGroupRuleViolation()) return;
+    if (!checkGroupRuleViolation(() => executeAddCurrentMealToSchedule())) return;
   }
   executeAddCurrentMealToSchedule();
 }
@@ -3468,9 +3467,11 @@ function updateFoodOrderSummary() {
       } else {
         summaryRows += `
           <div style="background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 7px 10px; border-radius: 8px; font-size: 11.5px; margin: 6px 0;">
-            ⚠️ انتخاب ۲ نوع خوراک: مجموع باید حداقل ۱۰ پرس باشد (مجموع فعلی: <strong>${formatPersianNumber(currentMealPortions)} پرس</strong> — نیاز به <strong>${formatPersianNumber(10 - currentMealPortions)} پرس</strong> دیگر).
-            <div style="margin-top: 5px;">
+            ⚠️ انتخاب ۲ نوع خوراک: مجموع باید حداقل ۱۰ پرس باشد (مجموع فعلی: <strong>${formatPersianNumber(currentMealPortions)} پرس</strong> — نیاز به <strong>${formatPersianNumber(10 - currentMealPortions)} پرس</strong> دیگر). در غیر این صورت باید یک نوع خوراک حذف شود.
+            <div style="margin-top: 6px; display: flex; gap: 5px; flex-wrap: wrap;">
               <button type="button" class="btn btn-mustard" style="font-size: 11px; padding: 3px 8px;" onclick="autoCompletePortionsToTen()">⚡ تکمیل به ۱۰ پرس</button>
+              <button type="button" class="btn btn-outline" style="font-size: 11px; padding: 3px 8px;" onclick="resolveGroupConflictKeepSingle('${currentSelectedIds[0]}')">حذف خوراک دوم</button>
+              <button type="button" class="btn btn-outline" style="font-size: 11px; padding: 3px 8px;" onclick="resolveGroupConflictKeepSingle('${currentSelectedIds[1]}')">حذف خوراک اول</button>
             </div>
           </div>
         `;
@@ -3526,7 +3527,7 @@ function submitFoodOrderForm(e) {
 
   // اعتبارسنجی قانون انتخاب ۲ نوع غذا: مجموع باید حداقل ۱۰ پرس باشد
   if (currentSelectedIds.length > 1) {
-    if (!checkGroupRuleViolation()) return;
+    if (!checkGroupRuleViolation(() => executeSubmitFoodOrderForm())) return;
   }
 
   executeSubmitFoodOrderForm();
@@ -3582,6 +3583,25 @@ function calculateCurrentTotals() {
 let currentModalMessage = "";
 
 function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
+  // بررسی نهایی قانون ۲ نوع خوراک: مجموع باید حداقل ۱۰ پرس باشد، وگرنه یکی از دو خوراک باید حذف شود
+  const currentDishIds = Object.keys(state.foodOrder.selectedDishes);
+  if (currentDishIds.length > 1) {
+    const portionsCount = currentDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
+    if (portionsCount < 10) {
+      checkGroupRuleViolation(() => {
+        updateReservationCalculations();
+        const refreshedText = generateUnifiedOrderMessage();
+        openMessagePreviewModal({
+          title: title,
+          subtitle: subtitle,
+          messageText: refreshedText,
+          actionType: actionType
+        });
+      });
+      return;
+    }
+  }
+
   currentModalMessage = messageText;
   const titleEl = document.getElementById("modal-title");
   const subtitleEl = document.getElementById("modal-subtitle");
@@ -3730,6 +3750,20 @@ function fallbackCopy(text) {
  */
 function sendToBarzokTelegramAccount() {
   triggerHaptic('medium');
+
+  // بررسی نهایی قانون دو خوراک قبل از ارسال مستقیم
+  const currentDishIds = Object.keys(state.foodOrder.selectedDishes);
+  if (currentDishIds.length > 1) {
+    const portionsCount = currentDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
+    if (portionsCount < 10) {
+      closeMessageModal();
+      checkGroupRuleViolation(() => {
+        executeSubmitFoodOrderForm();
+      });
+      return;
+    }
+  }
+
   copyModalMessage();
   const accountUrl = CONFIG.telegramAccountUrl || "https://t.me/barzokhouse";
 
@@ -3757,6 +3791,20 @@ function sendToBarzokTelegramAccount() {
  */
 function shareViaTelegram() {
   triggerHaptic('medium');
+
+  // بررسی نهایی قانون دو خوراک قبل از اشتراک‌گذاری در تلگرام
+  const currentDishIds = Object.keys(state.foodOrder.selectedDishes);
+  if (currentDishIds.length > 1) {
+    const portionsCount = currentDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
+    if (portionsCount < 10) {
+      closeMessageModal();
+      checkGroupRuleViolation(() => {
+        executeSubmitFoodOrderForm();
+      });
+      return;
+    }
+  }
+
   copyModalMessage();
   const shareUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(currentModalMessage)}`;
   

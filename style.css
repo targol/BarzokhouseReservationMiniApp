@@ -156,8 +156,12 @@ body {
 /* Navigation Screen System (SPA) */
 .screen {
   display: none;
-  padding: 18px 16px 36px;
+  padding: 18px 16px 85px;
   animation: fadeInScreen var(--transition-normal);
+}
+
+body.has-floating-bar .screen {
+  padding-bottom: 125px;
 }
 
 .screen.active {
@@ -709,6 +713,27 @@ body {
   white-space: nowrap;
 }
 
+.floating-booking-close {
+  background: transparent;
+  border: none;
+  color: var(--brand-text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.floating-booking-close:hover {
+  color: #b91c1c;
+  background: rgba(185, 28, 28, 0.08);
+}
+
 /* Selected Rooms List in Form */
 .selected-rooms-list {
   display: flex;
@@ -1201,7 +1226,7 @@ body {
   position: fixed;
   bottom: 24px;
   left: 50%;
-  transform: translateX(-50%) translateY(100px);
+  transform: translateX(-50%) translateY(120px);
   background: var(--brand-green-dark);
   color: #ffffff;
   padding: 12px 22px;
@@ -1209,14 +1234,18 @@ body {
   font-size: 13.5px;
   font-weight: 600;
   box-shadow: var(--shadow-lg);
-  z-index: 120;
-  transition: transform var(--transition-normal);
+  z-index: 9999;
+  transition: transform var(--transition-normal), bottom var(--transition-normal);
   pointer-events: none;
   display: flex;
   align-items: center;
   gap: 8px;
   max-width: 90%;
   text-align: center;
+}
+
+body.has-floating-bar .toast {
+  bottom: 96px;
 }
 
 .toast.show {

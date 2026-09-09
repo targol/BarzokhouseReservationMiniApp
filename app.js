@@ -1337,13 +1337,22 @@ let shamsiCalCurrentYear = 1405;
 let shamsiCalCurrentMonth = 6; // 1 to 12
 const JALALI_MONTH_NAMES = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
 
+function getMaxCheckInDateString() {
+  const d = new Date();
+  d.setDate(d.getDate() + 60); // حداکثر تا ۲ ماه آینده (۶۰ روز)
+  const gy = d.getFullYear();
+  const gm = String(d.getMonth() + 1).padStart(2, '0');
+  const gd = String(d.getDate()).padStart(2, '0');
+  return `${gy}-${gm}-${gd}`;
+}
+
 function openShamsiDatePicker(target) {
   shamsiCalTarget = target || "reservation";
   triggerHaptic('light');
 
   const currentDateStr = shamsiCalTarget === "food" 
     ? (state.foodOrder.date || getTodayFormattedDate()) 
-    : (state.reservation.checkInDate || getTomorrowFormattedDate());
+    : (state.reservation.checkInDate || getTodayFormattedDate());
 
   const jNum = getJalaliNumeric(currentDateStr);
   shamsiCalCurrentYear = jNum.year;
@@ -1362,14 +1371,35 @@ function closeShamsiDatePicker() {
 
 function changeShamsiCalendarMonth(delta) {
   triggerHaptic('light');
-  shamsiCalCurrentMonth += delta;
-  if (shamsiCalCurrentMonth > 12) {
-    shamsiCalCurrentMonth = 1;
-    shamsiCalCurrentYear += 1;
-  } else if (shamsiCalCurrentMonth < 1) {
-    shamsiCalCurrentMonth = 12;
-    shamsiCalCurrentYear -= 1;
+  let nextMonth = shamsiCalCurrentMonth + delta;
+  let nextYear = shamsiCalCurrentYear;
+  if (nextMonth > 12) {
+    nextMonth = 1;
+    nextYear += 1;
+  } else if (nextMonth < 1) {
+    nextMonth = 12;
+    nextYear -= 1;
   }
+
+  if (shamsiCalTarget === "reservation") {
+    const todayJNum = getJalaliNumeric(getTodayFormattedDate());
+    const maxJNum = getJalaliNumeric(getMaxCheckInDateString());
+    const nextKey = nextYear * 12 + nextMonth;
+    const minKey = todayJNum.year * 12 + todayJNum.month;
+    const maxKey = maxJNum.year * 12 + maxJNum.month;
+
+    if (nextKey < minKey) {
+      showToast("امکان انتخاب ماه‌های گذشته وجود ندارد.");
+      return;
+    }
+    if (nextKey > maxKey) {
+      showToast("رزرو حداکثر تا ۲ ماه آینده امکان‌پذیر است.");
+      return;
+    }
+  }
+
+  shamsiCalCurrentMonth = nextMonth;
+  shamsiCalCurrentYear = nextYear;
   renderShamsiCalendar();
 }
 
@@ -1398,6 +1428,7 @@ function renderShamsiCalendar() {
 
   const currentSelectedGStr = shamsiCalTarget === "food" ? state.foodOrder.date : state.reservation.checkInDate;
   const todayGStr = getTodayFormattedDate();
+  const maxDateStr = getMaxCheckInDateString();
 
   let html = "";
 
@@ -1413,20 +1444,32 @@ function renderShamsiCalendar() {
     const isMidweek = [0, 1, 2, 3].includes(dayOfWeekIndex); // شنبه تا سه‌شنبه (تخفیف ۱۰٪)
     const isSelected = dayGStr === currentSelectedGStr;
     const isToday = dayGStr === todayGStr;
+    const isPast = dayGStr < todayGStr;
+    const isTooFar = dayGStr > maxDateStr;
+    const isDisabled = (shamsiCalTarget === "reservation") && (isPast || isTooFar);
 
-    const classes = [
-      "shamsi-day-btn",
-      isSelected ? "selected" : "",
-      isToday ? "today" : "",
-      isFriday ? "friday" : "",
-      isMidweek ? "midweek" : ""
-    ].filter(Boolean).join(" ");
+    if (isDisabled) {
+      const reason = isPast ? 'تاریخ گذشته' : 'بیش از ۲ ماه آینده';
+      html += `
+        <button type="button" class="shamsi-day-btn disabled-day" disabled title="${d} ${JALALI_MONTH_NAMES[shamsiCalCurrentMonth - 1]} (${reason})" style="opacity: 0.28; cursor: not-allowed; background: rgba(0,0,0,0.03); color: #888; text-decoration: line-through; border: none;">
+          <span>${formatPersianNumber(d)}</span>
+        </button>
+      `;
+    } else {
+      const classes = [
+        "shamsi-day-btn",
+        isSelected ? "selected" : "",
+        isToday ? "today" : "",
+        isFriday ? "friday" : "",
+        isMidweek ? "midweek" : ""
+      ].filter(Boolean).join(" ");
 
-    html += `
-      <button type="button" class="${classes}" onclick="selectShamsiCalendarDay(${shamsiCalCurrentYear}, ${shamsiCalCurrentMonth}, ${d}, '${dayGStr}')" title="${d} ${JALALI_MONTH_NAMES[shamsiCalCurrentMonth - 1]}${isMidweek ? ' (مشمول تخفیف وسط هفته)' : ''}">
-        <span>${formatPersianNumber(d)}</span>
-      </button>
-    `;
+      html += `
+        <button type="button" class="${classes}" onclick="selectShamsiCalendarDay(${shamsiCalCurrentYear}, ${shamsiCalCurrentMonth}, ${d}, '${dayGStr}')" title="${d} ${JALALI_MONTH_NAMES[shamsiCalCurrentMonth - 1]}${isMidweek ? ' (مشمول تخفیف وسط هفته)' : ''}">
+          <span>${formatPersianNumber(d)}</span>
+        </button>
+      `;
+    }
   }
 
   grid.innerHTML = html;
@@ -1434,7 +1477,18 @@ function renderShamsiCalendar() {
 
 function selectShamsiCalendarDay(year, month, day, gregorianDateStr) {
   triggerHaptic('medium');
+  const todayGStr = getTodayFormattedDate();
+  const maxDateStr = getMaxCheckInDateString();
+
   if (shamsiCalTarget === "reservation") {
+    if (gregorianDateStr < todayGStr) {
+      showToast("تاریخ ورود نمی‌تواند قبل از امروز باشد.");
+      return;
+    }
+    if (gregorianDateStr > maxDateStr) {
+      showToast("رزرو حداکثر تا ۲ ماه آینده امکان‌پذیر می‌باشد.");
+      return;
+    }
     state.reservation.checkInDate = gregorianDateStr;
     state.foodOrder.date = gregorianDateStr;
     updateReservationCalculations();
@@ -1790,7 +1844,7 @@ function changeRoomGuests(roomId, delta) {
   const next = current + delta;
 
   if (next < 1) {
-    removeRoomFromReservation(roomId);
+    showToast(`حداقل تعداد نفرات برای هر اتاق ۱ نفر است.`);
     return;
   }
   if (next > maxCap) {
@@ -1857,6 +1911,7 @@ function renderSelectedRoomsInForm() {
   const totalGuests = selectedRooms.reduce((sum, r) => {
     return sum + ((state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2);
   }, 0);
+  state.reservation.guests = totalGuests;
 
   const roomsListHtml = selectedRooms.map(room => {
     const guests = (state.reservation.roomGuests && state.reservation.roomGuests[room.id]) || room.baseCapacity || 2;
@@ -1881,9 +1936,9 @@ function renderSelectedRoomsInForm() {
             <span style="font-size: 10.5px; color: var(--brand-text-muted); display: block;">(حداکثر ${formatPersianNumber(costInfo.maxCap)} نفر)</span>
           </div>
           <div class="room-booking-counter" title="تعداد نفرات اتاق ${room.name}" style="display: inline-flex; align-items: center; gap: 6px;">
-            <button type="button" class="room-counter-btn" onclick="changeRoomGuests('${room.id}', -1)" title="کاهش نفرات" style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;">−</button>
+            <button type="button" class="room-counter-btn" onclick="changeRoomGuests('${room.id}', -1)" title="کاهش نفرات" ${isAtMin ? 'disabled style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e5e5e5; background: #f3f3f3; color: #bbb; font-weight: bold; font-size: 15px; cursor: not-allowed; display: flex; align-items: center; justify-content: center;"' : 'style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;"'}>−</button>
             <span style="font-weight: 800; font-size: 14.5px; color: var(--brand-green); min-width: 46px; text-align: center;">${formatPersianNumber(guests)} نفر</span>
-            <button type="button" class="room-counter-btn" onclick="changeRoomGuests('${room.id}', 1)" title="افزایش نفرات" ${isAtMax ? 'style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e5e5e5; background: #f3f3f3; color: #bbb; font-weight: bold; font-size: 15px; cursor: not-allowed; display: flex; align-items: center; justify-content: center;"' : 'style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;"'}>+</button>
+            <button type="button" class="room-counter-btn" onclick="changeRoomGuests('${room.id}', 1)" title="افزایش نفرات" ${isAtMax ? 'disabled style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e5e5e5; background: #f3f3f3; color: #bbb; font-weight: bold; font-size: 15px; cursor: not-allowed; display: flex; align-items: center; justify-content: center;"' : 'style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;"'}>+</button>
           </div>
         </div>
 
@@ -1902,14 +1957,7 @@ function renderSelectedRoomsInForm() {
     `;
   }).join("");
 
-  const summaryFooterHtml = `
-    <div style="display: flex; justify-content: space-between; align-items: center; background: #edf7ee; border: 1px solid #c9e8cd; padding: 8px 12px; border-radius: 8px; margin-top: 2px; margin-bottom: 6px;">
-      <span style="font-size: 12.5px; font-weight: 800; color: #276749;">👥 مجموع کل نفرات اقامت:</span>
-      <span style="font-size: 13.5px; font-weight: 800; color: #276749; background: #ffffff; padding: 2px 10px; border-radius: 6px; border: 1px solid #c9e8cd;">${formatPersianNumber(totalGuests)} نفر</span>
-    </div>
-  `;
-
-  container.innerHTML = roomsListHtml + summaryFooterHtml;
+  container.innerHTML = roomsListHtml;
 }
 
 function updateFloatingBookingBar() {
@@ -1961,7 +2009,7 @@ function updateReservationCalculations() {
     }
 
     if (checkOutShamsiText) {
-      checkOutShamsiText.textContent = `${checkOutJalali.weekday} ${checkOutJalali.day} ${checkOutJalali.monthName}`;
+      checkOutShamsiText.textContent = checkOutJalali.fullString;
     }
   } else {
     state.reservation.checkOutDate = "";
@@ -2200,9 +2248,12 @@ function updateReservationCalculations() {
 
 function changeReservationNights(delta) {
   triggerHaptic('light');
-  let n = state.reservation.nights + delta;
+  let n = (state.reservation.nights || 1) + delta;
   if (n < 1) n = 1;
-  if (n > 14) n = 14;
+  if (n > 5) {
+    showToast("حداکثر مدت اقامت ۵ شب می‌باشد.");
+    n = 5;
+  }
   state.reservation.nights = n;
   updateReservationCalculations();
 }
@@ -2229,7 +2280,7 @@ function changeReservationGuests(delta) {
 function navigateToFoodFromReservation() {
   triggerHaptic('light');
   syncReservationToFoodInputs();
-  navigateTo("screen-food");
+  navigateTo("screen-food", "screen-reservation");
 }
 
 // ذخیره انتخاب غذا و بازگشت به فرم اقامت
@@ -3941,6 +3992,12 @@ window.changeShamsiCalendarMonth = changeShamsiCalendarMonth;
 window.selectShamsiCalendarDay = selectShamsiCalendarDay;
 window.pickQuickShamsiDate = pickQuickShamsiDate;
 window.changeRoomCount = changeRoomCount;
+window.changeRoomGuests = changeRoomGuests;
+window.navigateToFoodFromReservation = navigateToFoodFromReservation;
+window.clearFoodFromReservation = clearFoodFromReservation;
+window.removeScheduledMeal = removeScheduledMeal;
+window.addCurrentMealToSchedule = addCurrentMealToSchedule;
+window.quickAddBreakfastMeal = quickAddBreakfastMeal;
 window.CONFIG = CONFIG;
 window.ROOMS = ROOMS;
 window.FOOD_MENU = FOOD_MENU;

@@ -2890,33 +2890,31 @@ function quickAddBreakfastMeal() {
 let pendingGroupAction = null;
 
 /**
- * بررسی قانون انتخاب ۲ نوع غذا:
- * برای انتخاب ۲ نوع غذا در یک وعده، باید حتماً گروه بالای ۱۰ نفر باشد،
- * یعنی اقامت بالای ۱۰ نفر درخواست شده باشد یا برای بالای ۱۰ نفر غذا درخواستش ثبت شود.
- * اگر زیر ۱۰ نفر باشد، پنجره انتخاب هوشمند باز می‌شود.
+ * بررسی قانون انتخاب بیش از یک نوع خوراک:
+ * برای انتخاب بیش از یک نوع خوراک باید تعداد غذای انتخاب‌شده بالای ۱۰ نفر باشد وگرنه یک نوع خوراک باید انتخاب شود.
  */
 function checkGroupRuleViolation(callbackIfValid) {
   const selectedDishIds = Object.keys(state.foodOrder.selectedDishes);
   
-  // اگر ۱ نوع غذا یا کمتر انتخاب شده، هیچ محدودیتی در تعداد نفرات وجود ندارد
+  // اگر ۱ نوع غذا یا کمتر انتخاب شده، هیچ محدودیتی وجود ندارد
   if (selectedDishIds.length <= 1) {
     if (typeof callbackIfValid === "function") callbackIfValid();
     return true;
   }
 
-  // در صورت انتخاب ۲ نوع غذا، تعداد نفرات اقامت و تعداد پرس‌های این وعده بررسی می‌شود
+  // در صورت انتخاب بیش از یک نوع خوراک، مجموع تعداد غذاها و نفرات بررسی می‌شود
   const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
   const portionsCount = selectedDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
 
-  // شرط قانون: اقامت بالای ۱۰ نفر (> 10) یا مجموع پرس‌های غذا در این وعده بالای ۱۰ (> 10)
-  const isAboveTen = (guestsCount > 10) || (portionsCount > 10);
+  // شرط قانون: تعداد غذای انتخاب‌شده بالای ۱۰ نفر (> 10) یا اقامت بالای ۱۰ نفر (> 10)
+  const isAboveTen = (portionsCount > 10) || (guestsCount > 10);
 
   if (isAboveTen) {
     if (typeof callbackIfValid === "function") callbackIfValid();
     return true;
   }
 
-  // در صورتی که تعداد زیر ۱۰ نفر باشد (۱۰ یا کمتر):
+  // در صورتی که تعداد ۱۰ یا کمتر باشد:
   triggerHaptic('warning');
   openGroupRuleModal({
     selectedDishIds,
@@ -2927,7 +2925,7 @@ function checkGroupRuleViolation(callbackIfValid) {
   return false;
 }
 
-function openGroupRuleModal({ selectedDishIds, guestsCount, portionsCount, onSuccess }) {
+function openGroupRuleModal({ selectedDishIds, guestsCount, portionsCount, newDishIdToAdd, onSuccess }) {
   pendingGroupAction = onSuccess;
   
   const modal = document.getElementById("group-rule-modal");
@@ -2936,55 +2934,99 @@ function openGroupRuleModal({ selectedDishIds, guestsCount, portionsCount, onSuc
   if (!modal || !statusBox || !actionButtons) return;
 
   const dishId1 = selectedDishIds[0];
-  const dishId2 = selectedDishIds[1];
-  const dish1 = FOOD_MENU.find(d => d.id === dishId1) || { name: "غذای اول" };
-  const dish2 = FOOD_MENU.find(d => d.id === dishId2) || { name: "غذای دوم" };
+  const dishId2 = selectedDishIds[1] || newDishIdToAdd;
+  const dish1 = FOOD_MENU.find(d => d.id === dishId1) || { name: "خوراک اول" };
+  const dish2 = FOOD_MENU.find(d => d.id === dishId2) || { name: "خوراک دوم" };
   const qty1 = Number(state.foodOrder.selectedDishes[dishId1]) || 1;
-  const qty2 = Number(state.foodOrder.selectedDishes[dishId2]) || 1;
-  const totalQty = qty1 + qty2;
+  const qty2 = Number(state.foodOrder.selectedDishes[dishId2]) || (newDishIdToAdd ? 1 : 1);
+  const totalQty = newDishIdToAdd ? qty1 : (qty1 + qty2);
 
   statusBox.innerHTML = `
-    <div style="font-weight: 700; margin-bottom: 6px; color: #c2410c;">
-      📊 وضعیت فعلی سفارش شما (${formatPersianNumber(Math.max(guestsCount, totalQty))} نفر / زیر ۱۰ نفر):
+    <div style="font-weight: 700; margin-bottom: 6px; color: #c2410c; font-size: 13px;">
+      📊 وضعیت فعلی سفارش شما (${formatPersianNumber(portionsCount)} پرس / زیر ۱۰ نفر):
     </div>
-    <div style="line-height: 1.8;">
-      • نفرات اقامت ثبت‌شده: <strong>${guestsCount > 0 ? formatPersianNumber(guestsCount) + ' نفر' : 'ثبت نشده'}</strong><br/>
-      • مجموع پرس‌های این وعده: <strong>${formatPersianNumber(totalQty)} پرس</strong> (${dish1.name}: ${formatPersianNumber(qty1)} پرس + ${dish2.name}: ${formatPersianNumber(qty2)} پرس)
+    <div style="line-height: 1.8; font-size: 12.5px;">
+      • خوراک انتخابی فعلی: <strong>«${dish1.name}»</strong> (${formatPersianNumber(qty1)} پرس)<br/>
+      ${dishId2 ? `• خوراک درخواستی دوم: <strong>«${dish2.name}»</strong><br/>` : ''}
+      • مجموع پرس‌های ثبت‌شده: <strong>${formatPersianNumber(portionsCount)} پرس</strong>
     </div>
-    <div style="margin-top: 8px; font-size: 11.5px; color: #7c2d12; border-top: 1px dashed #fdba74; padding-top: 6px;">
-      💡 طبق ضوابط بومگردی، طبخ ۲ نوع غذا در یک وعده تنها مختص گروه‌های <strong>بالای ۱۰ نفر</strong> است.
+    <div style="margin-top: 8px; font-size: 12px; color: #7c2d12; border-top: 1px dashed #fdba74; padding-top: 6px; font-weight: 700;">
+      💡 ضوابط پذیرایی: برای انتخاب بیش از یک نوع خوراک باید تعداد غذای انتخاب‌شده بالای ۱۰ نفر باشد وگرنه یک نوع خوراک باید انتخاب شود.
     </div>
   `;
 
-  actionButtons.innerHTML = `
-    <button type="button" class="btn btn-primary" onclick="resolveGroupConflictKeepSingle('${dishId1}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
-      <span>🍛 انتخاب ۱ نوع غذا: فقط «${dish1.name}»</span>
-      <span style="opacity: 0.9;">(${formatPersianNumber(qty1)} پرس) ←</span>
-    </button>
+  if (newDishIdToAdd) {
+    // کاربر روی خوراک دومی کلیک کرده در حالی که مجموع غذاها ۱۰ یا کمتر است
+    actionButtons.innerHTML = `
+      <button type="button" class="btn btn-mustard" onclick="resolveGroupConflictIncreaseToAboveTen('${newDishIdToAdd}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
+        <span>👥 افزایش تعداد به بالای ۱۰ نفر (۱۱ پرس) و انتخاب هر دو خوراک</span>
+        <span>۱۱ پرس ←</span>
+      </button>
 
-    <button type="button" class="btn btn-primary" onclick="resolveGroupConflictKeepSingle('${dishId2}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
-      <span>🥘 انتخاب ۱ نوع غذا: فقط «${dish2.name}»</span>
-      <span style="opacity: 0.9;">(${formatPersianNumber(qty2)} پرس) ←</span>
-    </button>
+      <button type="button" class="btn btn-primary" onclick="resolveGroupConflictReplaceWithNew('${newDishIdToAdd}', '${dishId1}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
+        <span>🍛 فقط «${dish2.name}» انتخاب شود (جایگزینی خوراک)</span>
+        <span>۱ نوع غذا ←</span>
+      </button>
 
-    <button type="button" class="btn btn-mustard" onclick="resolveGroupConflictIncreaseToAboveTen()" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
-      <span>👥 افزایش تعداد به بالای ۱۰ نفر (سفارش گروهی)</span>
-      <span>۱۱ پرس ←</span>
-    </button>
+      <button type="button" class="btn btn-outline" onclick="closeGroupRuleModal('${newDishIdToAdd}')" style="font-size: 12.5px; padding: 8px 12px; color: var(--brand-text-muted);">
+        ✕ انصراف (حفظ فقط «${dish1.name}»)
+      </button>
+    `;
+  } else {
+    // هنگام ثبت فرم یا ذخیره
+    actionButtons.innerHTML = `
+      <button type="button" class="btn btn-primary" onclick="resolveGroupConflictKeepSingle('${dishId1}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
+        <span>🍛 انتخاب ۱ نوع غذا: فقط «${dish1.name}»</span>
+        <span style="opacity: 0.9;">(${formatPersianNumber(qty1)} پرس) ←</span>
+      </button>
 
-    <button type="button" class="btn btn-outline" onclick="closeGroupRuleModal()" style="font-size: 12.5px; padding: 8px 12px; color: var(--brand-text-muted);">
-      ✏️ انصراف و تنظیم دستی در منو
-    </button>
-  `;
+      <button type="button" class="btn btn-primary" onclick="resolveGroupConflictKeepSingle('${dishId2}')" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
+        <span>🥘 انتخاب ۱ نوع غذا: فقط «${dish2.name}»</span>
+        <span style="opacity: 0.9;">(${formatPersianNumber(qty2)} پرس) ←</span>
+      </button>
+
+      <button type="button" class="btn btn-mustard" onclick="resolveGroupConflictIncreaseToAboveTen()" style="font-size: 13px; font-weight: 700; padding: 11px 14px; text-align: right; justify-content: space-between; display: flex;">
+        <span>👥 افزایش تعداد به بالای ۱۰ نفر (سفارش گروهی)</span>
+        <span>۱۱ پرس ←</span>
+      </button>
+
+      <button type="button" class="btn btn-outline" onclick="closeGroupRuleModal()" style="font-size: 12.5px; padding: 8px 12px; color: var(--brand-text-muted);">
+        ✏️ انصراف و تنظیم دستی در منو
+      </button>
+    `;
+  }
 
   modal.classList.add("active");
 }
 
-function closeGroupRuleModal() {
+function closeGroupRuleModal(uncheckDishId) {
   triggerHaptic('light');
   const modal = document.getElementById("group-rule-modal");
   if (modal) modal.classList.remove("active");
+  if (uncheckDishId) {
+    const cb = document.getElementById(`check-${uncheckDishId}`);
+    if (cb) cb.checked = false;
+  }
   pendingGroupAction = null;
+}
+
+function resolveGroupConflictReplaceWithNew(newDishId, oldDishId) {
+  triggerHaptic('medium');
+  const prevQty = state.foodOrder.selectedDishes[oldDishId] || 1;
+  delete state.foodOrder.selectedDishes[oldDishId];
+  state.foodOrder.selectedDishes[newDishId] = prevQty;
+  state.foodOrder.isGroupTravel = false;
+
+  const groupCheck = document.getElementById("food-group-travel-checkbox");
+  if (groupCheck) groupCheck.checked = false;
+
+  const newDish = FOOD_MENU.find(d => d.id === newDishId);
+  const name = newDish ? newDish.name : "خوراک انتخابی";
+
+  closeGroupRuleModal();
+  renderFoodSection();
+  updateReservationCalculations();
+  showToast(`خوراک انتخابی به «${name}» تغییر یافت.`);
 }
 
 function resolveGroupConflictKeepSingle(dishIdToKeep) {
@@ -2998,6 +3040,10 @@ function resolveGroupConflictKeepSingle(dishIdToKeep) {
   const keptDish = FOOD_MENU.find(d => d.id === dishIdToKeep);
   const dishName = keptDish ? keptDish.name : "غذای انتخابی";
   
+  state.foodOrder.isGroupTravel = false;
+  const groupCheck = document.getElementById("food-group-travel-checkbox");
+  if (groupCheck) groupCheck.checked = false;
+
   closeGroupRuleModal();
   renderFoodSection();
   updateReservationCalculations();
@@ -3010,23 +3056,36 @@ function resolveGroupConflictKeepSingle(dishIdToKeep) {
   }
 }
 
-function resolveGroupConflictIncreaseToAboveTen() {
+function resolveGroupConflictIncreaseToAboveTen(newDishIdToAdd) {
   triggerHaptic('medium');
-  const currentKeys = Object.keys(state.foodOrder.selectedDishes);
-  if (currentKeys.length >= 2) {
-    const q1 = Number(state.foodOrder.selectedDishes[currentKeys[0]]) || 1;
-    const q2 = Number(state.foodOrder.selectedDishes[currentKeys[1]]) || 1;
-    const currentSum = q1 + q2;
-    if (currentSum <= 10) {
-      const needed = 11 - currentSum;
-      const add1 = Math.ceil(needed / 2);
-      const add2 = needed - add1;
-      state.foodOrder.selectedDishes[currentKeys[0]] = q1 + add1;
-      state.foodOrder.selectedDishes[currentKeys[1]] = q2 + add2;
+  if (newDishIdToAdd) {
+    state.foodOrder.selectedDishes[newDishIdToAdd] = 5;
+    const currentKeys = Object.keys(state.foodOrder.selectedDishes).filter(k => k !== newDishIdToAdd);
+    if (currentKeys.length > 0) {
+      const k1 = currentKeys[0];
+      state.foodOrder.selectedDishes[k1] = Math.max(6, state.foodOrder.selectedDishes[k1] || 6);
     }
-  } else if (currentKeys.length === 1) {
-    state.foodOrder.selectedDishes[currentKeys[0]] = Math.max(11, Number(state.foodOrder.selectedDishes[currentKeys[0]]) || 11);
+  } else {
+    const currentKeys = Object.keys(state.foodOrder.selectedDishes);
+    if (currentKeys.length >= 2) {
+      const q1 = Number(state.foodOrder.selectedDishes[currentKeys[0]]) || 1;
+      const q2 = Number(state.foodOrder.selectedDishes[currentKeys[1]]) || 1;
+      const currentSum = q1 + q2;
+      if (currentSum <= 10) {
+        const needed = 11 - currentSum;
+        const add1 = Math.ceil(needed / 2);
+        const add2 = needed - add1;
+        state.foodOrder.selectedDishes[currentKeys[0]] = q1 + add1;
+        state.foodOrder.selectedDishes[currentKeys[1]] = q2 + add2;
+      }
+    } else if (currentKeys.length === 1) {
+      state.foodOrder.selectedDishes[currentKeys[0]] = Math.max(11, Number(state.foodOrder.selectedDishes[currentKeys[0]]) || 11);
+    }
   }
+
+  state.foodOrder.isGroupTravel = true;
+  const groupCheck = document.getElementById("food-group-travel-checkbox");
+  if (groupCheck) groupCheck.checked = true;
 
   closeGroupRuleModal();
   renderFoodSection();
@@ -3182,42 +3241,91 @@ function renderScheduledMeals() {
   `;
 }
 
-// قانون سفارش: در هر وعده حداکثر ۱ نوع غذا، و در سفر گروهی حداکثر ۲ نوع غذا
+// قانون سفارش: برای انتخاب بیش از یک نوع خوراک باید تعداد غذای انتخاب‌شده بالای ۱۰ نفر باشد وگرنه یک نوع خوراک باید انتخاب شود.
 function toggleDishSelection(dishId) {
   triggerHaptic('light');
-  const currentSelectedKeys = Object.keys(state.foodOrder.selectedDishes);
-  const maxAllowed = state.foodOrder.isGroupTravel ? 2 : 1;
+  const currentDishIds = Object.keys(state.foodOrder.selectedDishes);
 
+  // اگر خوراک از قبل انتخاب شده، با کلیک مجدد حذف می‌شود
   if (state.foodOrder.selectedDishes[dishId]) {
     delete state.foodOrder.selectedDishes[dishId];
-  } else {
-    if (currentSelectedKeys.length >= maxAllowed) {
-      triggerHaptic('warning');
-      if (maxAllowed === 1) {
-        showToast("در هر وعده می‌توانید یک نوع غذا انتخاب کنید. برای انتخاب تا ۲ غذا، گزینه سفر گروهی را فعال کنید.");
-      } else {
-        showToast("در سفر گروهی می‌توانید حداکثر دو نوع غذا انتخاب کنید.");
-      }
-      const checkbox = document.getElementById(`check-${dishId}`);
-      if (checkbox) checkbox.checked = false;
-      return;
+    if (Object.keys(state.foodOrder.selectedDishes).length <= 1) {
+      state.foodOrder.isGroupTravel = false;
+      const groupCheck = document.getElementById("food-group-travel-checkbox");
+      if (groupCheck) groupCheck.checked = false;
     }
-    state.foodOrder.selectedDishes[dishId] = 1;
+    renderFoodSection();
+    updateReservationCalculations();
+    return;
   }
 
-  renderFoodSection();
-  updateReservationCalculations();
+  // اضافه کردن خوراک جدید
+  const currentPortions = currentDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
+  const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
+  const isAboveTen = (currentPortions > 10) || (guestsCount > 10);
+
+  // حالت ۱: هنوز هیچ غذایی انتخاب نشده است
+  if (currentDishIds.length === 0) {
+    state.foodOrder.selectedDishes[dishId] = Math.max(1, guestsCount || 1);
+    renderFoodSection();
+    updateReservationCalculations();
+    return;
+  }
+
+  // حالت ۲: ۱ نوع غذا انتخاب شده و کاربر می‌خواهد نوع دوم خوراک را انتخاب کند
+  if (currentDishIds.length === 1) {
+    if (isAboveTen) {
+      // تعداد غذاها یا مهمانان بالای ۱۰ نفر است، بنابراین انتخاب بیش از یک نوع خوراک مجاز است
+      state.foodOrder.selectedDishes[dishId] = 1;
+      state.foodOrder.isGroupTravel = true;
+      const groupCheck = document.getElementById("food-group-travel-checkbox");
+      if (groupCheck) groupCheck.checked = true;
+      renderFoodSection();
+      updateReservationCalculations();
+      showToast("خوراک دوم به سفارش اضافه شد (مجموع غذاها بالای ۱۰ نفر است).");
+      return;
+    }
+
+    // تعداد ۱۰ نفر یا کمتر است: طبق قانون برای بیش از یک نوع خوراک باید بالای ۱۰ نفر باشد
+    triggerHaptic('warning');
+    const existingDishId = currentDishIds[0];
+    openGroupRuleModal({
+      selectedDishIds: [existingDishId],
+      guestsCount,
+      portionsCount: currentPortions,
+      newDishIdToAdd: dishId,
+      onSuccess: null
+    });
+    return;
+  }
+
+  // حالت ۳: بیش از ۲ نوع خوراک در یک وعده
+  triggerHaptic('warning');
+  showToast("در هر وعده حداکثر دو نوع خوراک (مختص سفارش‌های بالای ۱۰ نفر) قابل انتخاب است.");
+  const checkbox = document.getElementById(`check-${dishId}`);
+  if (checkbox) checkbox.checked = false;
 }
 
-// تغییر وضعیت انتخاب سفر گروهی (امکان انتخاب تا ۲ نوع غذا)
+// تغییر وضعیت انتخاب چند نوع غذا
 function toggleGroupTravel(isGroup) {
   triggerHaptic('light');
   state.foodOrder.isGroupTravel = !!isGroup;
   const currentKeys = Object.keys(state.foodOrder.selectedDishes);
+  const totalPortions = currentKeys.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
+  const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
+
   if (!isGroup && currentKeys.length > 1) {
     const toRemove = currentKeys.slice(1);
     toRemove.forEach(k => delete state.foodOrder.selectedDishes[k]);
-    showToast("تعداد غذاها به یک نوع تنظیم شد.");
+    showToast("تعداد خوراک‌ها به یک نوع تنظیم شد.");
+  } else if (isGroup && currentKeys.length > 1 && totalPortions <= 10 && guestsCount <= 10) {
+    openGroupRuleModal({
+      selectedDishIds: currentKeys,
+      guestsCount,
+      portionsCount: totalPortions,
+      onSuccess: null
+    });
+    return;
   }
   renderFoodSection();
   updateReservationCalculations();
@@ -3226,9 +3334,25 @@ function toggleGroupTravel(isGroup) {
 function changeDishQty(dishId, delta) {
   triggerHaptic('light');
   if (!state.foodOrder.selectedDishes[dishId]) return;
+  const currentDishIds = Object.keys(state.foodOrder.selectedDishes);
   let q = state.foodOrder.selectedDishes[dishId] + delta;
   if (q < 1) q = 1;
   if (q > 50) q = 50;
+
+  // اگر بیش از یک نوع خوراک انتخاب شده، مجموع تعداد غذاها نباید به ۱۰ یا کمتر کاهش یابد
+  if (currentDishIds.length > 1 && delta < 0) {
+    const nextTotal = currentDishIds.reduce((sum, id) => {
+      return sum + (id === dishId ? q : (state.foodOrder.selectedDishes[id] || 0));
+    }, 0);
+    const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
+
+    if (nextTotal <= 10 && guestsCount <= 10) {
+      triggerHaptic('warning');
+      showToast("برای انتخاب بیش از یک نوع خوراک، تعداد غذا باید بالای ۱۰ نفر (حداقل ۱۱ پرس) باشد. برای ۱۰ نفر یا کمتر، یک نوع خوراک را حذف کنید.");
+      return;
+    }
+  }
+
   state.foodOrder.selectedDishes[dishId] = q;
   renderFoodSection();
   updateReservationCalculations();
@@ -3978,6 +4102,7 @@ window.submitFoodOrderForm = submitFoodOrderForm;
 window.closeGroupRuleModal = closeGroupRuleModal;
 window.resolveGroupConflictKeepSingle = resolveGroupConflictKeepSingle;
 window.resolveGroupConflictIncreaseToAboveTen = resolveGroupConflictIncreaseToAboveTen;
+window.resolveGroupConflictReplaceWithNew = resolveGroupConflictReplaceWithNew;
 window.closeMessageModal = closeMessageModal;
 window.copyModalMessage = copyModalMessage;
 window.sendToBarzokTelegramAccount = sendToBarzokTelegramAccount;

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "node scripts/generate-worker.cjs && vite build && cp -r app.js style.css assets dist/ && rm -f dist/_worker.js dist/worker.js && cp .assetsignore dist/.assetsignore",
+    "build": "node scripts/generate-worker.cjs && vite build && cp -r app.js style.css assets dist/",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"

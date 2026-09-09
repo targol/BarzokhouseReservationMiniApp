@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { generateWorkerJs, generateWranglerToml } from '../data/cloudflareCode';
 import { CloudflareConfig } from '../types';
+import rawWorkerJs from '../../worker.js?raw';
 
 interface CloudflareStudioProps {
   config: CloudflareConfig;
@@ -30,6 +31,7 @@ export const CloudflareStudio: React.FC<CloudflareStudioProps> = ({
   currentAppUrl = window.location.origin
 }) => {
   const [activeFile, setActiveFile] = useState<'worker' | 'wrangler' | 'validator'>('worker');
+  const [workerMode, setWorkerMode] = useState<'standalone' | 'modular'>('standalone');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // InitData Validator state
@@ -53,6 +55,8 @@ export const CloudflareStudio: React.FC<CloudflareStudioProps> = ({
     config.miniAppUrl || currentAppUrl,
     config.secretToken || 'my_secret_token_123'
   );
+
+  const currentWorkerCode = workerMode === 'standalone' ? rawWorkerJs : workerCode;
 
   const wranglerConfig = generateWranglerToml(
     'telegram-bot-miniapp',
@@ -237,9 +241,29 @@ export const CloudflareStudio: React.FC<CloudflareStudioProps> = ({
         </div>
       </div>
 
+      {/* Alert Box for resolving intermediate landing page issue */}
+      <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-start gap-3 text-xs text-amber-200">
+        <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="space-y-1.5 flex-1">
+          <div className="font-bold text-sm text-amber-300">
+            راهنمای حذف صفحه اول واسط (با دکمه «ورود به مینی‌اپ»):
+          </div>
+          <p className="text-slate-300 leading-relaxed text-xs">
+            اگر در تلگرام هنگام لمس دکمه ربات هنوز صفحه واسط با نوشته <span className="text-amber-200 font-mono bg-slate-900/80 px-1 py-0.5 rounded">«سرویس ارتباطی وب‌هوک و ثبت رزرو...»</span> را می‌بینید، دلیل آن این است که کد جدید هنوز در پنل Cloudflare شما Save & Deploy نشده است.
+          </p>
+          <div className="pt-1 text-slate-300 leading-relaxed text-xs">
+            <strong className="text-white">روش حل در ۲ قدم ساده:</strong>
+            <ol className="list-decimal list-inside space-y-0.5 mt-1 text-slate-300">
+              <li>دکمه <strong className="text-sky-300">«کپی کد ورکر جدید»</strong> در زیر را بزنید.</li>
+              <li>وارد پنل کلودفلر خود شوید (Workers & Pages &gt; ورکر خانه برزک &gt; <strong className="text-amber-300">Edit Code</strong>)، متن قبلی را پاک کرده، کد جدید را Paste کنید و دکمه آبی <strong className="text-emerald-400">Save and Deploy</strong> را بزنید. مینی‌اپ مستقیماً و بلافاصله باز خواهد شد!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
       {/* Code Tabs Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
           <button
             id="tab-view-worker-js"
             onClick={() => setActiveFile('worker')}
@@ -250,7 +274,7 @@ export const CloudflareStudio: React.FC<CloudflareStudioProps> = ({
             }`}
           >
             <FileCode className="w-4 h-4" />
-            <span>worker.js (Cloudflare Workers)</span>
+            <span>worker.js (نسخه بدون صفحه واسط)</span>
           </button>
           <button
             id="tab-view-wrangler-toml"
@@ -284,21 +308,21 @@ export const CloudflareStudio: React.FC<CloudflareStudioProps> = ({
               id="btn-copy-code"
               onClick={() =>
                 copyToClipboard(
-                  activeFile === 'worker' ? workerCode : wranglerConfig,
+                  activeFile === 'worker' ? currentWorkerCode : wranglerConfig,
                   activeFile
                 )
               }
-              className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition"
+              className="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold border border-orange-500 flex items-center gap-1.5 transition shadow"
             >
               {copiedKey === activeFile ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">کپی شد!</span>
+                  <Check className="w-3.5 h-3.5 text-emerald-300" />
+                  <span className="text-emerald-300">کپی شد!</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5" />
-                  <span>کپی کد</span>
+                  <span>کپی کد ورکر جدید</span>
                 </>
               )}
             </button>
@@ -307,7 +331,7 @@ export const CloudflareStudio: React.FC<CloudflareStudioProps> = ({
               onClick={() =>
                 downloadFile(
                   activeFile === 'worker' ? 'worker.js' : 'wrangler.toml',
-                  activeFile === 'worker' ? workerCode : wranglerConfig
+                  activeFile === 'worker' ? currentWorkerCode : wranglerConfig
                 )
               }
               className="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-medium flex items-center gap-1.5 transition shadow"
@@ -332,7 +356,7 @@ export const CloudflareStudio: React.FC<CloudflareStudioProps> = ({
             <span className="text-[11px]">JavaScript • ES Modules • Cloudflare Workers API</span>
           </div>
           <pre className="p-4 text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed max-h-[500px]">
-            <code>{workerCode}</code>
+            <code>{currentWorkerCode}</code>
           </pre>
         </div>
       )}

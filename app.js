@@ -1151,19 +1151,23 @@ function sanitizeIranianPhone(input) {
   if (!input) return "";
   const english = toEnglishDigits(input);
   let digits = english.replace(/\D/g, "");
-  if (digits.startsWith("989") && digits.length >= 12) {
+  // تبدیل پیش‌شماره بین‌المللی ۹۸ به ۰
+  if (digits.startsWith("989") && digits.length >= 11) {
     digits = "0" + digits.slice(2);
+  } else if (digits.startsWith("9") && (digits.length === 10 || digits.length === 9)) {
+    // اگر کاربر بدون صفر آغازین وارد کرد
+    digits = "0" + digits;
   }
   return digits.slice(0, 11);
 }
 
 /**
- * اعتبارسنجی شماره همراه ایرانی:
- * شماره باید حتماً با ۰۹ شروع شود و دقیقاً ۱۱ رقم باشد
+ * اعتبارسنجی شماره همراه:
+ * شماره باید با ۰۹ شروع شده و حداقل ۱۰ و حداکثر ۱۱ رقم باشد
  */
 function isValidIranianMobile(phone) {
   const digits = sanitizeIranianPhone(phone);
-  return /^09\d{9}$/.test(digits);
+  return digits.startsWith("09") && digits.length >= 10 && digits.length <= 11;
 }
 
 function formatToman(amount) {
@@ -2605,14 +2609,14 @@ function submitReservationForm(e) {
 
   if (!cleanPhone.startsWith("09")) {
     triggerHaptic('warning');
-    showToast("شماره تلفن باید با ۰۹ شروع شده و حداکثر ۱۱ رقم باشد.");
+    showToast("شماره تلفن باید با ۰۹ شروع شود.");
     document.getElementById("res-phone")?.focus();
     return;
   }
 
-  if (cleanPhone.length !== 11) {
+  if (cleanPhone.length < 10) {
     triggerHaptic('warning');
-    showToast("شماره تلفن باید ۱۱ رقم باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
+    showToast("شماره تلفن باید حداقل ۱۰ رقم باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
     document.getElementById("res-phone")?.focus();
     return;
   }
@@ -2966,11 +2970,11 @@ function checkGroupRuleViolation(callbackIfValid) {
     return true;
   }
 
-  // در صورت انتخاب بیش از یک نوع خوراک، مجموع تعداد غذاها و نفرات بررسی می‌شود
+  // در صورت انتخاب بیش از یک نوع خوراک، مجموع تعداد پرس‌ها بررسی می‌شود
   const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
   const portionsCount = selectedDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
 
-  // شرط قانون: مجموع دو خوراک ۱۰ و بالاتر باشد (>= 10) یا اقامت ۱۰ و بالاتر باشد (>= 10)
+  // شرط قانون: مجموع دو خوراک ۱۰ و بالاتر باشد (>= 10)
   const isTenOrMore = (portionsCount >= 10) || (guestsCount >= 10);
 
   if (isTenOrMore) {
@@ -2980,12 +2984,12 @@ function checkGroupRuleViolation(callbackIfValid) {
 
   // در صورتی که مجموع کمتر از ۱۰ باشد:
   triggerHaptic('warning');
-  openGroupRuleModal({
-    selectedDishIds,
-    guestsCount,
-    portionsCount,
-    onSuccess: callbackIfValid
-  });
+  showToast(`⚠️ برای انتخاب ۲ نوع خوراک، مجموع تعداد پرس‌ها باید حداقل ۱۰ پرس باشد (مجموع فعلی: ${formatPersianNumber(portionsCount)} پرس). لطفاً با دکمه‌های + تعداد را افزایش دهید یا یک نوع خوراک را حذف کنید.`);
+  
+  const summaryBox = document.getElementById("food-order-summary");
+  if (summaryBox) {
+    summaryBox.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
   return false;
 }
 
@@ -3305,7 +3309,7 @@ function renderScheduledMeals() {
   `;
 }
 
-// قانون سفارش: برای انتخاب بیش از یک نوع خوراک باید تعداد غذای انتخاب‌شده بالای ۱۰ نفر باشد وگرنه یک نوع خوراک باید انتخاب شود.
+// قانون سفارش: انتخاب آزادانه تا ۲ نوع خوراک در یک وعده؛ اگر ۲ نوع خوراک انتخاب شد، مجموع انتخاب باید بالای ۱۰ پرس باشد (مثلاً خوراک۱ به تعداد ۶ پرس و خوراک۲ به تعداد ۴ پرس)
 function toggleDishSelection(dishId) {
   triggerHaptic('light');
   const currentDishIds = Object.keys(state.foodOrder.selectedDishes);
@@ -3323,10 +3327,7 @@ function toggleDishSelection(dishId) {
     return;
   }
 
-  // اضافه کردن خوراک جدید
-  const currentPortions = currentDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
   const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
-  const isTenOrMore = (currentPortions >= 10) || (guestsCount >= 10);
 
   // حالت ۱: هنوز هیچ غذایی انتخاب نشده است
   if (currentDishIds.length === 0) {
@@ -3336,36 +3337,26 @@ function toggleDishSelection(dishId) {
     return;
   }
 
-  // حالت ۲: ۱ نوع غذا انتخاب شده و کاربر می‌خواهد نوع دوم خوراک را انتخاب کند
+  // حالت ۲: ۱ نوع غذا انتخاب شده و کاربر خوراک دوم را انتخاب می‌کند (انتخاب تا ۲ نوع از هر غذایی آزاد است)
   if (currentDishIds.length === 1) {
-    if (isTenOrMore) {
-      // مجموع پرس‌ها ۱۰ یا بیشتر است، بنابراین انتخاب دو نوع خوراک مجاز است
-      state.foodOrder.selectedDishes[dishId] = 1;
-      state.foodOrder.isGroupTravel = true;
-      const groupCheck = document.getElementById("food-group-travel-checkbox");
-      if (groupCheck) groupCheck.checked = true;
-      renderFoodSection();
-      updateReservationCalculations();
-      showToast("خوراک دوم به سفارش اضافه شد (مجموع غذاها ۱۰ و بالاتر است).");
-      return;
-    }
-
-    // مجموع زیر ۱۰ پرس است: طبق قانون برای دو نوع خوراک باید مجموع ۱۰ و بالاتر باشد
-    triggerHaptic('warning');
     const existingDishId = currentDishIds[0];
-    openGroupRuleModal({
-      selectedDishIds: [existingDishId],
-      guestsCount,
-      portionsCount: currentPortions,
-      newDishIdToAdd: dishId,
-      onSuccess: null
-    });
+    const existingQty = Number(state.foodOrder.selectedDishes[existingDishId]) || 1;
+    // پیش‌فرض هوشمند: اگر غذای اول زیر ۱۰ است، غذای دوم طوری مقداردهی می‌شود که مجموع اولیه ۱۰ شود (مثلاً ۶ و ۴)
+    // کاربر کاملاً آزاد است با + و - هر دو غذا را کم و زیاد کند (مجموع در نهایت باید ۱۰ و بالاتر باشد)
+    const defaultSecondQty = existingQty < 10 ? Math.max(1, 10 - existingQty) : 1;
+    state.foodOrder.selectedDishes[dishId] = defaultSecondQty;
+    state.foodOrder.isGroupTravel = true;
+    const groupCheck = document.getElementById("food-group-travel-checkbox");
+    if (groupCheck) groupCheck.checked = true;
+    renderFoodSection();
+    updateReservationCalculations();
+    showToast(`خوراک دوم اضافه شد (مجموع: ${formatPersianNumber(existingQty + defaultSecondQty)} پرس). می‌توانید تعداد هر دو خوراک را آزادانه با + و - کم و زیاد کنید.`);
     return;
   }
 
-  // حالت ۳: بیش از ۲ نوع خوراک در یک وعده
+  // حالت ۳: بیش از ۲ نوع خوراک در یک وعده مجاز نیست
   triggerHaptic('warning');
-  showToast("در هر وعده حداکثر دو نوع خوراک (با مجموع ۱۰ پرس و بالاتر) قابل انتخاب است.");
+  showToast("در هر وعده حداکثر ۲ نوع خوراک قابل انتخاب است. برای انتخاب خوراک دیگر، یکی از خوراک‌های قبلی را بردارید.");
   const checkbox = document.getElementById(`check-${dishId}`);
   if (checkbox) checkbox.checked = false;
 }
@@ -3375,21 +3366,11 @@ function toggleGroupTravel(isGroup) {
   triggerHaptic('light');
   state.foodOrder.isGroupTravel = !!isGroup;
   const currentKeys = Object.keys(state.foodOrder.selectedDishes);
-  const totalPortions = currentKeys.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
-  const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
 
   if (!isGroup && currentKeys.length > 1) {
     const toRemove = currentKeys.slice(1);
     toRemove.forEach(k => delete state.foodOrder.selectedDishes[k]);
     showToast("تعداد خوراک‌ها به یک نوع تنظیم شد.");
-  } else if (isGroup && currentKeys.length > 1 && totalPortions < 10 && guestsCount < 10) {
-    openGroupRuleModal({
-      selectedDishIds: currentKeys,
-      guestsCount,
-      portionsCount: totalPortions,
-      onSuccess: null
-    });
-    return;
   }
   renderFoodSection();
   updateReservationCalculations();
@@ -3398,28 +3379,32 @@ function toggleGroupTravel(isGroup) {
 function changeDishQty(dishId, delta) {
   triggerHaptic('light');
   if (!state.foodOrder.selectedDishes[dishId]) return;
-  const currentDishIds = Object.keys(state.foodOrder.selectedDishes);
   let q = state.foodOrder.selectedDishes[dishId] + delta;
   if (q < 1) q = 1;
   if (q > 50) q = 50;
 
-  // اگر دو نوع خوراک انتخاب شده، مجموع تعداد غذاها نباید به کمتر از ۱۰ کاهش یابد
-  if (currentDishIds.length > 1 && delta < 0) {
-    const nextTotal = currentDishIds.reduce((sum, id) => {
-      return sum + (id === dishId ? q : (state.foodOrder.selectedDishes[id] || 0));
-    }, 0);
-    const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
-
-    if (nextTotal < 10 && guestsCount < 10) {
-      triggerHaptic('warning');
-      showToast("برای انتخاب دو نوع خوراک، مجموع دو خوراک باید ۱۰ و بالاتر باشد. برای کمتر از ۱۰ پرس، یک نوع خوراک را حذف نمایید.");
-      return;
-    }
-  }
-
+  // کاربر می‌تواند تعداد پرس‌های هر خوراک را کاملاً آزادانه کم یا زیاد کند
   state.foodOrder.selectedDishes[dishId] = q;
   renderFoodSection();
   updateReservationCalculations();
+}
+
+function autoCompletePortionsToTen() {
+  triggerHaptic('medium');
+  const currentKeys = Object.keys(state.foodOrder.selectedDishes);
+  if (currentKeys.length === 0) return;
+  const total = currentKeys.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
+  if (total < 10) {
+    const needed = 10 - total;
+    const targetKey = currentKeys[1] || currentKeys[0];
+    state.foodOrder.selectedDishes[targetKey] = (Number(state.foodOrder.selectedDishes[targetKey]) || 0) + needed;
+    state.foodOrder.isGroupTravel = true;
+    const groupCheck = document.getElementById("food-group-travel-checkbox");
+    if (groupCheck) groupCheck.checked = true;
+    renderFoodSection();
+    updateReservationCalculations();
+    showToast("مجموع تعداد پرس‌ها به ۱۰ پرس تکمیل شد.");
+  }
 }
 
 function updateFoodOrderSummary() {
@@ -3473,6 +3458,27 @@ function updateFoodOrderSummary() {
         <span>${formatToman(currentMealTotal)}</span>
       </div>
     `;
+
+    // وضعیت انتخاب ۲ نوع خوراک در وعده جاری
+    if (currentSelectedIds.length === 2) {
+      const currentMealPortions = currentSelectedIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
+      if (currentMealPortions >= 10) {
+        summaryRows += `
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 7px 10px; border-radius: 8px; font-size: 11.5px; margin: 6px 0;">
+            ✓ انتخاب ۲ نوع خوراک (مجموع: <strong>${formatPersianNumber(currentMealPortions)} پرس</strong> • شرط حداقل ۱۰ پرس رعایت شده است)
+          </div>
+        `;
+      } else {
+        summaryRows += `
+          <div style="background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 7px 10px; border-radius: 8px; font-size: 11.5px; margin: 6px 0;">
+            ⚠️ انتخاب ۲ نوع خوراک: مجموع باید حداقل ۱۰ پرس باشد (مجموع فعلی: <strong>${formatPersianNumber(currentMealPortions)} پرس</strong> — نیاز به <strong>${formatPersianNumber(10 - currentMealPortions)} پرس</strong> دیگر).
+            <div style="margin-top: 5px;">
+              <button type="button" class="btn btn-mustard" style="font-size: 11px; padding: 3px 8px;" onclick="autoCompletePortionsToTen()">⚡ تکمیل به ۱۰ پرس</button>
+            </div>
+          </div>
+        `;
+      }
+    }
   }
 
   summaryBox.innerHTML = `
@@ -3514,14 +3520,14 @@ function submitFoodOrderForm(e) {
 
   if (!cleanPhone.startsWith("09")) {
     triggerHaptic('warning');
-    showToast("شماره تلفن باید با ۰۹ شروع شده و حداکثر ۱۱ رقم باشد.");
+    showToast("شماره تلفن باید با ۰۹ شروع شود.");
     document.getElementById("food-phone")?.focus();
     return;
   }
 
-  if (cleanPhone.length !== 11) {
+  if (cleanPhone.length < 10) {
     triggerHaptic('warning');
-    showToast("شماره تلفن باید ۱۱ رقم باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
+    showToast("شماره تلفن باید حداقل ۱۰ رقم باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
     document.getElementById("food-phone")?.focus();
     return;
   }
@@ -4189,6 +4195,7 @@ window.toggleAllFoodDetails = toggleAllFoodDetails;
 window.toggleDishSelection = toggleDishSelection;
 window.toggleGroupTravel = toggleGroupTravel;
 window.changeDishQty = changeDishQty;
+window.autoCompletePortionsToTen = autoCompletePortionsToTen;
 window.saveFoodAndReturnToReservation = saveFoodAndReturnToReservation;
 window.submitFoodOrderForm = submitFoodOrderForm;
 window.closeGroupRuleModal = closeGroupRuleModal;

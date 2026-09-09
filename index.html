@@ -209,7 +209,7 @@
           <span class="screen-title">📝 رزرو اقامت</span>
         </div>
 
-        <form class="form-card" id="reservation-form" onsubmit="submitReservationForm(event)">
+        <form class="form-card" id="reservation-form" novalidate onsubmit="submitReservationForm(event)">
           
           <h4 style="font-size: 14.5px; font-weight: 800; color: var(--brand-green); margin-bottom: 14px;">
             مشخصات شما
@@ -224,7 +224,7 @@
 
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="res-phone">شماره تماس (موبایل):</label>
-              <input type="tel" class="form-input" id="res-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" pattern="09[0-9]{9}" title="شماره موبایل باید با ۰۹ شروع شده و ۱۱ رقم باشد" required />
+              <input type="tel" class="form-input" id="res-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
             </div>
           </div>
 
@@ -715,7 +715,7 @@
         <div id="dishes-list-container"></div>
 
         <!-- فرم درخواست غذا و تنظیم برنامه چند وعده‌ای -->
-        <form class="form-card" id="food-order-form" onsubmit="submitFoodOrderForm(event)" style="margin-top: 20px;">
+        <form class="form-card" id="food-order-form" novalidate onsubmit="submitFoodOrderForm(event)" style="margin-top: 20px;">
           <h4 style="font-size: 15px; font-weight: 800; color: var(--brand-green); margin-bottom: 14px;">
             مشخصات و برنامه غذایی
           </h4>
@@ -729,7 +729,7 @@
 
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="food-phone">شماره تماس:</label>
-              <input type="tel" class="form-input" id="food-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" pattern="09[0-9]{9}" title="شماره تماس باید با ۰۹ شروع شده و ۱۱ رقم باشد" required />
+              <input type="tel" class="form-input" id="food-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
             </div>
           </div>
 

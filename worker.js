@@ -96,20 +96,29 @@ export default {
       return env.ASSETS.fetch(new URL("/", request.url));
     }
 
-    // ۴. در صورت تنظیم آدرس اختصاصی مینی‌اپ، هدایت مستقیم بدون صفحه واسط
-    if (env.MINIAPP_URL || env.MINI_APP_URL) {
-      return Response.redirect(env.MINIAPP_URL || env.MINI_APP_URL, 302);
+    // ۴. بارگذاری مستقیم مینی‌اپ بدون صفحه واسط و بدون ریدایرکت (پروکسی مستقیم محتوا)
+    const targetBase = env.MINIAPP_URL || env.MINI_APP_URL || "https://barzokhouse.com";
+    try {
+      const proxyUrl = new URL(url.pathname === "/" ? "/index.html" : url.pathname, targetBase);
+      proxyUrl.search = url.search;
+      const proxyRes = await fetch(new Request(proxyUrl, {
+        method: request.method,
+        headers: request.headers
+      }));
+      if (proxyRes.ok || proxyRes.status === 304) {
+        const newHeaders = new Headers(proxyRes.headers);
+        Object.entries(CORS_HEADERS).forEach(([k, v]) => newHeaders.set(k, v));
+        return new Response(proxyRes.body, {
+          status: proxyRes.status,
+          headers: newHeaders
+        });
+      }
+    } catch (proxyErr) {
+      console.warn("Direct miniapp proxy failed:", proxyErr);
     }
 
-    // پاسخ امن JSON فقط برای بررسی سلامت سرویس بدون هیچ صفحه واسط یا لینک گروه
-    return new Response(
-      JSON.stringify({ 
-        ok: true, 
-        service: "سرویس ثبت رزرو اقامتگاه بومگردی خانه برزک",
-        status: "active"
-      }),
-      { headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" } }
-    );
+    // در صورت بروز خطا در پروکسی، به آدرس مینی‌اپ منتقل شود
+    return Response.redirect(targetBase, 302);
   }
 };
 
@@ -262,7 +271,7 @@ async function handleTelegramUpdate(update, env) {
 
 🏡 تجربه‌ای آرام و اصیل در میان باغات شاتوت و کوهستان‌های دل‌انگیز برزک (نزدیک کاشان).
 
-برای مشاهده اتاق‌ها، قیمت‌ها، منوی غذای محلی و ثبت یکجای درخواست اقامت و خوراک، روی دکمه زیر بزنید:`;
+برای ورود مستقیم به مینی‌اپ و مشاهده اتاق‌ها، قیمت‌ها، منوی غذای محلی و ثبت درخواست اقامت، روی دکمه زیر بزنید:`;
 
     const payload = {
       chat_id: chatId,
@@ -271,22 +280,36 @@ async function handleTelegramUpdate(update, env) {
         inline_keyboard: [
           [
             {
-              text: "🏡 ورود به مینی‌اپ خانه برزک",
+              text: "🏡 ورود مستقیم به مینی‌اپ خانه برزک",
               web_app: { url: appUrl }
             }
-          ],
-          [
-            { text: "📞 وب‌سایت خانه برزک", url: "https://barzokhouse.com" }
           ]
         ]
       }
     };
 
+    // ۱. ارسال پیام با دکمه وب‌اپ
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+
+    // ۲. تنظیم دکمه منوی تلگرام (Menu Button) برای ورود مستقیم دائمی به مینی‌اپ
+    try {
+      await fetch(`https://api.telegram.org/bot${token}/setChatMenuButton`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          menu_button: {
+            type: "web_app",
+            text: "🏡 مینی‌اپ خانه برزک",
+            web_app: { url: appUrl }
+          }
+        })
+      });
+    } catch (_) {}
   }
 }
 

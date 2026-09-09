@@ -1157,26 +1157,46 @@ function sanitizeIranianPhone(input) {
     digits = "0" + digits.slice(4);
   }
   // تبدیل پیش‌شماره بین‌المللی 98 به 0 (مثلا 989123456789 -> 09123456789)
-  else if (digits.startsWith("989") && digits.length >= 11) {
+  else if (digits.startsWith("989") && digits.length >= 12) {
     digits = "0" + digits.slice(2);
   } else if (digits.startsWith("98") && digits.length === 12) {
     digits = "0" + digits.slice(2);
   }
   // اگر کاربر شماره را بدون صفر آغازین وارد کرد (مثلاً 9123456789)
-  else if (digits.startsWith("9") && (digits.length === 10 || digits.length === 9)) {
+  else if (digits.startsWith("9") && digits.length === 10) {
     digits = "0" + digits;
   }
   
-  return digits.slice(0, 11);
+  return digits;
 }
 
 /**
- * اعتبارسنجی شماره همراه:
- * شماره باید با ۰۹ شروع شده و ۱۱ رقم کامل باشد
+ * اعتبارسنجی دقیق شماره همراه ایرانی:
+ * شماره باید دقیقاً ۱۱ رقم بوده و با ۰۹ شروع شود. هر مقداری کمتر یا بیشتر از ۱۱ رقم غیرمجاز است.
  */
-function isValidIranianMobile(phone) {
+function validateIranianMobile(phone) {
+  if (!phone || String(phone).trim() === "") {
+    return { valid: false, error: "لطفاً شماره تماس (موبایل) خود را وارد کنید." };
+  }
   const digits = sanitizeIranianPhone(phone);
-  return digits.startsWith("09") && digits.length === 11;
+
+  if (!digits.startsWith("09")) {
+    return { valid: false, error: "شماره موبایل باید با ۰۹ شروع شود (مثال: ۰۹۱۲۳۴۵۶۷۸۹)." };
+  }
+
+  if (digits.length < 11) {
+    return { valid: false, error: `شماره موبایل ناقص است (${formatPersianNumber(digits.length)} رقم وارد شده؛ باید دقیقاً ۱۱ رقم باشد).` };
+  }
+
+  if (digits.length > 11) {
+    return { valid: false, error: `شماره موبایل بیشتر از ۱۱ رقم است (${formatPersianNumber(digits.length)} رقم وارد شده؛ باید دقیقاً ۱۱ رقم باشد).` };
+  }
+
+  return { valid: true, phone: digits };
+}
+
+function isValidIranianMobile(phone) {
+  return validateIranianMobile(phone).valid;
 }
 
 function formatToman(amount) {
@@ -2603,23 +2623,18 @@ function submitReservationForm(e) {
 
   const phoneInputEl = document.getElementById("res-phone");
   const rawPhone = (phoneInputEl && phoneInputEl.value) ? phoneInputEl.value : state.reservation.phone;
-  const cleanPhone = sanitizeIranianPhone(rawPhone);
+  const phoneValidation = validateIranianMobile(rawPhone);
+
+  if (!phoneValidation.valid) {
+    triggerHaptic('warning');
+    showToast(phoneValidation.error);
+    document.getElementById("res-phone")?.focus();
+    return;
+  }
+
+  const cleanPhone = phoneValidation.phone;
   state.reservation.phone = cleanPhone;
   if (phoneInputEl) phoneInputEl.value = cleanPhone;
-
-  if (!cleanPhone) {
-    triggerHaptic('warning');
-    showToast("لطفاً شماره تماس (موبایل) خود را وارد کنید.");
-    document.getElementById("res-phone")?.focus();
-    return;
-  }
-
-  if (!cleanPhone.startsWith("09") || cleanPhone.length < 11) {
-    triggerHaptic('warning');
-    showToast("شماره موبایل باید ۱۱ رقم بوده و با ۰۹ شروع شود (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
-    document.getElementById("res-phone")?.focus();
-    return;
-  }
 
   // در صورت انتخاب ۲ نوع خوراک همراه با اقامت، بررسی قانون حداقل ۱۰ پرس
   const selectedDishIds = Object.keys(state.foodOrder.selectedDishes);
@@ -3492,23 +3507,18 @@ function submitFoodOrderForm(e) {
 
   const foodPhoneInputEl = document.getElementById("food-phone");
   const rawFoodPhone = (foodPhoneInputEl && foodPhoneInputEl.value) ? foodPhoneInputEl.value : state.foodOrder.phone;
-  const cleanPhone = sanitizeIranianPhone(rawFoodPhone);
+  const phoneValidation = validateIranianMobile(rawFoodPhone);
+
+  if (!phoneValidation.valid) {
+    triggerHaptic('warning');
+    showToast(phoneValidation.error);
+    document.getElementById("food-phone")?.focus();
+    return;
+  }
+
+  const cleanPhone = phoneValidation.phone;
   state.foodOrder.phone = cleanPhone;
   if (foodPhoneInputEl) foodPhoneInputEl.value = cleanPhone;
-
-  if (!cleanPhone) {
-    triggerHaptic('warning');
-    showToast("لطفاً شماره تماس (موبایل) خود را وارد کنید.");
-    document.getElementById("food-phone")?.focus();
-    return;
-  }
-
-  if (!cleanPhone.startsWith("09") || cleanPhone.length < 11) {
-    triggerHaptic('warning');
-    showToast("شماره موبایل باید ۱۱ رقم بوده و با ۰۹ شروع شود (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
-    document.getElementById("food-phone")?.focus();
-    return;
-  }
   if (scheduled.length === 0 && currentSelectedIds.length === 0) {
     showToast("لطفاً حداقل یک غذا از منو یا برنامه وعده‌ها انتخاب کنید.");
     return;
@@ -3962,33 +3972,52 @@ document.addEventListener("DOMContentLoaded", () => {
     if (foodNameEl) foodNameEl.value = state.foodOrder.name;
   }
 
-  // اتصال کنترل هوشمند و اعتبارسنجی فیلدهای شماره تماس (شروع با ۰۹ و ۱۱ رقم)
+  // اتصال کنترل هوشمند و اعتبارسنجی دقیق فیلدهای شماره تماس (دقیقاً ۱۱ رقم با شروع ۰۹)
   function setupPhoneInputValidation(inputId, syncWithId) {
     const el = document.getElementById(inputId);
     if (!el) return;
+    el.maxLength = 11;
+    el.setAttribute("maxlength", "11");
+
     el.addEventListener("input", (e) => {
-      const eng = toEnglishDigits(e.target.value);
-      const filtered = eng.replace(/[^\d+]/g, "").slice(0, 14);
-      if (e.target.value !== filtered && filtered.length > 0) {
-        e.target.value = filtered;
+      let eng = toEnglishDigits(e.target.value);
+      // تبدیل +98 یا 0098 به 0
+      if (eng.startsWith("+98")) eng = "0" + eng.slice(3);
+      if (eng.startsWith("0098")) eng = "0" + eng.slice(4);
+      if (eng.startsWith("989") && eng.length >= 12) eng = "0" + eng.slice(2);
+
+      // فقط ارقام مجاز باشند و حداکثر ۱۱ رقم
+      let digits = eng.replace(/\D/g, "");
+
+      // اگر کاربر شماره را بدون صفر آغازین وارد کرد (مثلاً 9123456789)
+      if (digits.startsWith("9") && digits.length === 10) {
+        digits = "0" + digits;
       }
-      const sanitized = sanitizeIranianPhone(filtered);
-      state.reservation.phone = sanitized;
-      state.foodOrder.phone = sanitized;
+
+      // قطع سخت‌گیرانه هر رقمی بیش از ۱۱ رقم
+      if (digits.length > 11) {
+        digits = digits.slice(0, 11);
+      }
+
+      if (e.target.value !== digits) {
+        e.target.value = digits;
+      }
+      state.reservation.phone = digits;
+      state.foodOrder.phone = digits;
       const syncEl = document.getElementById(syncWithId);
-      if (syncEl && sanitized.length >= 10 && syncEl.value !== sanitized) {
-        syncEl.value = sanitized;
+      if (syncEl && syncEl.value !== digits) {
+        syncEl.value = digits;
       }
     });
 
     el.addEventListener("blur", (e) => {
-      const sanitized = sanitizeIranianPhone(e.target.value);
-      if (sanitized) {
-        e.target.value = sanitized;
-        state.reservation.phone = sanitized;
-        state.foodOrder.phone = sanitized;
-        const syncEl = document.getElementById(syncWithId);
-        if (syncEl) syncEl.value = sanitized;
+      const val = e.target.value ? e.target.value.trim() : "";
+      if (val) {
+        const check = validateIranianMobile(val);
+        if (!check.valid) {
+          triggerHaptic('warning');
+          showToast(check.error);
+        }
       }
     });
   }

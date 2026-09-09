@@ -385,3 +385,15 @@ const finalWorkerCode = workerTemplate.replace('"__EMBEDDED_MINIAPP_B64__"', JSO
 
 fs.writeFileSync(path.join(__dirname, '../worker.js'), finalWorkerCode, 'utf8');
 console.log('Successfully generated self-contained worker.js! Size:', Math.round(finalWorkerCode.length / 1024), 'KB');
+
+// اطمینان از وجود .assetsignore برای جلوگیری از خطای امنیتی Cloudflare Wrangler
+const assetsIgnoreContent = "_worker.js\nworker.js\n*.map\nfunctions/**\n";
+fs.writeFileSync(path.join(__dirname, '../.assetsignore'), assetsIgnoreContent, 'utf8');
+const distPath = path.join(__dirname, '../dist');
+if (fs.existsSync(distPath)) {
+  fs.writeFileSync(path.join(distPath, '.assetsignore'), assetsIgnoreContent, 'utf8');
+  const distWorker = path.join(distPath, '_worker.js');
+  if (fs.existsSync(distWorker)) fs.unlinkSync(distWorker);
+  const distMainWorker = path.join(distPath, 'worker.js');
+  if (fs.existsSync(distMainWorker)) fs.unlinkSync(distMainWorker);
+}

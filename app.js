@@ -31,13 +31,7 @@ const CONFIG = {
   foodMenuUrl: "https://barzokhouse.com/%d8%af%d8%b3%d8%aa%d9%88%d8%b1-%d9%be%d8%ae%d8%aa-%d8%ba%d8%b0%d8%a7%d9%87%d8%a7/",
   googleMapsReviewUrl: "https://maps.app.goo.gl/aC1vyJ9T5Q4jJkMy6",
   tripAdvisorUrl: "https://www.tripadvisor.com/Hotel_Review-g680023-d8618364-Reviews-Barzok_House-Kashan_Isfahan_Province.html",
-  // لینک اختصاصی گروه تلگرام برای ارسال درخواست‌های رزرو خانه برزک
-  reservationGroupUrl: "https://web.telegram.org/k/#-4485664573",
-  reservationGroupId: "-1004485664573",
-  reservationGroupRawId: "-4485664573",
-  reservationGroupDeepLink: "https://t.me/c/4485664573",
-  reservationGroupInviteUrl: "https://t.me/+wigY6VanuYplYTk8",
-  // آدرس Cloudflare Worker برای پردازش درخواست و ارسال مستقیم به گروه تلگرام
+  // آدرس سرویس پشتیبان برای پردازش درخواست و ارسال مستقیم
   workerUrl: "https://barzokhousereservationminiapp.targol.workers.dev"
 };
 
@@ -1132,6 +1126,44 @@ function formatPersianNumber(n) {
   if (n === null || n === undefined) return "";
   const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
   return String(n).replace(/[0-9]/g, w => persianDigits[+w]);
+}
+
+/**
+ * تبدیل ارقام فارسی و عربی به انگلیسی
+ */
+function toEnglishDigits(str) {
+  if (!str) return "";
+  const persianMap = { "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4", "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9" };
+  const arabicMap = { "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9" };
+  return String(str)
+    .replace(/[۰-۹]/g, c => persianMap[c] || c)
+    .replace(/[٠-٩]/g, c => arabicMap[c] || c);
+}
+
+/**
+ * پاکسازی و استانداردسازی شماره تلفن همراه:
+ * - تبدیل اعداد فارسی/عربی به انگلیسی
+ * - حذف کاراکترهای غیررقمی
+ * - اصلاح پیش‌شماره بین‌المللی ۹۸ به ۰
+ * - محدودیت حداکثر ۱۱ رقم
+ */
+function sanitizeIranianPhone(input) {
+  if (!input) return "";
+  const english = toEnglishDigits(input);
+  let digits = english.replace(/\D/g, "");
+  if (digits.startsWith("989") && digits.length >= 12) {
+    digits = "0" + digits.slice(2);
+  }
+  return digits.slice(0, 11);
+}
+
+/**
+ * اعتبارسنجی شماره همراه ایرانی:
+ * شماره باید حتماً با ۰۹ شروع شود و دقیقاً ۱۱ رقم باشد
+ */
+function isValidIranianMobile(phone) {
+  const digits = sanitizeIranianPhone(phone);
+  return /^09\d{9}$/.test(digits);
 }
 
 function formatToman(amount) {
@@ -2555,13 +2587,32 @@ function submitReservationForm(e) {
   const phone = state.reservation.phone;
 
   if (!name) {
+    triggerHaptic('warning');
     showToast("لطفاً نام و نام خانوادگی خود را وارد کنید.");
     document.getElementById("res-name")?.focus();
     return;
   }
 
-  if (!phone || phone.length < 10) {
-    showToast("لطفاً شماره تماس معتبر (موبایل) را وارد کنید.");
+  const cleanPhone = sanitizeIranianPhone(phone || document.getElementById("res-phone")?.value);
+  state.reservation.phone = cleanPhone;
+
+  if (!cleanPhone) {
+    triggerHaptic('warning');
+    showToast("لطفاً شماره تماس (موبایل) خود را وارد کنید.");
+    document.getElementById("res-phone")?.focus();
+    return;
+  }
+
+  if (!cleanPhone.startsWith("09")) {
+    triggerHaptic('warning');
+    showToast("شماره تلفن باید با ۰۹ شروع شده و حداکثر ۱۱ رقم باشد.");
+    document.getElementById("res-phone")?.focus();
+    return;
+  }
+
+  if (cleanPhone.length !== 11) {
+    triggerHaptic('warning');
+    showToast("شماره تلفن باید ۱۱ رقم باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
     document.getElementById("res-phone")?.focus();
     return;
   }
@@ -3445,12 +3496,32 @@ function submitFoodOrderForm(e) {
   const currentSelectedIds = Object.keys(state.foodOrder.selectedDishes);
 
   if (!name) {
+    triggerHaptic('warning');
     showToast("لطفاً نام مهمان را وارد کنید.");
     document.getElementById("food-name")?.focus();
     return;
   }
-  if (!phone || phone.length < 10) {
-    showToast("لطفاً شماره تماس را وارد کنید.");
+
+  const cleanPhone = sanitizeIranianPhone(phone || document.getElementById("food-phone")?.value);
+  state.foodOrder.phone = cleanPhone;
+
+  if (!cleanPhone) {
+    triggerHaptic('warning');
+    showToast("لطفاً شماره تماس خود را وارد کنید.");
+    document.getElementById("food-phone")?.focus();
+    return;
+  }
+
+  if (!cleanPhone.startsWith("09")) {
+    triggerHaptic('warning');
+    showToast("شماره تلفن باید با ۰۹ شروع شده و حداکثر ۱۱ رقم باشد.");
+    document.getElementById("food-phone")?.focus();
+    return;
+  }
+
+  if (cleanPhone.length !== 11) {
+    triggerHaptic('warning');
+    showToast("شماره تلفن باید ۱۱ رقم باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
     document.getElementById("food-phone")?.focus();
     return;
   }
@@ -3479,7 +3550,7 @@ function executeSubmitFoodOrderForm() {
 
   openMessagePreviewModal({
     title: "پیش‌نمایش درخواست شما",
-    subtitle: "خلاصه درخواست شما آماده ارسال به گروه رزرو خانه برزک است:",
+    subtitle: "خلاصه درخواست شما آماده ارسال به اقامتگاه است:",
     messageText: messageText,
     actionType: "unified"
   });
@@ -3719,34 +3790,13 @@ function shareViaTelegram() {
 }
 
 /**
- * ۳. باز کردن مستقیم لینک اختصاصی گروه رزرو خانه برزک
+ * ۳. ارسال متن درخواست از طریق اشتراک در تلگرام (بدون افشای لینک خصوصی گروه)
  */
 function sendDirectToReservationGroup() {
   triggerHaptic('medium');
   copyModalMessage();
-  const groupWebUrl = CONFIG.reservationGroupUrl || "https://web.telegram.org/k/#-4485664573";
-  const groupDeepLink = CONFIG.reservationGroupDeepLink || "https://t.me/c/4485664573";
-  const groupInviteUrl = CONFIG.reservationGroupInviteUrl || "https://t.me/+wigY6VanuYplYTk8";
-
-  showToast("متن درخواست کپی شد! در حال باز کردن گروه رزرو خانه برزک...");
-  setTimeout(() => {
-    if (tg && tg.openTelegramLink) {
-      try {
-        tg.openTelegramLink(groupDeepLink);
-        closeMessageModal();
-        return;
-      } catch (e) {
-        console.warn("tg.openTelegramLink failed, trying invite/web", e);
-        try {
-          tg.openTelegramLink(groupInviteUrl);
-          closeMessageModal();
-          return;
-        } catch (e2) {}
-      }
-    }
-    window.open(groupWebUrl, '_blank');
-    closeMessageModal();
-  }, 450);
+  showToast("متن درخواست کپی شد. در حال باز کردن تلگرام...");
+  shareViaTelegram();
 }
 
 /**
@@ -3819,20 +3869,20 @@ function sendViaTelegram() {
 
     if (sendBtn) {
       sendBtn.disabled = false;
-      sendBtn.innerHTML = originalBtnHtml || "🚀 ارسال خودکار به گروه رزرو خانه برزک";
+      sendBtn.innerHTML = originalBtnHtml || "🚀 ارسال خودکار درخواست رزرو";
     }
 
     if (res.ok && data && (data.ok === true || data.forwarded_to_group === true)) {
       triggerHaptic('success');
-      showToast("✅ درخواست با موفقیت در گروه رزرو خانه برزک ثبت شد.");
+      showToast("✅ درخواست با موفقیت در سیستم اقامتگاه ثبت شد.");
       const previewEl = document.getElementById("modal-message-preview");
       if (previewEl) {
         previewEl.innerHTML = `
           <div style="background: #e6f7f4; border: 1px solid #1f8578; color: #13524a; padding: 16px; border-radius: 8px; text-align: center;">
             <div style="font-size: 24px; margin-bottom: 6px;">🎉</div>
-            <div style="font-size: 15px; font-weight: 800; margin-bottom: 6px;">درخواست با موفقیت در گروه رزرو خانه برزک ثبت گردید!</div>
+            <div style="font-size: 15px; font-weight: 800; margin-bottom: 6px;">درخواست شما با موفقیت ثبت گردید!</div>
             <div style="font-size: 12.5px; line-height: 1.6; color: #2d4d42;">
-              پیام شما توسط بات در گروه رزرو خانه برزک قرار گرفت. میزبان اقامتگاه پیام شما را بررسی کرده و به زودی با شما هماهنگ خواهد شد.
+              پیام شما با موفقیت برای اقامتگاه ارسال شد. میزبان پیام شما را بررسی کرده و به زودی جهت هماهنگی نهایی با شما تماس خواهد گرفت.
             </div>
           </div>
         `;
@@ -3847,9 +3897,9 @@ function sendViaTelegram() {
       if (previewEl) {
         previewEl.innerHTML = `
           <div style="background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 14px; border-radius: 8px; text-align: right; margin-bottom: 12px; font-size: 12.5px; line-height: 1.6;">
-            <strong>⚠️ وضعیت ارسال به گروه تلگرام:</strong><br/>
+            <strong>⚠️ وضعیت ثبت درخواست:</strong><br/>
             ${errNote}<br/>
-            <span style="font-size: 11.5px; color: #7c2d12;">متن کامل درخواست در حافظه کپی شد؛ می‌توانید از دکمه زیر برای باز کردن مستقیم گروه تلگرام استفاده کنید.</span>
+            <span style="font-size: 11.5px; color: #7c2d12;">متن کامل درخواست در حافظه کپی شد؛ می‌توانید از گزینه‌های اشتراک در تلگرام یا ارسال پیامک مستقیم به میزبان استفاده فرمایید.</span>
           </div>
           <div style="white-space: pre-wrap; font-family: monospace; font-size: 12px; max-height: 120px; overflow-y: auto;">${currentModalMessage}</div>
         `;
@@ -3859,12 +3909,12 @@ function sendViaTelegram() {
   .catch(err => {
     if (sendBtn) {
       sendBtn.disabled = false;
-      sendBtn.innerHTML = originalBtnHtml || "🚀 ارسال خودکار به گروه رزرو خانه برزک";
+      sendBtn.innerHTML = originalBtnHtml || "🚀 ارسال خودکار درخواست رزرو";
     }
     console.warn("Worker submission network notice:", err);
     triggerHaptic('warning');
-    showToast("متن کپی شد. در حال هدایت به گروه تلگرام خانه برزک...");
-    sendDirectToReservationGroup();
+    showToast("متن کپی شد. می‌توانید از دکمه اشتراک یا پیامک استفاده فرمایید.");
+    shareViaTelegram();
   });
 }
 
@@ -3933,6 +3983,26 @@ document.addEventListener("DOMContentLoaded", () => {
     if (resNameEl) resNameEl.value = state.reservation.name;
     if (foodNameEl) foodNameEl.value = state.foodOrder.name;
   }
+
+  // اتصال کنترل هوشمند و اعتبارسنجی فیلدهای شماره تماس (شروع با ۰۹ و حداکثر ۱۱ رقم)
+  function setupPhoneInputValidation(inputId, syncWithId) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    el.addEventListener("input", (e) => {
+      const sanitized = sanitizeIranianPhone(e.target.value);
+      if (e.target.value !== sanitized) {
+        e.target.value = sanitized;
+      }
+      state.reservation.phone = sanitized;
+      state.foodOrder.phone = sanitized;
+      const syncEl = document.getElementById(syncWithId);
+      if (syncEl && syncEl.value !== sanitized) {
+        syncEl.value = sanitized;
+      }
+    });
+  }
+  setupPhoneInputValidation("res-phone", "food-phone");
+  setupPhoneInputValidation("food-phone", "res-phone");
 
   // مقداردهی دکمه‌ها و لینک‌های خارجی از CONFIG
   document.querySelectorAll("[data-config-phone1]").forEach(el => {

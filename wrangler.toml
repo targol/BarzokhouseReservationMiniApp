@@ -2,8 +2,12 @@ name = "barzokhousereservationminiapp"
 main = "worker.js"
 compatibility_date = "2024-09-01"
 
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
 [vars]
 # متغیرهای ربات و سرویس رزرو خانه برزک
 # BOT_TOKEN = "توکن بات تلگرام دریافتی از BotFather"
-# RESERVATION_CHAT_ID = "شناسه عددی گروه رزرو خانه برزک (مثلاً 100xxxxxxxxxx-)"
-# MINIAPP_URL = "https://barzokhouse.com"
+# RESERVATION_CHAT_ID = "شناسه عددی گروه رزرو خانه برزک"
+

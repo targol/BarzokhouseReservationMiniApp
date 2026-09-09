@@ -86,7 +86,7 @@ export async function onRequestPost({ request, env }) {
     if (errCode === 401 || errDesc.toLowerCase().includes("unauthorized")) {
       userFriendlyNote = "توکن ربات تلگرام نامعتبر است (Error 401 Unauthorized). لطفاً توکن BotFather را در متغیر BOT_TOKEN بررسی فرمایید.";
     } else if (errCode === 400 && errDesc.toLowerCase().includes("chat not found")) {
-      userFriendlyNote = `شناسه گروه رزرو تلگرام (${configuredGroupId}) یافت نشد. لطفاً ربات را در گروه (https://web.telegram.org/k/#-4485664573) عضو نمایید.`;
+      userFriendlyNote = `شناسه گروه رزرو تلگرام (${configuredGroupId}) یافت نشد. لطفاً از عضویت و دسترسی ربات در گروه اطمینان حاصل فرمایید.`;
     } else if (errCode === 403 || errDesc.toLowerCase().includes("bot is not a member")) {
       userFriendlyNote = "ربات در گروه رزرو عضو نیست یا دسترسی ارسال پیام ندارد. لطفاً ربات را به گروه اضافه کرده و ادمین کنید.";
     } else if (errDesc) {

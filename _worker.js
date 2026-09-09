@@ -16,6 +16,8 @@ export default {
       if (assetResponse.status !== 404) {
         return assetResponse;
       }
+      // در صورت ۴۰۴ در SPA، صفحه اصلی index.html بازگردانده شود
+      return env.ASSETS.fetch(new URL("/", request.url));
     }
 
     return worker.fetch(request, env, ctx);

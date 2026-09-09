@@ -86,24 +86,29 @@ export default {
       }
     }
 
-    // ۳. پشتیبانی از فایل‌های ایستا در صورت استقرار از طریق Cloudflare Workers with Assets
+    // ۳. بارگذاری مستقیم مینی‌اپ و فایل‌های استاتیک در صورت استقرار در Cloudflare
     if (env.ASSETS && typeof env.ASSETS.fetch === "function") {
-      return env.ASSETS.fetch(request);
+      const assetResponse = await env.ASSETS.fetch(request);
+      if (assetResponse.status !== 404) {
+        return assetResponse;
+      }
+      // در صورت ۴۰۴ برای SPA، صفحه اصلی مینی‌اپ مستقیماً بارگذاری شود
+      return env.ASSETS.fetch(new URL("/", request.url));
     }
 
-    // ۴. صفحه وضعیت برای متد GET در روت اصلی
+    // ۴. در صورت تنظیم آدرس اختصاصی مینی‌اپ، هدایت مستقیم بدون صفحه واسط
+    if (env.MINIAPP_URL || env.MINI_APP_URL) {
+      return Response.redirect(env.MINIAPP_URL || env.MINI_APP_URL, 302);
+    }
+
+    // پاسخ امن JSON فقط برای بررسی سلامت سرویس بدون هیچ صفحه واسط یا لینک گروه
     return new Response(
-      `<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head><meta charset="utf-8"><title>سرویس رزرو خانه برزک</title></head>
-<body style="font-family: sans-serif; text-align: center; padding: 40px; background: #faf8f5; color: #1c2b24;">
-  <h2 style="color: #1f8578;">اقامتگاه بومگردی خانه برزک</h2>
-  <p style="color: #4b6358;">سرویس ارتباطی وب‌هوک و ثبت رزرو یکپارچه فعال است.</p>
-  <p style="font-size: 14px; color: #768079;">لینک گروه رزرو: <a href="https://t.me/+wigY6VanuYplYTk8" target="_blank" style="color: #b88648;">گروه رزرو خانه برزک</a></p>
-  <p><a href="${env.MINIAPP_URL || env.MINI_APP_URL || '#'}" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #1f8578; color: #fff; text-decoration: none; border-radius: 8px;">ورود به مینی‌اپ</a></p>
-</body>
-</html>`,
-      { headers: { ...CORS_HEADERS, "Content-Type": "text/html; charset=utf-8" } }
+      JSON.stringify({ 
+        ok: true, 
+        service: "سرویس ثبت رزرو اقامتگاه بومگردی خانه برزک",
+        status: "active"
+      }),
+      { headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" } }
     );
   }
 };
@@ -184,7 +189,7 @@ async function handleDirectReservation(payload, env) {
   if (errCode === 401 || errDesc.toLowerCase().includes("unauthorized")) {
     userFriendlyNote = "توکن ربات تلگرام نامعتبر است (Error 401 Unauthorized). لطفاً توکن دریافتی از BotFather را در متغیر BOT_TOKEN بررسی فرمایید.";
   } else if (errCode === 400 && errDesc.toLowerCase().includes("chat not found")) {
-    userFriendlyNote = `شناسه گروه رزرو تلگرام (${configuredGroupId}) یافت نشد. لطفاً مطمئن شوید ربات در این گروه عضو شده است (لینک گروه: https://web.telegram.org/k/#-4485664573).`;
+    userFriendlyNote = `شناسه گروه رزرو تلگرام (${configuredGroupId}) یافت نشد. لطفاً از عضویت و دسترسی ربات در گروه اطمینان حاصل فرمایید.`;
   } else if (errCode === 403 || errDesc.toLowerCase().includes("bot is not a member")) {
     userFriendlyNote = "ربات در گروه رزرو عضو نیست یا دسترسی ارسال پیام ندارد. لطفاً ربات را به این گروه اضافه کرده و دسترسی ادمین دهید.";
   } else if (errDesc) {
@@ -271,7 +276,6 @@ async function handleTelegramUpdate(update, env) {
             }
           ],
           [
-            { text: "👥 گروه رزرو خانه برزک", url: "https://t.me/+wigY6VanuYplYTk8" },
             { text: "📞 وب‌سایت خانه برزک", url: "https://barzokhouse.com" }
           ]
         ]

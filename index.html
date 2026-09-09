@@ -224,7 +224,7 @@
 
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="res-phone">شماره تماس (موبایل):</label>
-              <input type="tel" class="form-input" id="res-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+              <input type="tel" class="form-input" id="res-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" pattern="09[0-9]{9}" title="شماره موبایل باید با ۰۹ شروع شده و ۱۱ رقم باشد" required />
             </div>
           </div>
 
@@ -729,7 +729,7 @@
 
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="food-phone">شماره تماس:</label>
-              <input type="tel" class="form-input" id="food-phone" inputmode="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+              <input type="tel" class="form-input" id="food-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" pattern="09[0-9]{9}" title="شماره تماس باید با ۰۹ شروع شده و ۱۱ رقم باشد" required />
             </div>
           </div>
 
@@ -929,9 +929,9 @@
         </details>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <!-- ۱. ارسال خودکار و مستقیم به گروه رزرو خانه برزک -->
+          <!-- ۱. ارسال خودکار و مستقیم درخواست رزرو خانه برزک -->
           <button class="btn btn-primary" id="btn-modal-send-tg" onclick="sendViaTelegram()" style="font-size: 13.5px; font-weight: 800; padding: 11px 16px;">
-            🚀 ارسال خودکار به گروه رزرو خانه برزک
+            🚀 ارسال خودکار درخواست رزرو
           </button>
 
           <!-- ۲. ارسال سریع متن در تلگرام -->

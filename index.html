@@ -690,17 +690,15 @@
           </div>
         </div>
 
-        <!-- انتخاب حالت سفر گروهی -->
-        <div style="background: var(--brand-surface); border: 1px solid var(--brand-border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
-          <label for="food-group-travel-checkbox" style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1;">
-            <input type="checkbox" id="food-group-travel-checkbox" onchange="toggleGroupTravel(this.checked)" style="width: 20px; height: 20px; accent-color: var(--brand-green); cursor: pointer;" />
-            <div>
-              <div style="font-weight: 700; font-size: 13.5px; color: var(--brand-green);">👥 انتخاب دو نوع خوراک در یک وعده (مجموع ۱۰ و بالاتر)</div>
-              <div style="font-size: 11.5px; color: var(--brand-text-muted); margin-top: 2px;">
-                برای انتخاب دو نوع خوراک، مجموع دو خوراک باید <strong>۱۰ و بالاتر</strong> باشد وگرنه یک نوع خوراک باید انتخاب شود.
-              </div>
+        <!-- راهنمای قانون انتخاب تا ۲ نوع خوراک -->
+        <div style="background: var(--brand-surface); border: 1px solid var(--brand-border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px; box-shadow: var(--shadow-sm);">
+          <span style="font-size: 20px; line-height: 1;">🍲</span>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 13.5px; color: var(--brand-green);">امکان انتخاب تا ۲ نوع خوراک دلخواه در هر وعده</div>
+            <div style="font-size: 11.5px; color: var(--brand-text-muted); margin-top: 3px; line-height: 1.6;">
+              شما می‌توانید از کل منو، ۱ نوع خوراک (به هر تعداد) یا تا ۲ نوع خوراک دلخواه انتخاب فرمایید. در صورت انتخاب ۲ نوع خوراک، مجموع تعداد پرس‌ها باید حداقل ۱۰ پرس باشد (مثلاً ۶ پرس خوراک اول و ۴ پرس خوراک دوم).
             </div>
-          </label>
+          </div>
         </div>
 
         <!-- راهنما و عنوان لیست خوراک‌ها -->

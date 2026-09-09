@@ -307,11 +307,21 @@ async function handleTelegramUpdate(update, env, currentUrl) {
         inline_keyboard: [
           [
             {
+              text: "🏡 ورود مستقیم به مینی‌اپ خانه برزک",
+              web_app: { url: appUrl }
+            }
+          ]
+        ],
+        keyboard: [
+          [
+            {
               text: "🏡 ورود به مینی‌اپ خانه برزک",
               web_app: { url: appUrl }
             }
           ]
-        ]
+        ],
+        resize_keyboard: true,
+        is_persistent: true
       }
     };
 
@@ -322,7 +332,7 @@ async function handleTelegramUpdate(update, env, currentUrl) {
       body: JSON.stringify(payload)
     });
 
-    // ۲. تنظیم دکمه منوی تلگرام (Menu Button) برای ورود مستقیم دائمی به مینی‌اپ
+    // ۲. تنظیم دکمه منوی تلگرام (Menu Button) برای ورود مستقیم دائمی به مینی‌اپ برای این چت و تمام کاربران
     try {
       await fetch(\`https://api.telegram.org/bot\${token}/setChatMenuButton\`, {
         method: "POST",
@@ -331,7 +341,19 @@ async function handleTelegramUpdate(update, env, currentUrl) {
           chat_id: chatId,
           menu_button: {
             type: "web_app",
-            text: "🏡 به خانه برزک خوش آمدید",
+            text: "🏡 خانه برزک",
+            web_app: { url: appUrl }
+          }
+        })
+      });
+      // همچنین تنظیم پیش‌فرض عمومی برای همه کاربران
+      await fetch(\`https://api.telegram.org/bot\${token}/setChatMenuButton\`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          menu_button: {
+            type: "web_app",
+            text: "🏡 خانه برزک",
             web_app: { url: appUrl }
           }
         })

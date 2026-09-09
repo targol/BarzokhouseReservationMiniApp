@@ -1144,30 +1144,39 @@ function toEnglishDigits(str) {
  * پاکسازی و استانداردسازی شماره تلفن همراه:
  * - تبدیل اعداد فارسی/عربی به انگلیسی
  * - حذف کاراکترهای غیررقمی
- * - اصلاح پیش‌شماره بین‌المللی ۹۸ به ۰
- * - محدودیت حداکثر ۱۱ رقم
+ * - اصلاح انواع پیش‌شماره‌های بین‌المللی (+98, 0098, 98) به 09
+ * - پذیرش شماره‌های بدون صفر آغازین (912...)
  */
 function sanitizeIranianPhone(input) {
   if (!input) return "";
-  const english = toEnglishDigits(input);
+  const english = toEnglishDigits(String(input).trim());
   let digits = english.replace(/\D/g, "");
-  // تبدیل پیش‌شماره بین‌المللی ۹۸ به ۰
-  if (digits.startsWith("989") && digits.length >= 11) {
+  
+  // تبدیل پیش‌شماره بین‌المللی 0098 به 0
+  if (digits.startsWith("0098")) {
+    digits = "0" + digits.slice(4);
+  }
+  // تبدیل پیش‌شماره بین‌المللی 98 به 0 (مثلا 989123456789 -> 09123456789)
+  else if (digits.startsWith("989") && digits.length >= 11) {
     digits = "0" + digits.slice(2);
-  } else if (digits.startsWith("9") && (digits.length === 10 || digits.length === 9)) {
-    // اگر کاربر بدون صفر آغازین وارد کرد
+  } else if (digits.startsWith("98") && digits.length === 12) {
+    digits = "0" + digits.slice(2);
+  }
+  // اگر کاربر شماره را بدون صفر آغازین وارد کرد (مثلاً 9123456789)
+  else if (digits.startsWith("9") && (digits.length === 10 || digits.length === 9)) {
     digits = "0" + digits;
   }
+  
   return digits.slice(0, 11);
 }
 
 /**
  * اعتبارسنجی شماره همراه:
- * شماره باید با ۰۹ شروع شده و حداقل ۱۰ و حداکثر ۱۱ رقم باشد
+ * شماره باید با ۰۹ شروع شده و ۱۱ رقم کامل باشد
  */
 function isValidIranianMobile(phone) {
   const digits = sanitizeIranianPhone(phone);
-  return digits.startsWith("09") && digits.length >= 10 && digits.length <= 11;
+  return digits.startsWith("09") && digits.length === 11;
 }
 
 function formatToman(amount) {
@@ -2337,13 +2346,7 @@ function saveFoodAndReturnToReservation() {
   triggerHaptic('medium');
   const selectedIds = Object.keys(state.foodOrder.selectedDishes);
   if (selectedIds.length > 1) {
-    const isValid = checkGroupRuleViolation(() => {
-      executeSaveFoodAndReturnToReservation();
-    });
-    if (isValid) {
-      executeSaveFoodAndReturnToReservation();
-    }
-    return;
+    if (!checkGroupRuleViolation()) return;
   }
   executeSaveFoodAndReturnToReservation();
 }
@@ -2587,8 +2590,8 @@ function submitReservationForm(e) {
     return;
   }
 
-  const name = state.reservation.name;
-  const phone = state.reservation.phone;
+  const nameInputEl = document.getElementById("res-name");
+  const name = (nameInputEl && nameInputEl.value.trim()) || state.reservation.name;
 
   if (!name) {
     triggerHaptic('warning');
@@ -2596,9 +2599,13 @@ function submitReservationForm(e) {
     document.getElementById("res-name")?.focus();
     return;
   }
+  state.reservation.name = name;
 
-  const cleanPhone = sanitizeIranianPhone(phone || document.getElementById("res-phone")?.value);
+  const phoneInputEl = document.getElementById("res-phone");
+  const rawPhone = (phoneInputEl && phoneInputEl.value) ? phoneInputEl.value : state.reservation.phone;
+  const cleanPhone = sanitizeIranianPhone(rawPhone);
   state.reservation.phone = cleanPhone;
+  if (phoneInputEl) phoneInputEl.value = cleanPhone;
 
   if (!cleanPhone) {
     triggerHaptic('warning');
@@ -2607,18 +2614,17 @@ function submitReservationForm(e) {
     return;
   }
 
-  if (!cleanPhone.startsWith("09")) {
+  if (!cleanPhone.startsWith("09") || cleanPhone.length < 11) {
     triggerHaptic('warning');
-    showToast("شماره تلفن باید با ۰۹ شروع شود.");
+    showToast("شماره موبایل باید ۱۱ رقم بوده و با ۰۹ شروع شود (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
     document.getElementById("res-phone")?.focus();
     return;
   }
 
-  if (cleanPhone.length < 10) {
-    triggerHaptic('warning');
-    showToast("شماره تلفن باید حداقل ۱۰ رقم باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
-    document.getElementById("res-phone")?.focus();
-    return;
+  // در صورت انتخاب ۲ نوع خوراک همراه با اقامت، بررسی قانون حداقل ۱۰ پرس
+  const selectedDishIds = Object.keys(state.foodOrder.selectedDishes);
+  if (selectedDishIds.length > 1) {
+    if (!checkGroupRuleViolation()) return;
   }
 
   const messageText = generateUnifiedOrderMessage();
@@ -2961,30 +2967,25 @@ let pendingGroupAction = null;
  * بررسی قانون انتخاب دو نوع خوراک:
  * برای انتخاب دو نوع خوراک، شرط این است که مجموع دو خوراک ۱۰ و بالاتر باشد وگرنه یک نوع خوراک باید انتخاب شود.
  */
-function checkGroupRuleViolation(callbackIfValid) {
+function checkGroupRuleViolation() {
   const selectedDishIds = Object.keys(state.foodOrder.selectedDishes);
   
   // اگر ۱ نوع غذا یا کمتر انتخاب شده، هیچ محدودیتی وجود ندارد
   if (selectedDishIds.length <= 1) {
-    if (typeof callbackIfValid === "function") callbackIfValid();
     return true;
   }
 
-  // در صورت انتخاب بیش از یک نوع خوراک، مجموع تعداد پرس‌ها بررسی می‌شود
-  const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
+  // در صورت انتخاب ۲ نوع خوراک، مجموع تعداد پرس‌ها بررسی می‌شود
   const portionsCount = selectedDishIds.reduce((sum, id) => sum + (Number(state.foodOrder.selectedDishes[id]) || 0), 0);
 
   // شرط قانون: مجموع دو خوراک ۱۰ و بالاتر باشد (>= 10)
-  const isTenOrMore = (portionsCount >= 10) || (guestsCount >= 10);
-
-  if (isTenOrMore) {
-    if (typeof callbackIfValid === "function") callbackIfValid();
+  if (portionsCount >= 10) {
     return true;
   }
 
   // در صورتی که مجموع کمتر از ۱۰ باشد:
   triggerHaptic('warning');
-  showToast(`⚠️ برای انتخاب ۲ نوع خوراک، مجموع تعداد پرس‌ها باید حداقل ۱۰ پرس باشد (مجموع فعلی: ${formatPersianNumber(portionsCount)} پرس). لطفاً با دکمه‌های + تعداد را افزایش دهید یا یک نوع خوراک را حذف کنید.`);
+  showToast(`⚠️ برای انتخاب ۲ نوع خوراک، مجموع تعداد پرس‌ها باید حداقل ۱۰ پرس باشد (مجموع فعلی: ${formatPersianNumber(portionsCount)} پرس). لطفاً با دکمه‌های + تعداد پرس‌ها را افزایش دهید.`);
   
   const summaryBox = document.getElementById("food-order-summary");
   if (summaryBox) {
@@ -3176,13 +3177,11 @@ function addCurrentMealToSchedule() {
     return;
   }
 
-  // اعتبارسنجی قانون انتخاب ۲ نوع غذا: اگر زیر ۱۰ نفر باشد باید اصلاح شود
-  const isValid = checkGroupRuleViolation(() => {
-    executeAddCurrentMealToSchedule();
-  });
-  if (isValid) {
-    executeAddCurrentMealToSchedule();
+  // اعتبارسنجی قانون انتخاب ۲ نوع غذا: مجموع باید حداقل ۱۰ پرس باشد
+  if (selectedIds.length > 1) {
+    if (!checkGroupRuleViolation()) return;
   }
+  executeAddCurrentMealToSchedule();
 }
 
 function executeAddCurrentMealToSchedule() {
@@ -3317,46 +3316,39 @@ function toggleDishSelection(dishId) {
   // اگر خوراک از قبل انتخاب شده، با کلیک مجدد حذف می‌شود
   if (state.foodOrder.selectedDishes[dishId]) {
     delete state.foodOrder.selectedDishes[dishId];
-    if (Object.keys(state.foodOrder.selectedDishes).length <= 1) {
-      state.foodOrder.isGroupTravel = false;
-      const groupCheck = document.getElementById("food-group-travel-checkbox");
-      if (groupCheck) groupCheck.checked = false;
-    }
     renderFoodSection();
     updateReservationCalculations();
     return;
   }
 
-  const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
-
   // حالت ۱: هنوز هیچ غذایی انتخاب نشده است
   if (currentDishIds.length === 0) {
+    const guestsCount = (state.reservation && Number(state.reservation.guests)) || 0;
     state.foodOrder.selectedDishes[dishId] = Math.max(1, guestsCount || 1);
     renderFoodSection();
     updateReservationCalculations();
     return;
   }
 
-  // حالت ۲: ۱ نوع غذا انتخاب شده و کاربر خوراک دوم را انتخاب می‌کند (انتخاب تا ۲ نوع از هر غذایی آزاد است)
+  // حالت ۲: ۱ نوع غذا انتخاب شده و کاربر خوراک دوم را انتخاب می‌کند (از هر کجای منو کاملاً آزاد است)
   if (currentDishIds.length === 1) {
-    const existingDishId = currentDishIds[0];
-    const existingQty = Number(state.foodOrder.selectedDishes[existingDishId]) || 1;
-    // پیش‌فرض هوشمند: اگر غذای اول زیر ۱۰ است، غذای دوم طوری مقداردهی می‌شود که مجموع اولیه ۱۰ شود (مثلاً ۶ و ۴)
-    // کاربر کاملاً آزاد است با + و - هر دو غذا را کم و زیاد کند (مجموع در نهایت باید ۱۰ و بالاتر باشد)
-    const defaultSecondQty = existingQty < 10 ? Math.max(1, 10 - existingQty) : 1;
-    state.foodOrder.selectedDishes[dishId] = defaultSecondQty;
-    state.foodOrder.isGroupTravel = true;
-    const groupCheck = document.getElementById("food-group-travel-checkbox");
-    if (groupCheck) groupCheck.checked = true;
+    state.foodOrder.selectedDishes[dishId] = 1;
     renderFoodSection();
     updateReservationCalculations();
-    showToast(`خوراک دوم اضافه شد (مجموع: ${formatPersianNumber(existingQty + defaultSecondQty)} پرس). می‌توانید تعداد هر دو خوراک را آزادانه با + و - کم و زیاد کنید.`);
+    const existingDishId = currentDishIds[0];
+    const existingQty = Number(state.foodOrder.selectedDishes[existingDishId]) || 1;
+    const total = existingQty + 1;
+    if (total < 10) {
+      showToast(`خوراک دوم اضافه شد. مجموع دو خوراک باید حداقل ۱۰ پرس باشد (مثلاً ۶ و ۴ پرس).`);
+    } else {
+      showToast(`خوراک دوم اضافه شد (مجموع: ${formatPersianNumber(total)} پرس).`);
+    }
     return;
   }
 
   // حالت ۳: بیش از ۲ نوع خوراک در یک وعده مجاز نیست
   triggerHaptic('warning');
-  showToast("در هر وعده حداکثر ۲ نوع خوراک قابل انتخاب است. برای انتخاب خوراک دیگر، یکی از خوراک‌های قبلی را بردارید.");
+  showToast("در هر وعده حداکثر ۲ نوع خوراک قابل انتخاب است. برای انتخاب خوراک دیگر، یکی از دو خوراک قبلی را بردارید.");
   const checkbox = document.getElementById(`check-${dishId}`);
   if (checkbox) checkbox.checked = false;
 }
@@ -3365,13 +3357,6 @@ function toggleDishSelection(dishId) {
 function toggleGroupTravel(isGroup) {
   triggerHaptic('light');
   state.foodOrder.isGroupTravel = !!isGroup;
-  const currentKeys = Object.keys(state.foodOrder.selectedDishes);
-
-  if (!isGroup && currentKeys.length > 1) {
-    const toRemove = currentKeys.slice(1);
-    toRemove.forEach(k => delete state.foodOrder.selectedDishes[k]);
-    showToast("تعداد خوراک‌ها به یک نوع تنظیم شد.");
-  }
   renderFoodSection();
   updateReservationCalculations();
 }
@@ -3379,9 +3364,9 @@ function toggleGroupTravel(isGroup) {
 function changeDishQty(dishId, delta) {
   triggerHaptic('light');
   if (!state.foodOrder.selectedDishes[dishId]) return;
-  let q = state.foodOrder.selectedDishes[dishId] + delta;
+  let q = (Number(state.foodOrder.selectedDishes[dishId]) || 1) + delta;
   if (q < 1) q = 1;
-  if (q > 50) q = 50;
+  if (q > 100) q = 100;
 
   // کاربر می‌تواند تعداد پرس‌های هر خوراک را کاملاً آزادانه کم یا زیاد کند
   state.foodOrder.selectedDishes[dishId] = q;
@@ -3398,9 +3383,6 @@ function autoCompletePortionsToTen() {
     const needed = 10 - total;
     const targetKey = currentKeys[1] || currentKeys[0];
     state.foodOrder.selectedDishes[targetKey] = (Number(state.foodOrder.selectedDishes[targetKey]) || 0) + needed;
-    state.foodOrder.isGroupTravel = true;
-    const groupCheck = document.getElementById("food-group-travel-checkbox");
-    if (groupCheck) groupCheck.checked = true;
     renderFoodSection();
     updateReservationCalculations();
     showToast("مجموع تعداد پرس‌ها به ۱۰ پرس تکمیل شد.");
@@ -3508,26 +3490,22 @@ function submitFoodOrderForm(e) {
     return;
   }
 
-  const cleanPhone = sanitizeIranianPhone(phone || document.getElementById("food-phone")?.value);
+  const foodPhoneInputEl = document.getElementById("food-phone");
+  const rawFoodPhone = (foodPhoneInputEl && foodPhoneInputEl.value) ? foodPhoneInputEl.value : state.foodOrder.phone;
+  const cleanPhone = sanitizeIranianPhone(rawFoodPhone);
   state.foodOrder.phone = cleanPhone;
+  if (foodPhoneInputEl) foodPhoneInputEl.value = cleanPhone;
 
   if (!cleanPhone) {
     triggerHaptic('warning');
-    showToast("لطفاً شماره تماس خود را وارد کنید.");
+    showToast("لطفاً شماره تماس (موبایل) خود را وارد کنید.");
     document.getElementById("food-phone")?.focus();
     return;
   }
 
-  if (!cleanPhone.startsWith("09")) {
+  if (!cleanPhone.startsWith("09") || cleanPhone.length < 11) {
     triggerHaptic('warning');
-    showToast("شماره تلفن باید با ۰۹ شروع شود.");
-    document.getElementById("food-phone")?.focus();
-    return;
-  }
-
-  if (cleanPhone.length < 10) {
-    triggerHaptic('warning');
-    showToast("شماره تلفن باید حداقل ۱۰ رقم باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
+    showToast("شماره موبایل باید ۱۱ رقم بوده و با ۰۹ شروع شود (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
     document.getElementById("food-phone")?.focus();
     return;
   }
@@ -3536,15 +3514,9 @@ function submitFoodOrderForm(e) {
     return;
   }
 
-  // اعتبارسنجی قانون گروهی (در صورت انتخاب ۲ نوع غذا در وعده جاری)
+  // اعتبارسنجی قانون انتخاب ۲ نوع غذا: مجموع باید حداقل ۱۰ پرس باشد
   if (currentSelectedIds.length > 1) {
-    const isValid = checkGroupRuleViolation(() => {
-      executeSubmitFoodOrderForm();
-    });
-    if (isValid) {
-      executeSubmitFoodOrderForm();
-    }
-    return;
+    if (!checkGroupRuleViolation()) return;
   }
 
   executeSubmitFoodOrderForm();
@@ -3990,20 +3962,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (foodNameEl) foodNameEl.value = state.foodOrder.name;
   }
 
-  // اتصال کنترل هوشمند و اعتبارسنجی فیلدهای شماره تماس (شروع با ۰۹ و حداکثر ۱۱ رقم)
+  // اتصال کنترل هوشمند و اعتبارسنجی فیلدهای شماره تماس (شروع با ۰۹ و ۱۱ رقم)
   function setupPhoneInputValidation(inputId, syncWithId) {
     const el = document.getElementById(inputId);
     if (!el) return;
     el.addEventListener("input", (e) => {
-      const sanitized = sanitizeIranianPhone(e.target.value);
-      if (e.target.value !== sanitized) {
-        e.target.value = sanitized;
+      const eng = toEnglishDigits(e.target.value);
+      const filtered = eng.replace(/[^\d+]/g, "").slice(0, 14);
+      if (e.target.value !== filtered && filtered.length > 0) {
+        e.target.value = filtered;
       }
+      const sanitized = sanitizeIranianPhone(filtered);
       state.reservation.phone = sanitized;
       state.foodOrder.phone = sanitized;
       const syncEl = document.getElementById(syncWithId);
-      if (syncEl && syncEl.value !== sanitized) {
+      if (syncEl && sanitized.length >= 10 && syncEl.value !== sanitized) {
         syncEl.value = sanitized;
+      }
+    });
+
+    el.addEventListener("blur", (e) => {
+      const sanitized = sanitizeIranianPhone(e.target.value);
+      if (sanitized) {
+        e.target.value = sanitized;
+        state.reservation.phone = sanitized;
+        state.foodOrder.phone = sanitized;
+        const syncEl = document.getElementById(syncWithId);
+        if (syncEl) syncEl.value = sanitized;
       }
     });
   }

@@ -148,9 +148,17 @@ body {
 }
 
 .brand-subtitle {
-  font-size: 12px;
+  font-size: 12.5px;
+  color: #8c5d0a;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.brand-location {
+  font-size: 11.5px;
   color: var(--brand-text-muted);
-  font-weight: 400;
+  font-weight: 500;
+  margin-top: 1px;
 }
 
 /* Navigation Screen System (SPA) */
@@ -329,6 +337,53 @@ body.has-floating-bar .screen {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   background: #fffdf9;
+}
+
+.menu-card.pillar-card {
+  background: linear-gradient(155deg, #ffffff 0%, #fdf8ee 100%);
+  border: 1.5px solid #d49e3d;
+  box-shadow: 0 3px 12px rgba(189, 137, 62, 0.12);
+  position: relative;
+  overflow: hidden;
+  padding: 14px 12px;
+}
+
+.menu-card.pillar-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #bd893e, #2d5a43);
+}
+
+.menu-card.pillar-card:hover, .menu-card.pillar-card:active {
+  border-color: #bd893e;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(189, 137, 62, 0.22);
+}
+
+.menu-card.pillar-card .menu-card-icon {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.menu-card.pillar-card .menu-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--brand-green);
+}
+
+.menu-card.pillar-card .pillar-tag {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #8c5d0a;
+  background: rgba(189, 137, 62, 0.12);
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-top: 4px;
 }
 
 .menu-card.featured {

@@ -853,7 +853,7 @@ const FOOD_MENU = [
 // ۴. وضعیت کلی برنامه (App State)
 const state = {
   screenStack: ["screen-home"], // پشته صفحات برای بازگشت سلسله‌مراتبی
-  selectedRoomId: "shatoot",
+  selectedRoomId: null,
   reservationSourceScreen: "screen-rooms", // صفحه منبع ورود به رزرو (برای بازگشت دقیق)
   foodReturnToReservation: false, // آیا ورود به صفحه غذا از فرم رزرو اقامت بوده است؟
   floatingBarDismissed: false, // بستن موقت نوار شناور رزرو توسط کاربر
@@ -862,11 +862,11 @@ const state = {
   expandedFoodIds: {}, // لیست خوراک‌های بازشده در آکاردئون: { [dishId]: true }
   allFoodExpanded: false, // آیا تمام خوراک‌ها باز هستند؟
   reservation: {
-    selectedRoomIds: ["shatoot"], // لیست شناسه‌های اتاق‌های انتخاب شده برای رزرو
-    roomGuests: { "shatoot": 2 }, // تعداد نفرات برای هر اتاق: { [roomId]: guestsCount }
-    roomCounts: { "shatoot": 1 }, // حفظ سازگاری
+    selectedRoomIds: [], // ابتدا خالی است تا بعد از ورود کاربر به اتاق یا غذا انتخاب شود
+    roomGuests: {}, // تعداد نفرات برای هر اتاق: { [roomId]: guestsCount }
+    roomCounts: {}, // حفظ سازگاری
     nights: 1,
-    guests: 2, // مجموع کل نفرات اتاق‌ها
+    guests: 0, // مجموع کل نفرات اتاق‌ها
     checkInDate: "", // ابتدا خالی است تا کاربر از تقویم شمسی انتخاب کند
     checkOutDate: "",
     name: "",
@@ -1025,6 +1025,11 @@ function navigateTo(screenId, source = null) {
     } else if (source === "screen-home" || !source) {
       state.foodReturnToReservation = false;
     }
+    // اطمینان از نمایش کامل منوی ۳۵ خوراک محلی به صورت پیش‌فرض
+    state.foodCategoryFilter = "all";
+    state.foodSearchQuery = "";
+    const searchInput = document.getElementById("food-search-input");
+    if (searchInput) searchInput.value = "";
   }
 
   if (screenId === "screen-reservation" && source) {
@@ -1629,7 +1634,7 @@ function calculateRoomNightCost(room, guestsCount) {
 
 /**
  * محاسبه تخفیف اقامت طبق ضوابط خانه برزک:
- * "برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه شنبه ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۲۰ درصد تخفیف درشب دوم در نظر گرفته میشود.)"
+ * "برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه‌شنبه) ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۱۰ درصد تخفیف در شب دوم در نظر گرفته می‌شود."
  */
 function calculateStayDiscount(checkInDateStr, nights, guests, customNightCost) {
   const selectedRooms = (state.reservation && state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
@@ -1644,7 +1649,7 @@ function calculateStayDiscount(checkInDateStr, nights, guests, customNightCost) 
       return sum + breakdown.cost;
     }, 0);
   } else {
-    nightBaseCost = Math.max(0, (guests || 2) * 1300000);
+    nightBaseCost = 0;
   }
 
   const totalBaseRoom = Math.max(0, nights * nightBaseCost);
@@ -1671,10 +1676,10 @@ function calculateStayDiscount(checkInDateStr, nights, guests, customNightCost) 
     let discountPct = 0;
     let reason = "";
 
-    // قانون ۱: برای اقامت بیش از یک شب، ۲۰ درصد تخفیف در شب دوم
+    // قانون ۱: برای اقامت بیش از یک شب، ۱۰ درصد تخفیف در شب دوم
     if (i === 1) {
-      discountPct = 0.20;
-      reason = "۲۰٪ تخفیف شب دوم (اقامت بیش از یک شب)";
+      discountPct = 0.10;
+      reason = "۱۰٪ تخفیف شب دوم (اقامت بیش از یک شب)";
     }
     // قانون ۲: برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه‌شنبه) ۱۰ درصد تخفیف
     else if (details.isMidweek) {
@@ -1740,9 +1745,20 @@ function renderRoomsList() {
             <h3 class="room-card-title">اتاق ${room.name}</h3>
             <span class="room-card-price">${formatToman(room.price)} <small style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">/ هر نفر شب</small></span>
           </div>
-          <button class="btn btn-outline" onclick="openRoomDetail('${room.id}')" style="margin-top: 8px;">
-            مشاهده مشخصات و عکس‌های اتاق ←
-          </button>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            ${isSelected ? `
+              <button type="button" class="btn btn-primary" onclick="openReservationScreen()" style="flex: 1; font-size: 13px; padding: 8px 10px;">
+                ✓ در لیست رزرو (تکمیل)
+              </button>
+            ` : `
+              <button type="button" class="btn btn-mustard" onclick="selectRoomAndBook('${room.id}')" style="flex: 1; font-size: 13px; padding: 8px 10px;">
+                رزرو اتاق ${room.name} ←
+              </button>
+            `}
+            <button type="button" class="btn btn-outline" onclick="openRoomDetail('${room.id}')" style="font-size: 12px; padding: 8px 10px; white-space: nowrap;">
+              مشخصات و تصاویر
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -1792,7 +1808,7 @@ function openRoomDetail(roomId) {
   }
   const detailPriceNote = document.getElementById("detail-price-note");
   if (detailPriceNote) {
-    detailPriceNote.textContent = "🏷️ برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه شنبه ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۲۰ درصد تخفیف درشب دوم در نظر گرفته میشود.)";
+    detailPriceNote.textContent = "🏷️ برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه‌شنبه) ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۱۰ درصد تخفیف در شب دوم در نظر گرفته می‌شود.";
     detailPriceNote.style.display = "block";
     detailPriceNote.style.color = "#825e1a";
     detailPriceNote.style.fontSize = "11.5px";
@@ -1881,18 +1897,38 @@ function startReservationForCurrentRoom() {
 
 function openReservationScreen() {
   triggerHaptic('light');
-  if (!state.reservation.selectedRoomIds || state.reservation.selectedRoomIds.length === 0) {
-    const defaultId = state.selectedRoomId || "shatoot";
-    const defaultRoom = ROOMS.find(r => r.id === defaultId) || ROOMS[0];
-    state.reservation.selectedRoomIds = [defaultRoom.id];
-    if (!state.reservation.roomGuests) state.reservation.roomGuests = {};
-    if (!state.reservation.roomCounts) state.reservation.roomCounts = {};
-    state.reservation.roomGuests[defaultRoom.id] = defaultRoom.baseCapacity || 2;
-    state.reservation.roomCounts[defaultRoom.id] = 1;
-  }
   renderSelectedRoomsInForm();
   updateReservationCalculations();
   navigateTo("screen-reservation");
+}
+
+function selectRoomAndBook(roomId) {
+  triggerHaptic('medium');
+  state.selectedRoomId = roomId;
+  const room = ROOMS.find(r => r.id === roomId);
+  if (!room) return;
+
+  if (!state.reservation.selectedRoomIds) {
+    state.reservation.selectedRoomIds = [];
+  }
+  if (!state.reservation.roomGuests) {
+    state.reservation.roomGuests = {};
+  }
+  if (!state.reservation.roomCounts) {
+    state.reservation.roomCounts = {};
+  }
+
+  if (!state.reservation.selectedRoomIds.includes(roomId)) {
+    state.reservation.selectedRoomIds.push(roomId);
+    state.reservation.roomGuests[roomId] = room.baseCapacity || 2;
+    state.reservation.roomCounts[roomId] = 1;
+    showToast(`اتاق ${room.name} (${formatPersianNumber(state.reservation.roomGuests[roomId])} نفر) انتخاب شد.`);
+  }
+
+  state.floatingBarDismissed = false;
+  updateFloatingBookingBar();
+  renderRoomsList();
+  openReservationScreen();
 }
 
 function changeRoomGuests(roomId, delta) {
@@ -2130,6 +2166,8 @@ function updateReservationCalculations() {
       calculatedTotalGuests += g;
     });
     state.reservation.guests = calculatedTotalGuests;
+  } else {
+    state.reservation.guests = 0;
   }
 
   // نمایش تعداد شب و نفرات در استپرها
@@ -2140,7 +2178,9 @@ function updateReservationCalculations() {
 
   const guestsValEl = document.getElementById("res-guests-val");
   if (guestsValEl) {
-    guestsValEl.textContent = formatPersianNumber(state.reservation.guests) + " نفر";
+    guestsValEl.textContent = state.reservation.guests > 0 
+      ? formatPersianNumber(state.reservation.guests) + " نفر" 
+      : "انتخاب اتاق";
   }
 
   // محاسبه مبلغ اقامت و تخفیف اقامت (وسط هفته غیرتعطیل ۱۰٪ و اقامت بیش از ۱ شب ۲۰٪ در شب دوم)
@@ -2157,7 +2197,7 @@ function updateReservationCalculations() {
       discountStatusBadge.style.background = "#fdfbf7";
       discountStatusBadge.style.color = "#825e1a";
       discountStatusBadge.style.borderColor = "#ebd9b5";
-      discountStatusBadge.innerHTML = `ℹ️ با انتخاب تاریخ ورود از تقویم، تخفیف‌های احتمالی روزهای اقامت (شنبه تا سه‌شنبه ۱۰٪ و اقامت بیش از یک شب ۲۰٪ در شب دوم) به صورت خودکار محاسبه می‌شوند.`;
+      discountStatusBadge.innerHTML = `ℹ️ با انتخاب تاریخ ورود از تقویم، تخفیف‌های احتمالی روزهای اقامت (شنبه تا سه‌شنبه ۱۰٪ و اقامت بیش از یک شب ۱۰٪ در شب دوم) به صورت خودکار محاسبه می‌شوند.`;
     } else if (discountData.hasDiscount) {
       discountStatusBadge.style.background = "#eef7f2";
       discountStatusBadge.style.color = "var(--brand-green)";
@@ -2168,7 +2208,7 @@ function updateReservationCalculations() {
       discountStatusBadge.style.background = "#fdfbf7";
       discountStatusBadge.style.color = "#825e1a";
       discountStatusBadge.style.borderColor = "#ebd9b5";
-      discountStatusBadge.innerHTML = `ℹ️ تاریخ‌های انتخابی در ایام آخر هفته یا تعطیل است. برای روزهای شنبه تا سه‌شنبه ۱۰٪ و برای اقامت بیش از یک شب ۲۰٪ تخفیف در شب دوم در نظر گرفته می‌شود.`;
+      discountStatusBadge.innerHTML = `ℹ️ تاریخ‌های انتخابی در ایام آخر هفته یا تعطیل است. برای روزهای شنبه تا سه‌شنبه ۱۰٪ و برای اقامت بیش از یک شب ۱۰٪ تخفیف در شب دوم در نظر گرفته می‌شود.`;
     }
   }
 
@@ -2564,7 +2604,7 @@ ${roomsDetailText}
 ${stayPriceLines}
 
 🏷️ شرایط تخفیف اقامت:
-برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه شنبه ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۲۰ درصد تخفیف درشب دوم در نظر گرفته می‌شود.)
+برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه‌شنبه) ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۱۰ درصد تخفیف در شب دوم در نظر گرفته می‌شود.
 ${discountStatusNote}
 
 ${foodSectionText}
@@ -2926,6 +2966,8 @@ function handleFoodMealTypeChange(meal) {
   }
   if (meal === 'صبحانه') {
     setFoodCategoryFilter('صبحانه سنتی');
+  } else if (state.foodCategoryFilter === 'صبحانه' || state.foodCategoryFilter === 'صبحانه سنتی') {
+    setFoodCategoryFilter('all');
   }
   updateFoodOrderSummary();
 }
@@ -4226,6 +4268,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const phoneTextEl = document.getElementById("display-house-phone");
   if (phoneTextEl) phoneTextEl.textContent = CONFIG.phone1Display;
 
+  // شماره‌های تماس بخش اطلاعات تماس در صفحه اصلی
+  const homePhone1El = document.getElementById("home-phone-display-1");
+  if (homePhone1El) homePhone1El.textContent = CONFIG.phone1Display;
+  const homePhone2El = document.getElementById("home-phone-display-2");
+  if (homePhone2El) homePhone2El.textContent = CONFIG.phone2Display;
+
   // رندر بخش‌ها
   renderRoomsList();
   renderFoodSection();
@@ -4239,6 +4287,7 @@ window.navigateTo = navigateTo;
 window.navigateBack = navigateBack;
 window.openExternalUrl = openExternalUrl;
 window.openRoomDetail = openRoomDetail;
+window.selectRoomAndBook = selectRoomAndBook;
 window.updateRoomDetailButtons = updateRoomDetailButtons;
 window.handleRoomDetailBookingClick = handleRoomDetailBookingClick;
 window.startReservationForCurrentRoom = startReservationForCurrentRoom;

@@ -58,6 +58,72 @@ function getMiniAppHtml() {
   return cachedMiniAppHtml;
 }
 
+function resolveBotToken(env, payload) {
+  let token = null;
+  if (env && typeof env === "object") {
+    token = env.BOT_TOKEN || env.bot_token || env.Bot_Token ||
+            env.TELEGRAM_BOT_TOKEN || env.telegram_bot_token || env.Telegram_Bot_Token ||
+            env.TOKEN || env.token || env.Token ||
+            env.TELEGRAM_TOKEN || env.telegram_token ||
+            env.TG_BOT_TOKEN || env.tg_bot_token ||
+            env.TG_TOKEN || env.tg_token ||
+            env.BOTTOKEN || env.bottoken ||
+            env.BARZOK_BOT_TOKEN || env.barzok_bot_token;
+
+    if (!token) {
+      for (const [, val] of Object.entries(env)) {
+        if (typeof val === "string") {
+          const cleanVal = val.trim().replace(/^["']+|["']+$/g, "");
+          if (/^\d{7,12}:[A-Za-z0-9_-]{20,}$/.test(cleanVal) || /^bot\d{7,12}:[A-Za-z0-9_-]{20,}$/i.test(cleanVal)) {
+            token = cleanVal;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (!token && payload && payload.botToken) {
+    token = payload.botToken;
+  }
+
+  if (typeof token === "string") {
+    token = token.trim().replace(/^["']+|["']+$/g, "");
+    if (token.toLowerCase().startsWith("bot") && !token.startsWith("bot_") && token.includes(":")) {
+      token = token.slice(3).trim();
+    }
+  }
+
+  return token || null;
+}
+
+function resolveChatId(env, payload) {
+  let chatId = null;
+  if (env && typeof env === "object") {
+    chatId = env.RESERVATION_CHAT_ID || env.reservation_chat_id ||
+             env.CHAT_ID || env.chat_id ||
+             env.TELEGRAM_CHAT_ID || env.telegram_chat_id ||
+             env.GROUP_ID || env.group_id ||
+             env.CHATID || env.chatid;
+
+    if (!chatId) {
+      for (const [, val] of Object.entries(env)) {
+        if (typeof val === "string" || typeof val === "number") {
+          const s = String(val).trim();
+          if (/^-100\d{8,14}$/.test(s) || /^-\d{7,14}$/.test(s)) {
+            chatId = s;
+            break;
+          }
+        }
+      }
+    }
+  }
+  if (!chatId && payload && payload.chatId) {
+    chatId = payload.chatId;
+  }
+  return chatId ? String(chatId).trim() : "-1004485664573";
+}
+
 export default {
   async fetch(request, env, ctx) {
     // پاسخ به درخواست‌های مقدماتی CORS (Preflight)
@@ -88,11 +154,17 @@ export default {
         }
       }
       // در صورت درخواست GET برای تست سلامت اندپوینت
+      const botToken = resolveBotToken(env, null);
+      const chatId = resolveChatId(env, null);
+      const envKeys = env ? Object.keys(env) : [];
       return new Response(JSON.stringify({ 
         ok: true, 
         service: "سرویس ثبت رزرو خانه برزک",
-        has_bot_token: !!(env.BOT_TOKEN || env.TELEGRAM_BOT_TOKEN),
-        has_chat_id: !!(env.RESERVATION_CHAT_ID || env.CHAT_ID)
+        has_bot_token: !!botToken,
+        token_prefix: botToken ? (botToken.split(':')[0] + ':***') : null,
+        has_chat_id: !!chatId,
+        chat_id: chatId,
+        available_env_keys: envKeys
       }), {
         status: 200,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
@@ -163,15 +235,17 @@ export default {
  * پردازش درخواست ثبت یکپارچه ارسالی مستقیم از مینی‌اپ
  */
 async function handleDirectReservation(payload, env) {
-  const token = env.BOT_TOKEN || env.TELEGRAM_BOT_TOKEN || env.TOKEN || env.TELEGRAM_TOKEN || "691903257:AAfeOUEmpfHkElZUb8JFUTmOhLU79b6--zQ";
-  let configuredGroupId = env.RESERVATION_CHAT_ID || env.CHAT_ID || env.TELEGRAM_CHAT_ID || env.GROUP_ID || env.CHATID || "-1004485664573";
+  const token = resolveBotToken(env, payload);
+  let configuredGroupId = resolveChatId(env, payload);
   const messageText = payload.message || "درخواست رزرو جدید ثبت شد.";
 
   if (!token) {
+    const envKeys = env ? Object.keys(env) : [];
     return { 
       ok: false, 
       error: "BOT_TOKEN_NOT_CONFIGURED",
-      note: "توکن بات تلگرام (BOT_TOKEN) در متغیرهای Cloudflare یافت نشد. لطفاً در Settings > Variables کلادفلر آن را ثبت نمایید." 
+      detected_keys: envKeys,
+      note: "متغیر BOT_TOKEN در متغیرهای Cloudflare یافت نشد. لطفاً در پنل Cloudflare در بخش Settings > Variables متغیر BOT_TOKEN را ثبت و ذخیره (Save and Deploy) فرمایید. (کلیدهای فعال فعلی: " + (envKeys.length > 0 ? envKeys.join(', ') : 'بدون متغیر') + ")"
     };
   }
 
@@ -180,7 +254,7 @@ async function handleDirectReservation(payload, env) {
     return {
       ok: false,
       error: "INVALID_CHAT_ID",
-      note: "در متغیر RESERVATION_CHAT_ID لینک تلگرام وارد شده است. شناسه عددی صحیح گروه -1004485664573 یا -4485664573 می‌باشد."
+      note: "در متغیر RESERVATION_CHAT_ID لینک تلگرام وارد شده است. شناسه عددی صحیح گروه -1004485664573 می‌باشد."
     };
   }
 

@@ -883,6 +883,13 @@ const state = {
     selectedDishes: {},
     // برنامه وعده‌های چندگانه (برای چند روز یا چند وعده در روز یا صبحانه‌های مستقل):
     scheduledMeals: []
+  },
+  telegramUser: {
+    id: null,
+    username: "",
+    firstName: "",
+    lastName: "",
+    phone: ""
   }
 };
 
@@ -911,19 +918,134 @@ function initTelegramWebApp() {
         });
       }
 
-      // دریافت نام کاربر تلگرام به عنوان پیش‌فرض در فرم‌ها (با قابلیت ویرایش)
+      // دریافت نام، آیدی کاربری و شماره کاربر تلگرام
       if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
         const u = tg.initDataUnsafe.user;
         const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ");
+        state.telegramUser = {
+          id: u.id || null,
+          username: u.username || "",
+          firstName: u.first_name || "",
+          lastName: u.last_name || "",
+          phone: u.phone_number || ""
+        };
+
         if (fullName) {
           state.reservation.name = fullName;
           state.foodOrder.name = fullName;
+          const resNameEl = document.getElementById("res-name");
+          const foodNameEl = document.getElementById("food-name");
+          if (resNameEl && !resNameEl.value) resNameEl.value = fullName;
+          if (foodNameEl && !foodNameEl.value) foodNameEl.value = fullName;
         }
+
+        if (u.phone_number) {
+          fillTelegramPhone(u.phone_number);
+        }
+
+        updateTelegramUserBadges();
       }
     } catch (e) {
       console.warn("Telegram WebApp initialization note:", e);
     }
   }
+}
+
+/**
+ * درخواست بومی شماره تماس از تلگرام (Telegram WebApp Request Contact)
+ */
+function requestTelegramContact(targetField = 'res') {
+  triggerHaptic('medium');
+  if (tg && typeof tg.requestContact === 'function') {
+    try {
+      tg.requestContact((granted, response) => {
+        if (granted) {
+          let phone = "";
+          if (response && response.responseUnsafe && response.responseUnsafe.contact) {
+            phone = response.responseUnsafe.contact.phone_number;
+          } else if (response && response.phone_number) {
+            phone = response.phone_number;
+          } else if (typeof response === 'string') {
+            phone = response;
+          }
+          if (phone) {
+            fillTelegramPhone(phone);
+            showToast("شماره تلگرام شما با موفقیت دریافت و درج شد.");
+            return;
+          }
+          showToast("شماره تماس تلگرام شما ثبت شد.");
+        } else {
+          showToast("دسترسی به شماره داده نشد. لطفاً شماره را به صورت دستی وارد فرمایید.");
+        }
+      });
+      return;
+    } catch (e) {
+      console.warn("tg.requestContact error:", e);
+    }
+  }
+
+  const savedPhone = state.telegramUser?.phone;
+  if (savedPhone) {
+    fillTelegramPhone(savedPhone);
+    showToast("شماره تلگرام شما در فیلد قرار گرفت.");
+    return;
+  }
+
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
+  if (tgUser && tgUser.username) {
+    showToast(`حساب کاربری @${tgUser.username} شناسایی شد؛ لطفاً شماره تماس خود را در کادر بنویسید.`);
+  } else {
+    showToast("این قابلیت درون پیام‌رسان تلگرام شماره همراه حساب شما را دریافت می‌کند.");
+  }
+}
+
+/**
+ * استانداردسازی و درج شماره تماس دریافت‌شده از تلگرام
+ */
+function fillTelegramPhone(rawPhone) {
+  if (!rawPhone) return;
+  let clean = String(rawPhone).replace(/[^\d+]/g, '');
+  if (clean.startsWith("+98")) {
+    clean = "0" + clean.slice(3);
+  } else if (clean.startsWith("98") && clean.length === 12) {
+    clean = "0" + clean.slice(2);
+  } else if (clean.startsWith("0098")) {
+    clean = "0" + clean.slice(4);
+  } else if (!clean.startsWith("0") && clean.length === 10) {
+    clean = "0" + clean;
+  }
+  handleGuestPhoneSync(clean);
+  const resPhoneEl = document.getElementById("res-phone");
+  const foodPhoneEl = document.getElementById("food-phone");
+  if (resPhoneEl) resPhoneEl.value = clean;
+  if (foodPhoneEl) foodPhoneEl.value = clean;
+  state.reservation.phone = clean;
+  state.foodOrder.phone = clean;
+}
+
+/**
+ * نمایش نشان شناسایی حساب تلگرام جهت اطلاع مهمان و اطمینان از ارتباط مستقیم میزبان
+ */
+function updateTelegramUserBadges() {
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
+  if (!tgUser) return;
+  const username = tgUser.username || "";
+  const badges = [
+    document.getElementById("tg-user-badge-res"),
+    document.getElementById("tg-user-badge-food")
+  ];
+  badges.forEach(badge => {
+    if (!badge) return;
+    if (username) {
+      badge.style.display = "flex";
+      badge.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#1f8578" style="flex-shrink: 0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+        <span>حساب تلگرام شما: <strong>@${username}</strong> <span style="font-size: 10.5px; opacity: 0.85;">(میزبان در صورت نیاز مستقیماً به شما در تلگرام پیام خواهد داد)</span></span>
+      `;
+    } else {
+      badge.style.display = "none";
+    }
+  });
 }
 
 // بازخورد لمسی تلگرام (Haptic Feedback)
@@ -2732,9 +2854,10 @@ function syncFoodToReservationInputs() {
 }
 
 /**
- * تولید متن پیام یکپارچه نهایی (شامل اطلاعات اقامت + وعده‌های غذایی چند روزه یا سفارش مستقل غذا)
+ * تولید متن پیام یکپارچه نهایی
+ * @param {'guest' | 'group'} target - در حالت group، شرایط تخفیف، متون تکمیلی و بخش غذای خالی طبق درخواست حذف می‌شود.
  */
-function generateUnifiedOrderMessage() {
+function generateUnifiedOrderMessage(target = 'guest') {
   const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
 
   // استخراج نام و شماره با اولویت فیلدهای زنده
@@ -2767,6 +2890,11 @@ function generateUnifiedOrderMessage() {
   const checkInJalali = getJalaliDetails(checkIn);
   const checkOutJalali = getJalaliDetails(checkOut);
   const stayDaysText = `${checkInJalali.weekday} تا ${checkOutJalali.weekday}`;
+
+  // بررسی وجود آیدی تلگرام مهمان
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
+  const telegramUsername = tgUser?.username || "";
+  const telegramLine = telegramUsername ? `\n💬 آیدی تلگرام مهمان: @${telegramUsername} (https://t.me/${telegramUsername})` : "";
 
   let roomsDetailText = "";
 
@@ -2847,6 +2975,57 @@ ${mealsTextBlocks}
 
   // ۱. در صورتی که کاربر اتاق انتخاب کرده باشد (سفارش یکپارچه اقامت + غذا)
   if (selectedRooms.length > 0) {
+    // ۱-الف: فرمت مختصر و استاندارد گروه رزرو تلگرام خانه برزک (بدون شرایط تخفیف، بدون جزئیات اضافی قیمت هر اتاق، و حذف غذا در صورت عدم سفارش)
+    if (target === 'group') {
+      const roomsSummaryGroup = selectedRooms.map(r => {
+        const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+        return `  ▫️ اتاق ${r.name} (${formatPersianNumber(g)} نفر)`;
+      }).join("\n");
+
+      let stayPriceGroup = `• برآورد اقامت: ${formatToman(discountData.totalBaseRoom)}`;
+      if (discountData.hasDiscount) {
+        stayPriceGroup = `• برآورد اقامت: ${formatToman(discountData.finalRoomTotal)} (با کسر ${formatToman(discountData.totalDiscount)} تخفیف)`;
+      }
+
+      // در گروه تلگرام: اگر غذا سفارش داده نشده باشد، اصلاً هیچ بخشی از غذا نشان داده نمی‌شود
+      let foodSectionGroup = "";
+      if (sortedScheduled.length > 0) {
+        const mealsTextBlocksGroup = sortedScheduled.map((m, idx) => {
+          const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
+          const mJalali = getJalaliDetails(m.date);
+          const dishesLines = m.dishes.map(d => `    ▫️ ${d.name} × ${formatPersianNumber(d.quantity)} پرس`).join("\n");
+          return `  ${icon} وعده ${formatPersianNumber(idx + 1)}: ${m.mealType} (${mJalali.weekday} ${mJalali.dateOnlyString})
+${dishesLines}
+    جمع وعده: ${formatToman(m.subtotal)}`;
+        }).join("\n\n");
+
+        foodSectionGroup = `
+
+🍽️ وعده‌های غذایی انتخابی (${formatPersianNumber(sortedScheduled.length)} وعده):
+${mealsTextBlocksGroup}
+• برآورد خوراک: ${formatToman(foodTotal)}`;
+      }
+
+      return `🌿 درخواست رزرو در خانه برزک
+
+👤 مهمان: ${name}
+📞 تماس: ${phone}${telegramLine}
+⏰ زمان ثبت: ${nowJalaliString}
+
+🏡 مشخصات اقامت:
+• اتاق‌های انتخابی:
+${roomsSummaryGroup}
+• تاریخ و روز ورود: ${checkInJalali.fullString}
+• تاریخ و روز خروج: ${checkOutJalali.fullString}
+• مدت اقامت: ${formatPersianNumber(nights)} شب (${stayDaysText})
+• تعداد کل نفرات: ${formatPersianNumber(guests)} نفر (همراه با صبحانه)
+${stayPriceGroup}${foodSectionGroup}
+
+💰 جمع کل برآورد: ${formatToman(grandTotal)}
+#درخواست_رزرو`;
+    }
+
+    // ۱-ب: فرمت کامل پیش‌نمایش برای مهمان (شامل توضیحات شرایط تخفیف و یادداشت‌های بررسی میزبان)
     let stayPriceLines = `• برآورد اقامت: ${formatToman(discountData.totalBaseRoom)}`;
     if (discountData.hasDiscount) {
       stayPriceLines = `• مبلغ پایه اقامت: ${formatToman(discountData.totalBaseRoom)}
@@ -2861,7 +3040,7 @@ ${mealsTextBlocks}
     return `🌿 درخواست رزرو در خانه برزک
 
 👤 مهمان: ${name}
-📞 تماس: ${phone}
+📞 تماس: ${phone}${telegramLine}
 ⏰ زمان ثبت درخواست: ${nowJalaliString}
 
 🏡 مشخصات اقامت:
@@ -2885,10 +3064,23 @@ ${foodSectionText}
   }
 
   // ۲. در صورتی که سفارش صرفاً برای غذا و صبحانه باشد (مستقل از اقامت)
+  if (target === 'group') {
+    return `🍽️ درخواست سفارش غذای محلی و پذیرایی در خانه برزک
+
+👤 مهمان: ${name}
+📞 تماس: ${phone}${telegramLine}
+⏰ زمان ثبت: ${nowJalaliString}
+
+${foodSectionText}
+
+💰 برآورد کل سفارش: ${formatToman(foodTotal)}
+#سفارش_غذا`;
+  }
+
   return `🍽️ درخواست سفارش غذای محلی و پذیرایی در خانه برزک
 
 👤 مهمان: ${name}
-📞 تماس: ${phone}
+📞 تماس: ${phone}${telegramLine}
 ⏰ زمان ثبت درخواست: ${nowJalaliString}
 
 ${foodSectionText}
@@ -4308,6 +4500,7 @@ function calculateCurrentTotals() {
 
 // ۱۲. مدال پیش‌نمایش و ارسال پیام به گروه رزرو
 let currentModalMessage = "";
+let currentGroupMessage = "";
 
 function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
   // بررسی نهایی قانون ۲ نوع خوراک: مجموع باید حداقل ۱۰ پرس باشد، وگرنه یکی از دو خوراک باید حذف شود
@@ -4317,7 +4510,7 @@ function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
     if (portionsCount < 10) {
       checkGroupRuleViolation(() => {
         updateReservationCalculations();
-        const refreshedText = generateUnifiedOrderMessage();
+        const refreshedText = generateUnifiedOrderMessage('guest');
         openMessagePreviewModal({
           title: title,
           subtitle: subtitle,
@@ -4329,14 +4522,15 @@ function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
     }
   }
 
-  currentModalMessage = messageText;
+  currentModalMessage = messageText || generateUnifiedOrderMessage('guest');
+  currentGroupMessage = generateUnifiedOrderMessage('group');
   const titleEl = document.getElementById("modal-title");
   const subtitleEl = document.getElementById("modal-subtitle");
   const previewEl = document.getElementById("modal-message-preview");
   
   if (titleEl) titleEl.textContent = title || "پیش‌نمایش درخواست شما";
   if (subtitleEl) subtitleEl.textContent = subtitle || "خلاصه درخواست شما جهت بررسی و ارسال نهایی:";
-  if (previewEl) previewEl.textContent = messageText;
+  if (previewEl) previewEl.textContent = currentModalMessage;
 
   // ۱. نام و شماره تماس در دو ستون مجزا
   const guestName = state.reservation.name || state.foodOrder.name || "مهمان گرامی";
@@ -4557,9 +4751,26 @@ function shareViaTelegram() {
  */
 function sendDirectToReservationGroup() {
   triggerHaptic('medium');
-  copyModalMessage();
-  showToast("متن درخواست کپی شد. در حال باز کردن تلگرام...");
-  shareViaTelegram();
+  const msgToSend = currentGroupMessage || currentModalMessage;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(msgToSend).catch(() => {});
+  }
+  const shareUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(msgToSend)}`;
+  showToast("در حال باز کردن تلگرام با متن مخصوص گروه رزرو...");
+
+  setTimeout(() => {
+    if (tg && tg.openTelegramLink) {
+      try {
+        tg.openTelegramLink(shareUrl);
+        closeMessageModal();
+        return;
+      } catch (e) {
+        console.warn("tg.openTelegramLink failed, using window.open", e);
+      }
+    }
+    window.open(shareUrl, '_blank');
+    closeMessageModal();
+  }, 350);
 }
 
 /**
@@ -4597,12 +4808,15 @@ function sendViaTelegram() {
     sendBtn.innerHTML = "⏳ در حال ارسال به گروه رزرو...";
   }
 
+  // ارسال فرمت خلاصه و بدون موارد اضافی مخصوص گروه رزرو
+  const groupMessageToSend = currentGroupMessage || generateUnifiedOrderMessage('group');
+
   const reqBody = JSON.stringify({
     action: "submit_reservation",
     isMiniAppOrder: true,
     botToken: "691903257:AAFeOUEmpfHkElZUb8JFUTmOhLU79b6--zQ",
     chatId: "-1004485664573",
-    message: currentModalMessage,
+    message: groupMessageToSend,
     initData: (tg && tg.initData) ? tg.initData : "",
     data: {
       reservation: state.reservation,
@@ -5092,3 +5306,7 @@ window.quickAddBreakfastMeal = quickAddBreakfastMeal;
 window.CONFIG = CONFIG;
 window.ROOMS = ROOMS;
 window.FOOD_MENU = FOOD_MENU;
+window.requestTelegramContact = requestTelegramContact;
+window.fillTelegramPhone = fillTelegramPhone;
+window.updateTelegramUserBadges = updateTelegramUserBadges;
+

@@ -2459,7 +2459,6 @@ function syncFoodToReservationInputs() {
   const foodName = document.getElementById("food-name")?.value.trim() || state.foodOrder.name;
   const foodPhone = document.getElementById("food-phone")?.value.trim() || state.foodOrder.phone;
   const foodDate = document.getElementById("food-date")?.value || state.foodOrder.date;
-  const foodDay = document.getElementById("food-day")?.value || state.foodOrder.dayOfWeek;
   const foodMeal = document.getElementById("food-meal")?.value || state.foodOrder.mealType;
 
   if (foodName) {
@@ -2476,9 +2475,13 @@ function syncFoodToReservationInputs() {
   }
   if (foodDate) {
     state.foodOrder.date = foodDate;
+    try {
+      state.foodOrder.dayOfWeek = getJalaliDetails(foodDate).weekday;
+    } catch (e) {}
   }
-  if (foodDay) state.foodOrder.dayOfWeek = foodDay;
-  if (foodMeal) state.foodOrder.mealType = foodMeal;
+  if (foodMeal && ['ناهار', 'شام'].includes(foodMeal)) {
+    state.foodOrder.mealType = foodMeal;
+  }
 }
 
 /**
@@ -2914,7 +2917,6 @@ function renderFoodSection() {
   const foodNameInput = document.getElementById("food-name");
   const foodPhoneInput = document.getElementById("food-phone");
   const foodDateInput = document.getElementById("food-date");
-  const foodDaySelect = document.getElementById("food-day");
   const foodMealSelect = document.getElementById("food-meal");
   const currentMealBadge = document.getElementById("current-meal-badge");
 
@@ -2936,23 +2938,125 @@ function renderFoodSection() {
     const foodDateDisplay = document.getElementById("food-date-shamsi-display");
     if (foodDateDisplay && foodDateInput.value) {
       const jDetails = getJalaliDetails(foodDateInput.value);
-      foodDateDisplay.textContent = `📅 تاریخ شمسی: ${jDetails.fullString}`;
+      foodDateDisplay.textContent = `📅 ${jDetails.fullString}`;
+      state.foodOrder.dayOfWeek = jDetails.weekday;
     }
   }
-  if (foodDaySelect && state.foodOrder.dayOfWeek) {
-    foodDaySelect.value = state.foodOrder.dayOfWeek;
+
+  // تضمین اینکه نوع وعده معتبر است (فقط ناهار و شام)
+  if (!['ناهار', 'شام'].includes(state.foodOrder.mealType)) {
+    state.foodOrder.mealType = 'ناهار';
   }
-  if (foodMealSelect && state.foodOrder.mealType) {
+  if (foodMealSelect) {
     foodMealSelect.value = state.foodOrder.mealType;
   }
-  if (currentMealBadge) {
-    const mealIcon = state.foodOrder.mealType === 'صبحانه' ? '🍳' : state.foodOrder.mealType === 'شام' ? '🌙' : '🍲';
-    currentMealBadge.textContent = `${mealIcon} در حال انتخاب: ${state.foodOrder.mealType || 'ناهار'}`;
-  }
 
+  updateMealAvailabilityForDate(state.foodOrder.date);
   renderFoodList();
   renderScheduledMeals();
   updateFoodOrderSummary();
+}
+
+/**
+ * بررسی وضعیت وعده‌های غذایی در تاریخ انتخابی:
+ * قانون کاربردی: برای هر روز، ناهار و شام هر کدام حداکثر یک‌بار قابل انتخاب هستند.
+ */
+function updateMealAvailabilityForDate(dateVal) {
+  const currentDate = dateVal || state.foodOrder.date || (state.reservation && state.reservation.checkInDate) || getTodayFormattedDate();
+  state.foodOrder.date = currentDate;
+
+  let jDetails = { fullString: "", weekday: "", dateOnlyString: "" };
+  try {
+    jDetails = getJalaliDetails(currentDate);
+    state.foodOrder.dayOfWeek = jDetails.weekday;
+  } catch (e) {}
+
+  const foodDateDisplay = document.getElementById("food-date-shamsi-display");
+  if (foodDateDisplay && jDetails.fullString) {
+    foodDateDisplay.textContent = `📅 ${jDetails.fullString}`;
+  }
+
+  const scheduled = state.foodOrder.scheduledMeals || [];
+  const scheduledForDate = scheduled.filter(m => m.date === currentDate);
+  const hasLunch = scheduledForDate.some(m => m.mealType === 'ناهار');
+  const hasDinner = scheduledForDate.some(m => m.mealType === 'شام');
+
+  const foodMealSelect = document.getElementById("food-meal");
+  const mealStatusHint = document.getElementById("food-meal-status-hint");
+  const currentMealBadge = document.getElementById("current-meal-badge");
+  const addMealBtn = document.getElementById("btn-add-meal-to-schedule");
+
+  if (foodMealSelect) {
+    foodMealSelect.innerHTML = `
+      <option value="ناهار" ${hasLunch ? 'disabled' : ''}>🍲 ناهار ${hasLunch ? '(قبلاً ثبت شده)' : ''}</option>
+      <option value="شام" ${hasDinner ? 'disabled' : ''}>🌙 شام ${hasDinner ? '(قبلاً ثبت شده)' : ''}</option>
+    `;
+
+    // تنظیم هوشمند وعده انتخابی
+    if (hasLunch && !hasDinner) {
+      state.foodOrder.mealType = 'شام';
+      foodMealSelect.value = 'شام';
+    } else if (!hasLunch && hasDinner) {
+      state.foodOrder.mealType = 'ناهار';
+      foodMealSelect.value = 'ناهار';
+    } else if (!hasLunch && !hasDinner) {
+      if (!['ناهار', 'شام'].includes(state.foodOrder.mealType)) {
+        state.foodOrder.mealType = 'ناهار';
+      }
+      foodMealSelect.value = state.foodOrder.mealType;
+    }
+  }
+
+  // به‌روزرسانی پیام وضعیت و کنترل دکمه افزودن
+  if (hasLunch && hasDinner) {
+    if (mealStatusHint) {
+      mealStatusHint.style.color = "#c2410c";
+      mealStatusHint.style.background = "#fff7ed";
+      mealStatusHint.style.padding = "7px 10px";
+      mealStatusHint.style.borderRadius = "6px";
+      mealStatusHint.style.border = "1px solid #fed7aa";
+      mealStatusHint.innerHTML = `⚠️ هر دو وعده <b>ناهار</b> و <b>شام</b> برای ${jDetails.weekday} (${jDetails.dateOnlyString || currentDate}) در برنامه ثبت شده‌اند. برای انتخاب وعده جدید، لطفاً تاریخ دیگری را در تقویم بالا انتخاب فرمایید یا وعده ثبت‌شده را از لیست پایین حذف نمایید.`;
+    }
+    if (addMealBtn) {
+      addMealBtn.disabled = true;
+      addMealBtn.style.opacity = "0.5";
+      addMealBtn.style.cursor = "not-allowed";
+      addMealBtn.title = "برای این تاریخ هر دو وعده ناهار و شام قبلاً ثبت شده‌اند.";
+    }
+    if (currentMealBadge) {
+      currentMealBadge.textContent = `تکمیل ناهار و شام (${jDetails.weekday})`;
+      currentMealBadge.style.background = "#fff7ed";
+      currentMealBadge.style.color = "#c2410c";
+    }
+  } else {
+    if (addMealBtn) {
+      addMealBtn.disabled = false;
+      addMealBtn.style.opacity = "1";
+      addMealBtn.style.cursor = "pointer";
+      addMealBtn.title = "";
+    }
+    if (mealStatusHint) {
+      mealStatusHint.style.background = "transparent";
+      mealStatusHint.style.padding = "0";
+      mealStatusHint.style.border = "none";
+      if (hasLunch && !hasDinner) {
+        mealStatusHint.style.color = "var(--brand-green)";
+        mealStatusHint.innerHTML = `ℹ️ ناهار این روز قبلاً ثبت شده؛ اکنون در حال انتخاب وعده <b>شام (${jDetails.weekday})</b> هستید.`;
+      } else if (!hasLunch && hasDinner) {
+        mealStatusHint.style.color = "var(--brand-green)";
+        mealStatusHint.innerHTML = `ℹ️ شام این روز قبلاً ثبت شده؛ اکنون در حال انتخاب وعده <b>ناهار (${jDetails.weekday})</b> هستید.`;
+      } else {
+        mealStatusHint.style.color = "var(--brand-text-muted)";
+        mealStatusHint.innerHTML = `💡 برای هر روز، ناهار و شام هر کدام حداکثر یک‌بار قابل انتخاب هستند (${jDetails.weekday}).`;
+      }
+    }
+    if (currentMealBadge) {
+      const mealIcon = state.foodOrder.mealType === 'شام' ? '🌙' : '🍲';
+      currentMealBadge.textContent = `${mealIcon} در حال انتخاب: ${state.foodOrder.mealType || 'ناهار'}`;
+      currentMealBadge.style.background = "var(--brand-teal-subtle)";
+      currentMealBadge.style.color = "var(--brand-teal-dark)";
+    }
+  }
 }
 
 // مدیریت تغییر نوع وعده جاری
@@ -2961,13 +3065,8 @@ function handleFoodMealTypeChange(meal) {
   state.foodOrder.mealType = meal;
   const currentMealBadge = document.getElementById("current-meal-badge");
   if (currentMealBadge) {
-    const mealIcon = meal === 'صبحانه' ? '🍳' : meal === 'شام' ? '🌙' : '🍲';
+    const mealIcon = meal === 'شام' ? '🌙' : '🍲';
     currentMealBadge.textContent = `${mealIcon} در حال انتخاب: ${meal}`;
-  }
-  if (meal === 'صبحانه') {
-    setFoodCategoryFilter('صبحانه سنتی');
-  } else if (state.foodCategoryFilter === 'صبحانه' || state.foodCategoryFilter === 'صبحانه سنتی') {
-    setFoodCategoryFilter('all');
   }
   updateFoodOrderSummary();
 }
@@ -2978,13 +3077,12 @@ function handleFoodDateChange(dateVal) {
   try {
     const details = getJalaliDetails(dateVal);
     state.foodOrder.dayOfWeek = details.weekday;
-    const foodDaySelect = document.getElementById("food-day");
-    if (foodDaySelect) foodDaySelect.value = details.weekday;
     const foodDateDisplay = document.getElementById("food-date-shamsi-display");
     if (foodDateDisplay) {
-      foodDateDisplay.textContent = `📅 تاریخ شمسی: ${details.fullString}`;
+      foodDateDisplay.textContent = `📅 ${details.fullString}`;
     }
   } catch (e) {}
+  updateMealAvailabilityForDate(dateVal);
   updateFoodOrderSummary();
 }
 
@@ -3245,12 +3343,21 @@ function executeAddCurrentMealToSchedule() {
   if (selectedIds.length === 0) return;
 
   const dateInput = document.getElementById("food-date");
-  const daySelect = document.getElementById("food-day");
   const mealSelect = document.getElementById("food-meal");
 
   const mealDate = (dateInput && dateInput.value) || state.foodOrder.date || getTodayFormattedDate();
-  const mealDay = (daySelect && daySelect.value) || state.foodOrder.dayOfWeek || "جمعه";
+  const jDetails = getJalaliDetails(mealDate);
+  const mealDay = jDetails.weekday;
   const mealType = (mealSelect && mealSelect.value) || state.foodOrder.mealType || "ناهار";
+
+  // بررسی قانون: برای هر روز ناهار و شام هر کدام یک‌بار
+  const scheduled = state.foodOrder.scheduledMeals || [];
+  const alreadyExists = scheduled.some(m => m.date === mealDate && m.mealType === mealType);
+  if (alreadyExists) {
+    triggerHaptic('warning');
+    showToast(`برای تاریخ ${jDetails.weekday} (${jDetails.dateOnlyString || mealDate}) وعده ${mealType} قبلاً در برنامه ثبت شده است. برای هر روز ناهار و شام هر کدام فقط یک‌بار قابل انتخاب هستند.`);
+    return;
+  }
 
   let mealSubtotal = 0;
   const dishes = selectedIds.map(id => {
@@ -3284,19 +3391,30 @@ function executeAddCurrentMealToSchedule() {
   // خالی کردن غذاهای وعده جاری جهت تنظیم وعده بعدی
   state.foodOrder.selectedDishes = {};
 
-  // پیشنهاد هوشمند برای وعده بعدی
-  if (mealType === "صبحانه") {
-    state.foodOrder.mealType = "ناهار";
-  } else if (mealType === "ناهار") {
+  // بررسی وضعیت وعده بعدی برای همین تاریخ یا روز بعد
+  const sameDateMeals = state.foodOrder.scheduledMeals.filter(m => m.date === mealDate);
+  const hasLunch = sameDateMeals.some(m => m.mealType === 'ناهار');
+  const hasDinner = sameDateMeals.some(m => m.mealType === 'شام');
+
+  if (hasLunch && !hasDinner) {
+    // ناهار ثبت شد، نوبت شام همین روز است
     state.foodOrder.mealType = "شام";
-  } else if (mealType === "شام") {
-    state.foodOrder.mealType = "صبحانه";
+    showToast(`وعده ناهار (${mealDay}) ثبت شد! اکنون می‌توانید وعده شام همین روز را انتخاب نمایید.`);
+  } else {
+    // هر دو وعده این روز ثبت شدند، انتقال هوشمند به ناهار روز بعد
+    state.foodOrder.mealType = "ناهار";
     try {
-      state.foodOrder.date = addDaysToDateString(mealDate, 1);
-    } catch (e) {}
+      const nextDate = addDaysToDateString(mealDate, 1);
+      state.foodOrder.date = nextDate;
+      const dateInputEl = document.getElementById("food-date");
+      if (dateInputEl) dateInputEl.value = nextDate;
+      const nextJalali = getJalaliDetails(nextDate);
+      showToast(`وعده ${mealType} (${mealDay}) ثبت شد! تاریخ به ${nextJalali.weekday} (${nextJalali.dateOnlyString}) منتقل شد.`);
+    } catch (e) {
+      showToast(`وعده ${mealType} (${mealDay}) با موفقیت در برنامه ثبت شد.`);
+    }
   }
 
-  showToast(`وعده ${mealType} (${mealDay}) ثبت شد! اکنون می‌توانید وعده بعدی را انتخاب نمایید.`);
   renderFoodSection();
   updateReservationCalculations();
 }
@@ -3565,6 +3683,19 @@ function submitFoodOrderForm(e) {
   if (scheduled.length === 0 && currentSelectedIds.length === 0) {
     showToast("لطفاً حداقل یک غذا از منو یا برنامه وعده‌ها انتخاب کنید.");
     return;
+  }
+
+  // بررسی اینکه آیا اقلام جاری با وعده‌ای که قبلاً برای همین تاریخ ثبت شده تداخل دارد یا خیر
+  if (currentSelectedIds.length > 0) {
+    const activeDate = state.foodOrder.date || getTodayFormattedDate();
+    const activeMeal = state.foodOrder.mealType || "ناهار";
+    const duplicateInScheduled = scheduled.some(m => m.date === activeDate && m.mealType === activeMeal);
+    if (duplicateInScheduled) {
+      triggerHaptic('warning');
+      const jDetails = getJalaliDetails(activeDate);
+      showToast(`برای تاریخ ${jDetails.weekday} (${jDetails.dateOnlyString}) وعده ${activeMeal} قبلاً ثبت شده است (هر روز یک ناهار و یک شام).`);
+      return;
+    }
   }
 
   // اعتبارسنجی قانون انتخاب ۲ نوع غذا: مجموع باید حداقل ۱۰ پرس باشد

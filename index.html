@@ -761,14 +761,9 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                <label class="form-label" style="margin-bottom: 0; font-size: 13px; font-weight: 800; color: var(--brand-green);">
-                  📅 تاریخ وعده غذایی:
-                </label>
-                <button type="button" class="btn-text-link" onclick="openShamsiDatePicker('food')" style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 800; background: var(--brand-mustard-subtle); padding: 3px 8px; border-radius: 6px; border: 1px solid #ebd9b5; cursor: pointer;">
-                  🗓️ تقویم شمسی
-                </button>
-              </div>
+              <label class="form-label" style="margin-bottom: 6px; font-size: 13px; font-weight: 800; color: var(--brand-green);">
+                📅 تاریخ وعده غذایی:
+              </label>
               <div id="food-date-display-box" onclick="openShamsiDatePicker('food')" style="background: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--brand-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <span id="food-date-shamsi-display" style="font-size: 13.5px; font-weight: 800; color: var(--brand-teal-dark);">--</span>
                 <span style="font-size: 11.5px; color: var(--brand-mustard-dark); font-weight: 700;">انتخاب در تقویم ▾</span>
@@ -776,27 +771,16 @@
               <input type="hidden" id="food-date" />
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label" for="food-day">روز هفته:</label>
-                <select class="form-select" id="food-day">
-                  <option value="شنبه">شنبه</option>
-                  <option value="یکشنبه">یکشنبه</option>
-                  <option value="دوشنبه">دوشنبه</option>
-                  <option value="سه‌شنبه">سه‌شنبه</option>
-                  <option value="چهارشنبه">چهارشنبه</option>
-                  <option value="پنج‌شنبه">پنج‌شنبه</option>
-                  <option value="جمعه" selected>جمعه</option>
-                </select>
-              </div>
-
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label" for="food-meal">وعده:</label>
-                <select class="form-select" id="food-meal" onchange="handleFoodMealTypeChange(this.value)">
-                  <option value="ناهار" selected>🍲 ناهار</option>
-                  <option value="شام">🌙 شام</option>
-                  <option value="صبحانه">🍳 صبحانه سنتی</option>
-                </select>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label class="form-label" for="food-meal" style="font-size: 13px; font-weight: 800; color: var(--brand-green); margin-bottom: 6px;">
+                وعده غذایی (هر روز حداکثر یک ناهار و یک شام):
+              </label>
+              <select class="form-select" id="food-meal" onchange="handleFoodMealTypeChange(this.value)">
+                <option value="ناهار" selected>🍲 ناهار</option>
+                <option value="شام">🌙 شام</option>
+              </select>
+              <div id="food-meal-status-hint" style="font-size: 11.5px; margin-top: 6px; line-height: 1.5; color: var(--brand-text-muted);">
+                💡 برای هر روز، ناهار و شام هر کدام حداکثر یک‌بار قابل انتخاب هستند.
               </div>
             </div>
 
@@ -805,7 +789,7 @@
                 ➕ ثبت این وعده و افزودن وعده بعدی
               </button>
             </div>
-            <span class="form-hint" style="margin-top: 6px;">می‌توانید برای چند روز اقامت یا چند وعده در یک روز، وعده‌های مجزا ثبت کنید.</span>
+            <span class="form-hint" style="margin-top: 6px;">می‌توانید برای هر روز اقامت، یک وعده ناهار و یک وعده شام به تفکیک ثبت فرمایید.</span>
           </div>
 
           <!-- کارت نمایش وعده‌های ثبت‌شده (چند روز / چند وعده) -->

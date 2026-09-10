@@ -870,11 +870,13 @@ const state = {
     checkInDate: "", // ابتدا خالی است تا کاربر از تقویم شمسی انتخاب کند
     checkOutDate: "",
     name: "",
-    phone: ""
+    phone: "",
+    notes: ""
   },
   foodOrder: {
     name: "",
     phone: "",
+    notes: "",
     date: getTodayFormattedDate(),
     dayOfWeek: "جمعه",
     mealType: "ناهار",
@@ -2653,6 +2655,19 @@ function handleGuestPhoneSync(val) {
 }
 window.handleGuestPhoneSync = handleGuestPhoneSync;
 
+// همگام‌سازی لحظه‌ای یادداشت‌ها و ملاحظات خاص مهمان بین تمام فرم‌ها و استیت
+function handleGuestNotesSync(val) {
+  const cleanVal = (val || "").trim();
+  state.reservation.notes = cleanVal;
+  state.foodOrder.notes = cleanVal;
+
+  const resNotes = document.getElementById("res-notes");
+  const foodNotes = document.getElementById("food-notes");
+  if (resNotes && resNotes.value !== val) resNotes.value = val;
+  if (foodNotes && foodNotes.value !== val) foodNotes.value = val;
+}
+window.handleGuestNotesSync = handleGuestNotesSync;
+
 // هدایت کاربر از صفحه غذا به لیست اتاق‌ها جهت مشاهده و انتخاب اتاق
 function openRoomsFromFood() {
   try { triggerHaptic('light'); } catch (_) {}
@@ -2839,6 +2854,17 @@ function syncFoodToReservationInputs() {
     const foodPhoneInput = document.getElementById("food-phone");
     if (foodPhoneInput && foodPhoneInput.value !== phone) foodPhoneInput.value = phone;
   }
+  const liveFoodNotes = document.getElementById("food-notes")?.value.trim();
+  const liveResNotes = document.getElementById("res-notes")?.value.trim();
+  const notes = liveFoodNotes || liveResNotes || state.foodOrder.notes || state.reservation.notes || "";
+  if (notes) {
+    state.foodOrder.notes = notes;
+    state.reservation.notes = notes;
+    const resNotesInput = document.getElementById("res-notes");
+    if (resNotesInput && resNotesInput.value !== notes) resNotesInput.value = notes;
+    const foodNotesInput = document.getElementById("food-notes");
+    if (foodNotesInput && foodNotesInput.value !== notes) foodNotesInput.value = notes;
+  }
   if (foodDate) {
     state.foodOrder.date = foodDate;
     if (!state.reservation.checkInDate) {
@@ -2878,6 +2904,18 @@ function generateUnifiedOrderMessage(target = 'guest') {
     state.foodOrder.phone = phone;
     state.reservation.phone = phone;
   }
+
+  // استخراج توضیحات و ملاحظات خاص مهمان
+  const liveFoodNotes = document.getElementById("food-notes")?.value.trim();
+  const liveResNotes = document.getElementById("res-notes")?.value.trim();
+  const rawNotes = liveFoodNotes || liveResNotes || state.foodOrder.notes || state.reservation.notes || "";
+  if (rawNotes) {
+    state.foodOrder.notes = rawNotes;
+    state.reservation.notes = rawNotes;
+  }
+  const notesLine = rawNotes ? `\n📝 توضیحات و ملاحظات مهمان:\n${rawNotes}` : "";
+  const notesLineInline = rawNotes ? `\n\n📝 توضیحات و ملاحظات مهمان:\n${rawNotes}` : "";
+
   const checkIn = state.reservation.checkInDate;
   const checkOut = state.reservation.checkOutDate || addDaysToDateString(checkIn, state.reservation.nights);
   const nights = state.reservation.nights;
@@ -2891,10 +2929,10 @@ function generateUnifiedOrderMessage(target = 'guest') {
   const checkOutJalali = getJalaliDetails(checkOut);
   const stayDaysText = `${checkInJalali.weekday} تا ${checkOutJalali.weekday}`;
 
-  // بررسی وجود آیدی تلگرام مهمان
+  // بررسی وجود آیدی تلگرام مهمان (فقط آیدی بدون آدرس کامل تلگرام طبق درخواست)
   const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
   const telegramUsername = tgUser?.username || "";
-  const telegramLine = telegramUsername ? `\n💬 آیدی تلگرام مهمان: @${telegramUsername} (https://t.me/${telegramUsername})` : "";
+  const telegramLine = telegramUsername ? `\n💬 آیدی تلگرام مهمان: @${telegramUsername}` : "";
 
   let roomsDetailText = "";
 
@@ -3019,7 +3057,7 @@ ${roomsSummaryGroup}
 • تاریخ و روز خروج: ${checkOutJalali.fullString}
 • مدت اقامت: ${formatPersianNumber(nights)} شب (${stayDaysText})
 • تعداد کل نفرات: ${formatPersianNumber(guests)} نفر (همراه با صبحانه)
-${stayPriceGroup}${foodSectionGroup}
+${stayPriceGroup}${foodSectionGroup}${notesLineInline}
 
 💰 جمع کل برآورد: ${formatToman(grandTotal)}
 #درخواست_رزرو`;
@@ -3055,7 +3093,7 @@ ${stayPriceLines}
 برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه‌شنبه) ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۱۰ درصد تخفیف در شب دوم در نظر گرفته می‌شود.
 ${discountStatusNote}
 
-${foodSectionText}
+${foodSectionText}${notesLineInline}
 
 💰 جمع کل برآورد نهایی: ${formatToman(grandTotal)}
 
@@ -3071,7 +3109,7 @@ ${foodSectionText}
 📞 تماس: ${phone}${telegramLine}
 ⏰ زمان ثبت: ${nowJalaliString}
 
-${foodSectionText}
+${foodSectionText}${notesLineInline}
 
 💰 برآورد کل سفارش: ${formatToman(foodTotal)}
 #سفارش_غذا`;
@@ -3083,7 +3121,7 @@ ${foodSectionText}
 📞 تماس: ${phone}${telegramLine}
 ⏰ زمان ثبت درخواست: ${nowJalaliString}
 
-${foodSectionText}
+${foodSectionText}${notesLineInline}
 
 💰 برآورد کل سفارش: ${formatToman(foodTotal)}
 
@@ -4619,7 +4657,18 @@ function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
     if (previewFoodCard) previewFoodCard.style.display = "none";
   }
 
-  // ۵. جمع کل برآورد
+  // ۵. توضیحات و ملاحظات خاص مهمان
+  const previewNotesCard = document.getElementById("preview-notes-card");
+  const previewNotesText = document.getElementById("preview-notes-text");
+  const guestNotes = state.reservation.notes || state.foodOrder.notes || document.getElementById("res-notes")?.value.trim() || document.getElementById("food-notes")?.value.trim() || "";
+  if (guestNotes) {
+    if (previewNotesCard) previewNotesCard.style.display = "block";
+    if (previewNotesText) previewNotesText.textContent = guestNotes;
+  } else {
+    if (previewNotesCard) previewNotesCard.style.display = "none";
+  }
+
+  // ۶. جمع کل برآورد
   const previewGrandTotal = document.getElementById("preview-grand-total");
   const totals = calculateCurrentTotals();
   if (previewGrandTotal) {

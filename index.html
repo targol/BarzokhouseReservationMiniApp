@@ -31,8 +31,8 @@
   <body>
     <div class="app-container" id="app-container">
       
-      <!-- هدر و هویت بصری خانه برزک -->
-      <header class="app-header" id="app-header">
+      <!-- هدر و هویت بصری خانه برزک (کلیک روی آن به صفحه اول بازمی‌گردد) -->
+      <header class="app-header" id="app-header" onclick="navigateTo('screen-home')" role="button" tabindex="0" title="بازگشت به صفحه اول خانه برزک" aria-label="خانه برزک - بازگشت به صفحه اصلی">
         <div class="brand-bar">
           <img src="assets/images/logo.png" alt="اقامتگاه بومگردی خانه برزک" class="brand-logo" id="header-brand-logo" onerror="this.onerror=null; this.src='logo.png';" />
           <div class="brand-meta">
@@ -66,16 +66,18 @@
           <!-- ردیف اول: دو ستون شاخص و متمایز (اتاق‌ها و خوراک‌ها) -->
           <div class="menu-card pillar-card" id="menu-btn-rooms" onclick="navigateTo('screen-rooms')" role="button" tabindex="0">
             <div class="menu-card-icon">🏠</div>
-            <h4 class="menu-card-title">اتاق‌ها</h4>
-            <p class="menu-card-desc">مشاهده و انتخاب اتاق‌ها</p>
-            <span class="pillar-tag">رزرو اقامت ←</span>
+            <div class="menu-card-content">
+              <h4 class="menu-card-title">اتاق‌ها</h4>
+              <span class="pillar-tag">رزرو اقامت ←</span>
+            </div>
           </div>
 
           <div class="menu-card pillar-card" id="menu-btn-food" onclick="navigateTo('screen-food')" role="button" tabindex="0">
             <div class="menu-card-icon">🍲</div>
-            <h4 class="menu-card-title">خوراک‌ها</h4>
-            <p class="menu-card-desc">غذاهای محلی و سنتی</p>
-            <span class="pillar-tag">منو و سفارش ←</span>
+            <div class="menu-card-content">
+              <h4 class="menu-card-title">خوراک‌ها</h4>
+              <span class="pillar-tag">سفارش غذا ←</span>
+            </div>
           </div>
 
           <!-- ردیف دوم: نشانی و نقشه / آب و هوا -->
@@ -384,6 +386,15 @@
               <span>جمع کل برآورد:</span>
               <span id="res-summary-total">۲,۶۰۰,۰۰۰ تومان</span>
             </div>
+          </div>
+
+          <!-- کادر توضیحات و ملاحظات خاص مهمان قبل از ارسال رزرو -->
+          <div class="form-group" style="margin-top: 16px; margin-bottom: 14px;">
+            <label for="res-notes" class="form-label" style="display: flex; align-items: center; justify-content: space-between;">
+              <span>📝 توضیحات و ملاحظات خاص مهمان (اختیاری):</span>
+              <span style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">رژیم غذایی، ساعت رسیدن یا نیاز ویژه</span>
+            </label>
+            <textarea id="res-notes" class="form-input" rows="3" placeholder="اگر ملاحظه، رژیم غذایی، نیاز ویژه یا هماهنگی خاصی دارید اینجا بنویسید..." oninput="handleGuestNotesSync(this.value)" style="resize: vertical; min-height: 64px; line-height: 1.6; font-size: 13px;"></textarea>
           </div>
 
           <!-- تاکید بر عدم پرداخت و پیش‌نویس بودن رزرو -->
@@ -844,6 +855,15 @@
           <!-- خلاصه سفارش غذا -->
           <div class="estimate-box" id="food-order-summary"></div>
 
+          <!-- کادر توضیحات و ملاحظات خاص مهمان قبل از ارسال سفارش غذا -->
+          <div class="form-group" style="margin-top: 14px; margin-bottom: 8px;">
+            <label for="food-notes" class="form-label" style="display: flex; align-items: center; justify-content: space-between;">
+              <span>📝 توضیحات و ملاحظات خاص (اختیاری):</span>
+              <span style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">حساسیت غذایی، نحوه سرو یا زمان‌بندی</span>
+            </label>
+            <textarea id="food-notes" class="form-input" rows="2" placeholder="اگر ملاحظه، رژیم خاص یا ساعت تحویل مد نظرتان است بنویسید..." oninput="handleGuestNotesSync(this.value)" style="resize: vertical; min-height: 56px; line-height: 1.6; font-size: 13px;"></textarea>
+          </div>
+
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
             <button type="submit" class="btn btn-primary" id="btn-submit-food-order" style="font-size: 14px; font-weight: 800; padding: 12px;">
               ارسال درخواست غذا و اقامت ←
@@ -973,6 +993,14 @@
             🍲 سفارش غذاهای سنتی:
           </div>
           <div id="preview-food-list" style="font-size: 12px; color: var(--brand-text); line-height: 1.6;"></div>
+        </div>
+
+        <!-- کارت توضیحات و ملاحظات مهمان در صورت وجود -->
+        <div class="preview-summary-card" id="preview-notes-card" style="display: none; background: #fffcf6; border-color: #e8d7b8;">
+          <div style="font-size: 12px; font-weight: 800; color: #8c5d0a; margin-bottom: 4px;">
+            📝 ملاحظات و توضیحات شما:
+          </div>
+          <div id="preview-notes-text" style="font-size: 12px; color: var(--brand-text); line-height: 1.6; white-space: pre-line;"></div>
         </div>
 
         <!-- کادر جمع کل برآورد و تخفیف -->

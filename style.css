@@ -114,7 +114,7 @@ body {
 
 /* Header & Identity */
 .app-header {
-  padding: 16px 18px 12px;
+  padding: 14px 16px 10px;
   background: linear-gradient(180deg, var(--brand-surface-subtle) 0%, var(--tg-bg) 100%);
   border-bottom: 1px solid var(--brand-border);
   position: sticky;
@@ -122,6 +122,14 @@ body {
   z-index: 40;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.app-header:hover, .app-header:active {
+  background: linear-gradient(180deg, #fffbf2 0%, var(--tg-bg) 100%);
+  border-bottom-color: var(--brand-mustard);
 }
 
 .brand-bar {
@@ -131,8 +139,8 @@ body {
 }
 
 .brand-logo {
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
   flex-shrink: 0;
   background: transparent;
@@ -145,21 +153,21 @@ body {
 }
 
 .brand-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--brand-green);
   line-height: 1.3;
 }
 
 .brand-subtitle {
-  font-size: 12.5px;
+  font-size: 12px;
   color: #8c5d0a;
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .brand-location {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--brand-text-muted);
   font-weight: 500;
   margin-top: 1px;
@@ -312,20 +320,20 @@ body.has-floating-bar .screen {
 .menu-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 .menu-card {
   background: var(--brand-surface);
   border: 1px solid var(--brand-border);
   border-radius: var(--radius-md);
-  padding: 16px 14px;
+  padding: 10px 12px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 8px;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
   text-align: right;
   text-decoration: none;
   color: inherit;
@@ -333,7 +341,7 @@ body.has-floating-bar .screen {
   transition: all var(--transition-fast);
   box-shadow: var(--shadow-sm);
   position: relative;
-  min-height: 86px;
+  min-height: 48px;
 }
 
 .menu-card:hover, .menu-card:active {
@@ -346,10 +354,13 @@ body.has-floating-bar .screen {
 .menu-card.pillar-card {
   background: linear-gradient(155deg, #ffffff 0%, #fdf8ee 100%);
   border: 1.5px solid #d49e3d;
-  box-shadow: 0 3px 12px rgba(189, 137, 62, 0.12);
+  box-shadow: 0 2px 10px rgba(189, 137, 62, 0.12);
   position: relative;
   overflow: hidden;
-  padding: 14px 12px;
+  padding: 11px 12px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
 .menu-card.pillar-card::before {
@@ -364,30 +375,33 @@ body.has-floating-bar .screen {
 
 .menu-card.pillar-card:hover, .menu-card.pillar-card:active {
   border-color: #bd893e;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(189, 137, 62, 0.22);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(189, 137, 62, 0.2);
 }
 
 .menu-card.pillar-card .menu-card-icon {
-  font-size: 28px;
-  margin-bottom: 4px;
+  font-size: 24px;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .menu-card.pillar-card .menu-card-title {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 800;
   color: var(--brand-green);
+  line-height: 1.2;
 }
 
 .menu-card.pillar-card .pillar-tag {
   display: inline-block;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   color: #8c5d0a;
   background: rgba(189, 137, 62, 0.12);
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: 4px;
-  margin-top: 4px;
+  margin-top: 3px;
+  white-space: nowrap;
 }
 
 .menu-card.featured {
@@ -397,38 +411,46 @@ body.has-floating-bar .screen {
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  padding: 16px 18px;
-  min-height: 80px;
+  padding: 12px 14px;
+  min-height: 56px;
 }
 
 .menu-card.featured .menu-card-icon {
   margin-bottom: 0;
-  font-size: 32px;
+  font-size: 26px;
 }
 
 .menu-card.featured .menu-card-info {
   flex: 1;
-  margin-right: 14px;
+  margin-right: 10px;
 }
 
 .menu-card-icon {
-  font-size: 26px;
+  font-size: 22px;
   line-height: 1;
-  margin-bottom: 2px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .menu-card-title {
-  font-size: 14.5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--brand-green);
   margin-bottom: 0;
-  line-height: 1.35;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-card-desc {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--brand-text-muted);
-  line-height: 1.4;
+  line-height: 1.3;
+  margin-top: 1px;
 }
 
 /* Rooms List Grid */

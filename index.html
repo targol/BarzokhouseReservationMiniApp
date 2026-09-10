@@ -27,7 +27,7 @@
     <link rel="apple-touch-icon" href="./assets/images/logo.png" />
     <link rel="shortcut icon" href="./favicon.ico" />
 
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./style.css?v=2.6.0" />
   </head>
   <body>
     <div class="app-container" id="app-container">
@@ -795,16 +795,27 @@
           <!-- کارت نمایش وعده‌های ثبت‌شده (چند روز / چند وعده) -->
           <div id="scheduled-meals-container" style="margin-bottom: 16px;"></div>
 
+          <!-- بخش پیوند و انتخاب اقامت در صفحه غذا -->
+          <div class="unified-stay-card" id="unified-stay-card">
+            <div class="unified-stay-header">
+              <span class="unified-stay-title">🏡 رزرو اقامت و اتاق در خانه برزک (اختیاری)</span>
+              <span class="badge-unified" id="unified-stay-badge">بدون اقامت</span>
+            </div>
+            <div id="unified-stay-content">
+              <!-- با جاوااسکریپت پر می‌شود -->
+            </div>
+          </div>
+
           <!-- خلاصه سفارش غذا -->
           <div class="estimate-box" id="food-order-summary"></div>
 
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
-            <button type="submit" class="btn btn-primary" id="btn-submit-food-order">
+            <button type="submit" class="btn btn-primary" id="btn-submit-food-order" style="font-size: 14px; font-weight: 800; padding: 12px;">
               ارسال درخواست غذا و اقامت ←
             </button>
 
-            <button type="button" class="btn btn-outline" id="btn-save-food-return" onclick="saveFoodAndReturnToReservation()">
-              ذخیره و بازگشت به رزرو اقامت
+            <button type="button" class="btn btn-outline" id="btn-save-food-return" onclick="saveFoodAndReturnToReservation()" style="display: none; font-size: 13px; padding: 10px;">
+              💾 ذخیره غذاها و بازگشت به رزرو اقامت
             </button>
           </div>
         </form>
@@ -1056,6 +1067,6 @@
     <!-- اعلان معلق (Toast) -->
     <div class="toast" id="app-toast"></div>
 
-    <script type="module" src="./app.js"></script>
+    <script type="module" src="./app.js?v=2.6.0"></script>
   </body>
 </html>

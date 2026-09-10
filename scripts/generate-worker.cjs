@@ -7,10 +7,10 @@ const css = fs.readFileSync(path.join(__dirname, '../style.css'), 'utf8');
 const js = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
 
 // 2. Inline style.css into index.html
-html = html.replace(/<link[^>]*href=["'][^"']*style\.css["'][^>]*>/i, `<style>\n${css}\n</style>`);
+html = html.replace(/<link[^>]*href=["'][^"']*style\.css[^"']*["'][^>]*>/i, `<style>\n${css}\n</style>`);
 
 // 3. Inline app.js into index.html
-html = html.replace(/<script[^>]*src=["'][^"']*app\.js["'][^>]*><\/script>/i, `<script>\n${js}\n</script>`);
+html = html.replace(/<script[^>]*src=["'][^"']*app\.js[^"']*["'][^>]*><\/script>/i, `<script>\n${js}\n</script>`);
 
 // 4. Encode to Base64
 const base64Html = Buffer.from(html, 'utf8').toString('base64');

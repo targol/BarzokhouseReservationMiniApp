@@ -2255,8 +2255,9 @@ function updateReservationCalculations() {
       foodBadge.style.color = "var(--brand-teal-dark)";
 
       let mealsSummaryHtml = "";
-      if (scheduled.length > 0) {
-        mealsSummaryHtml += scheduled.map((m, idx) => {
+      const sortedScheduled = sortScheduledMealsChronologically(scheduled);
+      if (sortedScheduled.length > 0) {
+        mealsSummaryHtml += sortedScheduled.map((m, idx) => {
           const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
           const dishesNames = m.dishes.map(d => `${d.name} (${formatPersianNumber(d.quantity)} پرس)`).join("، ");
           const mJalali = getJalaliDetails(m.date);
@@ -2399,6 +2400,26 @@ function navigateToFoodFromReservation() {
   triggerHaptic('light');
   syncReservationToFoodInputs();
   navigateTo("screen-food", "screen-reservation");
+}
+
+// هدایت کاربر از صفحه غذا به فرم رزرو اقامت (جهت افزودن یا تغییر اتاق)
+function navigateToReservationFromFood() {
+  triggerHaptic('light');
+  syncFoodToReservationInputs();
+  state.foodReturnToReservation = true;
+  navigateTo("screen-reservation", "screen-food");
+}
+
+// حذف اقامت از صفحه غذا (تبدیل به سفارش فقط غذا)
+function clearStayFromFoodOrder() {
+  triggerHaptic('light');
+  state.reservation.selectedRoomIds = [];
+  state.selectedRoomId = null;
+  state.foodReturnToReservation = false;
+  renderFoodSection();
+  updateFoodOrderSummary();
+  updateReservationCalculations();
+  showToast("رزرو اقامت از این سفارش حذف شد (سفارش فقط غذا).");
 }
 
 // ذخیره انتخاب غذا و بازگشت به فرم اقامت
@@ -2555,11 +2576,14 @@ function generateUnifiedOrderMessage() {
     });
   }
 
+  // مرتب‌سازی تقویمی و زمانی وعده‌ها: به ترتیب تاریخ و سپس صبحانه، ناهار، شام
+  const sortedScheduled = sortScheduledMealsChronologically(scheduled);
+
   let foodTotal = 0;
   let foodSectionText = "";
 
-  if (scheduled.length > 0) {
-    const mealsTextBlocks = scheduled.map((m, idx) => {
+  if (sortedScheduled.length > 0) {
+    const mealsTextBlocks = sortedScheduled.map((m, idx) => {
       foodTotal += m.subtotal;
       const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
       const mJalali = getJalaliDetails(m.date);
@@ -2569,7 +2593,7 @@ ${dishesLines}
     جمع وعده: ${formatToman(m.subtotal)}`;
     }).join("\n\n");
 
-    foodSectionText = `🍽️ برنامه وعده‌های غذایی انتخابی (${formatPersianNumber(scheduled.length)} وعده):
+    foodSectionText = `🍽️ برنامه وعده‌های غذایی انتخابی (${formatPersianNumber(sortedScheduled.length)} وعده):
 ${mealsTextBlocks}
 • برآورد کل خوراک و پذیرایی: ${formatToman(foodTotal)}`;
   } else {
@@ -2887,16 +2911,21 @@ function renderFoodSection() {
   const banner = document.getElementById("food-linked-stay-banner");
   const bannerText = document.getElementById("food-linked-stay-text");
   const saveReturnBtn = document.getElementById("btn-save-food-return");
-  const room = ROOMS.find(r => r.id === state.selectedRoomId) || ROOMS[0];
+  const submitFoodBtn = document.getElementById("btn-submit-food-order");
+  
+  const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
 
-  if (state.foodReturnToReservation) {
+  // بنر و دکمه بازگشت بر اساس وجود اقامت در سفارش
+  if (selectedRooms.length > 0) {
     if (banner && bannerText) {
       banner.style.display = "flex";
-      const inJalali = getJalaliDetails(state.reservation.checkInDate);
-      bannerText.textContent = `🏡 در حال انتخاب غذای محلی همراه با اقامت در اتاق «${room.name}» (ورود: ${inJalali.fullString})`;
+      const inJalali = getJalaliDetails(state.reservation.checkInDate || getTomorrowFormattedDate());
+      const roomNames = selectedRooms.map(r => r.name).join("، ");
+      bannerText.textContent = `🏡 در حال انتخاب غذای محلی همراه با اقامت در «اتاق ${roomNames}» (ورود: ${inJalali.fullString})`;
     }
     if (saveReturnBtn) {
       saveReturnBtn.style.display = "block";
+      saveReturnBtn.innerHTML = "💾 ذخیره غذاها و بازگشت به رزرو اقامت";
     }
   } else {
     if (banner) {
@@ -2904,6 +2933,70 @@ function renderFoodSection() {
     }
     if (saveReturnBtn) {
       saveReturnBtn.style.display = "none";
+    }
+  }
+
+  // به‌روزرسانی کارت تعاملی اقامت در صفحه غذا (امکان انتخاب اقامت از صفحه غذا)
+  const stayCard = document.getElementById("unified-stay-card");
+  const stayBadge = document.getElementById("unified-stay-badge");
+  const stayContent = document.getElementById("unified-stay-content");
+
+  if (stayCard && stayBadge && stayContent) {
+    if (selectedRooms.length === 0) {
+      stayCard.classList.remove("has-stay");
+      stayBadge.textContent = "بدون اقامت";
+      stayBadge.style.background = "var(--brand-surface-subtle)";
+      stayBadge.style.color = "var(--brand-text-muted)";
+      stayContent.innerHTML = `
+        <p style="font-size: 12.5px; color: var(--brand-text-muted); line-height: 1.6; margin-bottom: 10px;">
+          اگر تمایل دارید علاوه بر غذا، در خانه برزک اقامت داشته باشید، اتاق مورد نظرتان را انتخاب کنید تا هزینه اقامت، تخفیف‌ها و غذا به‌صورت یکپارچه با هم هماهنگ شوند.
+        </p>
+        <button type="button" class="btn btn-outline" style="font-size: 13px; padding: 8px 14px; width: 100%; font-family: inherit;" onclick="navigateToReservationFromFood()">
+          ➕ انتخاب اتاق و رزرو اقامت
+        </button>
+      `;
+      if (submitFoodBtn) {
+        submitFoodBtn.textContent = "ارسال درخواست سفارش غذا ←";
+      }
+    } else {
+      stayCard.classList.add("has-stay");
+      stayBadge.textContent = `دارای اقامت (${formatPersianNumber(selectedRooms.length)} اتاق)`;
+      stayBadge.style.background = "var(--brand-teal-subtle)";
+      stayBadge.style.color = "var(--brand-teal-dark)";
+
+      const checkInVal = state.reservation.checkInDate || getTomorrowFormattedDate();
+      const inJalali = getJalaliDetails(checkInVal);
+      const nightsVal = state.reservation.nights || 1;
+      const guestsVal = state.reservation.guests || 2;
+      const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
+      const avgPrice = Math.round(sumPrices / selectedRooms.length);
+      const discountData = calculateStayDiscount(checkInVal, nightsVal, guestsVal, avgPrice);
+      const roomNames = selectedRooms.map(r => `اتاق ${r.name}`).join("، ");
+
+      stayContent.innerHTML = `
+        <div style="font-size: 12.5px; line-height: 1.7; margin-bottom: 10px; background: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--brand-border);">
+          <div style="font-weight: 700; color: var(--brand-teal-dark); margin-bottom: 4px;">
+            🏡 ${roomNames}
+          </div>
+          <div style="color: var(--brand-text-muted);">
+            📅 ورود: ${inJalali.fullString} (${formatPersianNumber(nightsVal)} شب) • ${formatPersianNumber(guestsVal)} نفر مهمان
+          </div>
+          <div style="font-weight: 700; color: var(--brand-green); margin-top: 4px;">
+            برآورد اقامت با تخفیف: ${formatToman(discountData.finalRoomTotal)}
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 7px 12px; flex: 1; font-family: inherit;" onclick="navigateToReservationFromFood()">
+            ✏️ تغییر یا افزودن اتاق
+          </button>
+          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 7px 10px; border-color: #fecaca; background: #fef2f2; color: #b91c1c; font-family: inherit;" onclick="clearStayFromFoodOrder()">
+            حذف اقامت
+          </button>
+        </div>
+      `;
+      if (submitFoodBtn) {
+        submitFoodBtn.textContent = "ارسال درخواست یکپارچه اقامت و غذا ←";
+      }
     }
   }
 
@@ -3322,6 +3415,28 @@ function resolveGroupConflictIncreaseToAboveTen(newDishIdToAdd) {
   }
 }
 
+// ترتیب منطقی وعده‌ها در طول شبانه‌روز
+const MEAL_TYPE_SORT_ORDER = {
+  'صبحانه': 1,
+  'ناهار': 2,
+  'شام': 3
+};
+
+// مرتب‌سازی تقویمی و زمانی وعده‌ها: اول تاریخ و سپس صبحانه، ناهار و شام
+function sortScheduledMealsChronologically(meals) {
+  if (!meals || !Array.isArray(meals)) return [];
+  return [...meals].sort((a, b) => {
+    const dateA = a.date || "";
+    const dateB = b.date || "";
+    if (dateA !== dateB) {
+      return dateA.localeCompare(dateB);
+    }
+    const orderA = MEAL_TYPE_SORT_ORDER[a.mealType] || 99;
+    const orderB = MEAL_TYPE_SORT_ORDER[b.mealType] || 99;
+    return orderA - orderB;
+  });
+}
+
 // افزودن وعده جاری به لیست برنامه چند روزه/چند وعده‌ای
 function addCurrentMealToSchedule() {
   triggerHaptic('medium');
@@ -3387,6 +3502,7 @@ function executeAddCurrentMealToSchedule() {
     state.foodOrder.scheduledMeals = [];
   }
   state.foodOrder.scheduledMeals.push(scheduledItem);
+  state.foodOrder.scheduledMeals = sortScheduledMealsChronologically(state.foodOrder.scheduledMeals);
 
   // خالی کردن غذاهای وعده جاری جهت تنظیم وعده بعدی
   state.foodOrder.selectedDishes = {};
@@ -3434,7 +3550,7 @@ function renderScheduledMeals() {
   const container = document.getElementById("scheduled-meals-container");
   if (!container) return;
 
-  const scheduled = state.foodOrder.scheduledMeals || [];
+  const scheduled = sortScheduledMealsChronologically(state.foodOrder.scheduledMeals || []);
   if (scheduled.length === 0) {
     container.innerHTML = "";
     return;
@@ -3459,7 +3575,8 @@ function renderScheduledMeals() {
             ${icon} وعده ${formatPersianNumber(index + 1)}: ${m.mealType} (${mJalali.fullString})
           </span>
           <button type="button" class="scheduled-meal-delete-btn" onclick="removeScheduledMeal('${m.id}')" title="حذف این وعده">
-            🗑️ حذف
+            <span>🗑️</span>
+            <span>حذف</span>
           </button>
         </div>
         ${dishesList}
@@ -3567,13 +3684,14 @@ function updateFoodOrderSummary() {
   const summaryBox = document.getElementById("food-order-summary");
   if (!summaryBox) return;
 
-  const scheduled = state.foodOrder.scheduledMeals || [];
+  const scheduled = sortScheduledMealsChronologically(state.foodOrder.scheduledMeals || []);
   const currentSelectedIds = Object.keys(state.foodOrder.selectedDishes);
+  const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
 
-  if (scheduled.length === 0 && currentSelectedIds.length === 0) {
+  if (scheduled.length === 0 && currentSelectedIds.length === 0 && selectedRooms.length === 0) {
     summaryBox.innerHTML = `
       <div style="font-size: 12.5px; color: var(--brand-text-muted); text-align: center;">
-        هنوز غذایی انتخاب نشده است. از منوی بالا غذاهای محلی یا صبحانه را انتخاب کنید و برای ثبت چند روز یا چند وعده، دکمه «ثبت این وعده» را بزنید.
+        هنوز غذا یا اقامتی انتخاب نشده است. از منوی بالا غذاهای محلی را انتخاب فرمایید و در صورت تمایل اقامت را نیز اضافه کنید.
       </div>
     `;
     return;
@@ -3582,14 +3700,34 @@ function updateFoodOrderSummary() {
   let grandTotal = 0;
   let summaryRows = "";
 
-  // ۱. وعده‌های ثبت‌شده قبلی
+  // ۱. اقامت (در صورت انتخاب اتاق از صفحه غذا یا اقامت)
+  if (selectedRooms.length > 0) {
+    const checkInVal = state.reservation.checkInDate || getTomorrowFormattedDate();
+    const nightsVal = state.reservation.nights || 1;
+    const guestsVal = state.reservation.guests || 2;
+    const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
+    const avgPrice = Math.round(sumPrices / selectedRooms.length);
+    const discountData = calculateStayDiscount(checkInVal, nightsVal, guestsVal, avgPrice);
+    const roomCost = discountData.finalRoomTotal;
+    grandTotal += roomCost;
+
+    summaryRows += `
+      <div class="estimate-row" style="color: var(--brand-teal-dark); font-weight: 700;">
+        <span>🏡 اقامت خانه برزک (${formatPersianNumber(selectedRooms.length)} اتاق، ${formatPersianNumber(nightsVal)} شب):</span>
+        <span>${formatToman(roomCost)}</span>
+      </div>
+    `;
+  }
+
+  // ۲. وعده‌های ثبت‌شده قبلی (به ترتیب تاریخ و زمان)
   if (scheduled.length > 0) {
     scheduled.forEach((m, idx) => {
       grandTotal += m.subtotal;
       const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
+      const mJalali = getJalaliDetails(m.date);
       summaryRows += `
         <div class="estimate-row">
-          <span>${icon} وعده ${formatPersianNumber(idx + 1)} (${m.mealType} ${m.dayOfWeek}):</span>
+          <span>${icon} وعده ${formatPersianNumber(idx + 1)} (${m.mealType} ${mJalali.weekday} ${mJalali.dateOnlyString}):</span>
           <span>${formatToman(m.subtotal)}</span>
         </div>
       `;
@@ -4460,6 +4598,8 @@ window.pickQuickShamsiDate = pickQuickShamsiDate;
 window.changeRoomCount = changeRoomCount;
 window.changeRoomGuests = changeRoomGuests;
 window.navigateToFoodFromReservation = navigateToFoodFromReservation;
+window.navigateToReservationFromFood = navigateToReservationFromFood;
+window.clearStayFromFoodOrder = clearStayFromFoodOrder;
 window.clearFoodFromReservation = clearFoodFromReservation;
 window.removeScheduledMeal = removeScheduledMeal;
 window.addCurrentMealToSchedule = addCurrentMealToSchedule;

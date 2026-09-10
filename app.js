@@ -967,9 +967,18 @@ function openExternalUrl(url) {
 // ۶. مدیریت Navigation و بازگشت یکپارچه بر پایه سلسله‌مراتب صفحات (Hierarchical SPA Navigation)
 // مطابق دستور کاربر: دکمه بازگشت بر اساس ساختار درختی مینی‌اپ عمل می‌کند، نه گردش تاریخی تصادفی
 const SCREEN_HIERARCHY = {
-  "screen-rooms": () => "screen-home",
+  "screen-rooms": () => {
+    if (state.roomSelectionSource === "food") {
+      state.roomSelectionSource = null;
+      return "screen-food";
+    }
+    return "screen-home";
+  },
   "screen-room-detail": () => "screen-rooms",
   "screen-reservation": () => {
+    if (state.reservationSourceScreen === "screen-food") {
+      return "screen-food";
+    }
     if (state.reservationSourceScreen === "screen-room-detail") {
       return "screen-room-detail";
     }
@@ -994,11 +1003,21 @@ function updateScreenStackFor(screenId) {
   if (screenId === "screen-home") {
     state.screenStack = ["screen-home"];
   } else if (screenId === "screen-rooms") {
-    state.screenStack = ["screen-home", "screen-rooms"];
+    if (state.roomSelectionSource === "food") {
+      state.screenStack = ["screen-home", "screen-food", "screen-rooms"];
+    } else {
+      state.screenStack = ["screen-home", "screen-rooms"];
+    }
   } else if (screenId === "screen-room-detail") {
-    state.screenStack = ["screen-home", "screen-rooms", "screen-room-detail"];
+    if (state.roomSelectionSource === "food") {
+      state.screenStack = ["screen-home", "screen-food", "screen-rooms", "screen-room-detail"];
+    } else {
+      state.screenStack = ["screen-home", "screen-rooms", "screen-room-detail"];
+    }
   } else if (screenId === "screen-reservation") {
-    if (state.reservationSourceScreen === "screen-room-detail") {
+    if (state.reservationSourceScreen === "screen-food") {
+      state.screenStack = ["screen-home", "screen-food", "screen-reservation"];
+    } else if (state.reservationSourceScreen === "screen-room-detail") {
       state.screenStack = ["screen-home", "screen-rooms", "screen-room-detail", "screen-reservation"];
     } else {
       state.screenStack = ["screen-home", "screen-rooms", "screen-reservation"];
@@ -1081,6 +1100,18 @@ function renderCurrentScreen() {
     renderRoomsList();
   } else if (targetId === "screen-food") {
     renderFoodSection();
+  }
+
+  // مدیریت نمایش داک شناور اسکرول در صفحه غذا
+  const foodScrollDock = document.getElementById("food-scroll-nav-dock");
+  if (foodScrollDock) {
+    foodScrollDock.style.display = (targetId === "screen-food") ? "flex" : "none";
+  }
+
+  // مدیریت نمایش بنر بازگشت به غذا در صفحه انتخاب اتاق‌ها
+  const roomsFromFoodBanner = document.getElementById("rooms-from-food-banner");
+  if (roomsFromFoodBanner) {
+    roomsFromFoodBanner.style.display = (targetId === "screen-rooms" && state.roomSelectionSource === "food") ? "flex" : "none";
   }
 
   // مدیریت نمایش یا مخفی‌سازی دکمه Back بومی تلگرام
@@ -1551,7 +1582,7 @@ function selectShamsiCalendarDay(year, month, day, gregorianDateStr) {
   const todayGStr = getTodayFormattedDate();
   const maxDateStr = getMaxCheckInDateString();
 
-  if (shamsiCalTarget === "reservation") {
+  if (shamsiCalTarget === "reservation" || shamsiCalTarget === "food-stay") {
     if (gregorianDateStr < todayGStr) {
       showToast("تاریخ ورود نمی‌تواند قبل از امروز باشد.");
       return;
@@ -1563,8 +1594,10 @@ function selectShamsiCalendarDay(year, month, day, gregorianDateStr) {
     state.reservation.checkInDate = gregorianDateStr;
     state.foodOrder.date = gregorianDateStr;
     updateReservationCalculations();
+    renderFoodSection();
+    updateFoodOrderSummary();
     const jDetails = getJalaliDetails(gregorianDateStr);
-    showToast(`تاریخ ورود: ${jDetails.fullString}`);
+    showToast(`تاریخ ورود اقامت: ${jDetails.fullString}`);
   } else if (shamsiCalTarget === "food") {
     state.foodOrder.date = gregorianDateStr;
     handleFoodDateChange(gregorianDateStr);
@@ -1747,12 +1780,12 @@ function renderRoomsList() {
           </div>
           <div style="display: flex; gap: 8px; margin-top: 10px;">
             ${isSelected ? `
-              <button type="button" class="btn btn-primary" onclick="openReservationScreen()" style="flex: 1; font-size: 13px; padding: 8px 10px;">
-                ✓ در لیست رزرو (تکمیل)
+              <button type="button" class="btn btn-primary" onclick="${state.roomSelectionSource === 'food' ? 'returnToFoodFromRooms()' : 'openReservationScreen()'}" style="flex: 1; font-size: 13px; padding: 8px 10px;">
+                ${state.roomSelectionSource === 'food' ? '✓ انتخاب شده (بازگشت به غذا ↵)' : '✓ در لیست رزرو (تکمیل)'}
               </button>
             ` : `
               <button type="button" class="btn btn-mustard" onclick="selectRoomAndBook('${room.id}')" style="flex: 1; font-size: 13px; padding: 8px 10px;">
-                رزرو اتاق ${room.name} ←
+                ${state.roomSelectionSource === 'food' ? `➕ افزودن به سفارش غذا ←` : `رزرو اتاق ${room.name} ←`}
               </button>
             `}
             <button type="button" class="btn btn-outline" onclick="openRoomDetail('${room.id}')" style="font-size: 12px; padding: 8px 10px; white-space: nowrap;">
@@ -1892,6 +1925,14 @@ function handleRoomDetailBookingClick() {
 
 function startReservationForCurrentRoom() {
   handleRoomDetailBookingClick();
+  if (state.roomSelectionSource === "food") {
+    state.roomSelectionSource = null;
+    renderFoodSection();
+    updateFoodOrderSummary();
+    navigateTo("screen-food");
+    showToast("اتاق با موفقیت به سفارش شما افزوده شد.");
+    return;
+  }
   openReservationScreen();
 }
 
@@ -1928,6 +1969,16 @@ function selectRoomAndBook(roomId) {
   state.floatingBarDismissed = false;
   updateFloatingBookingBar();
   renderRoomsList();
+
+  if (state.roomSelectionSource === "food") {
+    state.roomSelectionSource = null;
+    renderFoodSection();
+    updateFoodOrderSummary();
+    navigateTo("screen-food");
+    showToast(`اتاق «${room.name}» با موفقیت به سفارش شما افزوده شد.`);
+    return;
+  }
+
   openReservationScreen();
 }
 
@@ -2069,7 +2120,9 @@ function dismissFloatingBookingBar(e) {
   state.floatingBarDismissed = true;
   const bar = document.getElementById("floating-booking-bar");
   if (bar) bar.style.display = "none";
-  document.body.classList.remove("has-floating-bar");
+  if (document.body && document.body.classList) {
+    document.body.classList.remove("has-floating-bar");
+  }
 }
 
 function updateFloatingBookingBar() {
@@ -2081,7 +2134,9 @@ function updateFloatingBookingBar() {
 
   if (selectedRooms.length > 0 && currentScreenId !== "screen-reservation" && !state.floatingBarDismissed) {
     bar.style.display = "flex";
-    document.body.classList.add("has-floating-bar");
+    if (document.body && document.body.classList) {
+      document.body.classList.add("has-floating-bar");
+    }
     const count = selectedRooms.length;
     const roomNames = selectedRooms.map(r => r.name).join(" و ");
     const titleEl = document.getElementById("floating-booking-title");
@@ -2094,7 +2149,9 @@ function updateFloatingBookingBar() {
     }
   } else {
     bar.style.display = "none";
-    document.body.classList.remove("has-floating-bar");
+    if (document.body && document.body.classList) {
+      document.body.classList.remove("has-floating-bar");
+    }
   }
 }
 
@@ -2395,24 +2452,198 @@ function changeReservationGuests(delta) {
   updateReservationCalculations();
 }
 
-// هدایت کاربر از فرم اقامت به منوی غذا
-function navigateToFoodFromReservation() {
-  triggerHaptic('light');
-  syncReservationToFoodInputs();
-  navigateTo("screen-food", "screen-reservation");
-}
+// اسکرول نرم به بالا یا پایین صفحه غذا
+function scrollFoodScreen(direction) {
+  try { triggerHaptic('light'); } catch (_) {}
+  
+  if (direction === 'top') {
+    // ۱. اسکرول مستقیم پنجره و روت صفحه
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); } catch (_) { window.scrollTo(0, 0); }
+    if (document.documentElement) {
+      try { document.documentElement.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); } catch (_) {}
+      document.documentElement.scrollTop = 0;
+    }
+    if (document.body) {
+      try { document.body.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); } catch (_) {}
+      document.body.scrollTop = 0;
+    }
+    if (document.scrollingElement) {
+      try { document.scrollingElement.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); } catch (_) {}
+      document.scrollingElement.scrollTop = 0;
+    }
 
-// هدایت کاربر از صفحه غذا به فرم رزرو اقامت (جهت افزودن یا تغییر اتاق)
-function navigateToReservationFromFood() {
-  triggerHaptic('light');
+    // ۲. اسکرول به نقطه لنگر بالای صفحه غذا با scrollIntoView
+    const topAnchor = document.getElementById('food-screen-top-anchor') ||
+                      document.getElementById('food-stay-top-card') ||
+                      document.getElementById('food-linked-stay-banner') ||
+                      document.getElementById('screen-food');
+    if (topAnchor) {
+      try {
+        topAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (_) {
+        try { topAnchor.scrollIntoView(true); } catch (_) {}
+      }
+    }
+  } else {
+    // اسکرول مستقیم به فاکتور و دکمه ارسال سفارش در انتهای صفحه غذا
+    const bottomTarget = document.getElementById('food-order-summary') || 
+                         document.getElementById('btn-submit-food-order') || 
+                         document.getElementById('food-order-form');
+    if (bottomTarget) {
+      try {
+        bottomTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (_) {
+        try { bottomTarget.scrollIntoView(false); } catch (_) {}
+      }
+    } else {
+      const maxScroll = Math.max(document.body?.scrollHeight || 0, document.documentElement?.scrollHeight || 0, 10000);
+      try { window.scrollTo({ top: maxScroll, behavior: 'smooth' }); } catch (_) { window.scrollTo(0, maxScroll); }
+      if (document.documentElement) document.documentElement.scrollTop = maxScroll;
+      if (document.body) document.body.scrollTop = maxScroll;
+    }
+  }
+}
+window.scrollFoodScreen = scrollFoodScreen;
+
+// همگام‌سازی لحظه‌ای نام مهمان بین تمام فرم‌ها و استیت
+function handleGuestNameSync(val) {
+  const cleanVal = (val || "").trim();
+  state.reservation.name = cleanVal;
+  state.foodOrder.name = cleanVal;
+
+  const resName = document.getElementById("res-name");
+  const foodName = document.getElementById("food-name");
+  if (resName && resName.value !== val) resName.value = val;
+  if (foodName && foodName.value !== val) foodName.value = val;
+}
+window.handleGuestNameSync = handleGuestNameSync;
+
+// همگام‌سازی لحظه‌ای شماره تماس بین تمام فرم‌ها و استیت
+function handleGuestPhoneSync(val) {
+  const cleanVal = (val || "").trim();
+  state.reservation.phone = cleanVal;
+  state.foodOrder.phone = cleanVal;
+
+  const resPhone = document.getElementById("res-phone");
+  const foodPhone = document.getElementById("food-phone");
+  if (resPhone && resPhone.value !== val) resPhone.value = val;
+  if (foodPhone && foodPhone.value !== val) foodPhone.value = val;
+}
+window.handleGuestPhoneSync = handleGuestPhoneSync;
+
+// هدایت کاربر از صفحه غذا به لیست اتاق‌ها جهت مشاهده و انتخاب اتاق
+function openRoomsFromFood() {
+  try { triggerHaptic('light'); } catch (_) {}
+  state.roomSelectionSource = "food";
   syncFoodToReservationInputs();
+  navigateTo("screen-rooms", "screen-food");
+}
+window.openRoomsFromFood = openRoomsFromFood;
+
+// هدایت کاربر از صفحه غذا به فرم کامل رزرو اقامت
+function openReservationFromFood() {
+  try { triggerHaptic('light'); } catch (_) {}
+  syncFoodToReservationInputs();
+  state.reservationSourceScreen = "screen-food";
   state.foodReturnToReservation = true;
   navigateTo("screen-reservation", "screen-food");
 }
+window.openReservationFromFood = openReservationFromFood;
+
+// بازگشت از لیست اتاق‌ها به صفحه غذا
+function returnToFoodFromRooms() {
+  try { triggerHaptic('light'); } catch (_) {}
+  state.roomSelectionSource = null;
+  renderFoodSection();
+  updateFoodOrderSummary();
+  navigateTo("screen-food");
+}
+window.returnToFoodFromRooms = returnToFoodFromRooms;
+
+// افزودن سریع اتاق به اقامت مستقیماً از داخل صفحه غذا
+function quickAddRoomToStay(roomId) {
+  try { triggerHaptic('medium'); } catch (_) {}
+  const room = ROOMS.find(r => r.id === roomId);
+  if (!room) return;
+
+  if (!state.reservation.selectedRoomIds) {
+    state.reservation.selectedRoomIds = [];
+  }
+  if (!state.reservation.roomGuests) {
+    state.reservation.roomGuests = {};
+  }
+  if (!state.reservation.roomCounts) {
+    state.reservation.roomCounts = {};
+  }
+
+  if (!state.reservation.selectedRoomIds.includes(roomId)) {
+    state.reservation.selectedRoomIds.push(roomId);
+    state.reservation.roomGuests[roomId] = room.baseCapacity || 2;
+    state.reservation.roomCounts[roomId] = 1;
+    showToast(`اتاق ${room.name} (${formatPersianNumber(state.reservation.roomGuests[roomId])} نفر) به اقامت افزوده شد.`);
+  } else {
+    showToast(`اتاق ${room.name} از قبل در لیست انتخاب‌های شماست.`);
+  }
+
+  state.selectedRoomId = roomId;
+  if (!state.reservation.checkInDate) {
+    state.reservation.checkInDate = state.foodOrder.date || getTomorrowFormattedDate();
+  }
+  syncFoodToReservationInputs();
+  renderFoodSection();
+  renderSelectedRoomsInForm();
+  updateReservationCalculations();
+  updateFoodOrderSummary();
+  updateFloatingBookingBar();
+  renderRoomsList();
+}
+window.quickAddRoomToStay = quickAddRoomToStay;
+
+// تغییر تعداد نفرات یک اتاق از صفحه غذا
+function changeRoomGuestsFromFood(roomId, delta) {
+  changeRoomGuests(roomId, delta);
+  renderFoodSection();
+  updateFoodOrderSummary();
+}
+window.changeRoomGuestsFromFood = changeRoomGuestsFromFood;
+
+// حذف یک اتاق مشخص از اقامت در صفحه غذا
+function removeRoomFromFoodOrder(roomId) {
+  removeRoomFromReservation(roomId);
+  renderFoodSection();
+  updateFoodOrderSummary();
+}
+window.removeRoomFromFoodOrder = removeRoomFromFoodOrder;
+
+// تغییر تعداد شب‌های اقامت از صفحه غذا
+function changeStayNightsFromFood(delta) {
+  changeReservationNights(delta);
+  renderFoodSection();
+  updateFoodOrderSummary();
+}
+window.changeStayNightsFromFood = changeStayNightsFromFood;
+
+// هدایت کاربر از فرم اقامت به منوی غذا
+function navigateToFoodFromReservation() {
+  try { triggerHaptic('light'); } catch (_) {}
+  syncReservationToFoodInputs();
+  navigateTo("screen-food", "screen-reservation");
+}
+window.navigateToFoodFromReservation = navigateToFoodFromReservation;
+
+// هدایت کاربر از صفحه غذا به فرم رزرو اقامت (جهت افزودن یا تغییر اتاق)
+function navigateToReservationFromFood() {
+  try { triggerHaptic('light'); } catch (_) {}
+  syncFoodToReservationInputs();
+  state.reservationSourceScreen = "screen-food";
+  state.foodReturnToReservation = true;
+  navigateTo("screen-reservation", "screen-food");
+}
+window.navigateToReservationFromFood = navigateToReservationFromFood;
 
 // حذف اقامت از صفحه غذا (تبدیل به سفارش فقط غذا)
 function clearStayFromFoodOrder() {
-  triggerHaptic('light');
+  try { triggerHaptic('light'); } catch (_) {}
   state.reservation.selectedRoomIds = [];
   state.selectedRoomId = null;
   state.foodReturnToReservation = false;
@@ -2421,16 +2652,18 @@ function clearStayFromFoodOrder() {
   updateReservationCalculations();
   showToast("رزرو اقامت از این سفارش حذف شد (سفارش فقط غذا).");
 }
+window.clearStayFromFoodOrder = clearStayFromFoodOrder;
 
 // ذخیره انتخاب غذا و بازگشت به فرم اقامت
 function saveFoodAndReturnToReservation() {
-  triggerHaptic('medium');
+  try { triggerHaptic('medium'); } catch (_) {}
   const selectedIds = Object.keys(state.foodOrder.selectedDishes);
   if (selectedIds.length > 1) {
     if (!checkGroupRuleViolation(() => executeSaveFoodAndReturnToReservation())) return;
   }
   executeSaveFoodAndReturnToReservation();
 }
+window.saveFoodAndReturnToReservation = saveFoodAndReturnToReservation;
 
 function executeSaveFoodAndReturnToReservation() {
   syncFoodToReservationInputs();
@@ -2441,61 +2674,54 @@ function executeSaveFoodAndReturnToReservation() {
 
 // حذف سفارش غذا از اقامت
 function clearFoodFromReservation() {
-  triggerHaptic('light');
+  try { triggerHaptic('light'); } catch (_) {}
   state.foodOrder.selectedDishes = {};
   state.foodOrder.scheduledMeals = [];
   updateReservationCalculations();
   renderFoodSection();
   showToast("سفارش غذا از درخواست اقامت حذف شد.");
 }
+window.clearFoodFromReservation = clearFoodFromReservation;
 
 // همگام‌سازی ورودی‌های فرم اقامت با فرم غذا
 function syncReservationToFoodInputs() {
-  const resName = document.getElementById("res-name")?.value.trim() || state.reservation.name;
-  const resPhone = document.getElementById("res-phone")?.value.trim() || state.reservation.phone;
-  const resDate = document.getElementById("res-checkin-date")?.value || state.reservation.checkInDate;
-
-  if (resName) {
-    state.reservation.name = resName;
-    state.foodOrder.name = resName;
-    const foodNameInput = document.getElementById("food-name");
-    if (foodNameInput) foodNameInput.value = resName;
-  }
-  if (resPhone) {
-    state.reservation.phone = resPhone;
-    state.foodOrder.phone = resPhone;
-    const foodPhoneInput = document.getElementById("food-phone");
-    if (foodPhoneInput) foodPhoneInput.value = resPhone;
-  }
-  if (resDate) {
-    state.reservation.checkInDate = resDate;
-    state.foodOrder.date = resDate;
-    const foodDateInput = document.getElementById("food-date");
-    if (foodDateInput) foodDateInput.value = resDate;
-  }
+  syncFoodToReservationInputs();
 }
 
-// همگام‌سازی ورودی‌های فرم غذا با فرم اقامت
+// همگام‌سازی جامع نام، تلفن، تاریخ و اطلاعات بین صفحه غذا و اقامت
 function syncFoodToReservationInputs() {
-  const foodName = document.getElementById("food-name")?.value.trim() || state.foodOrder.name;
-  const foodPhone = document.getElementById("food-phone")?.value.trim() || state.foodOrder.phone;
-  const foodDate = document.getElementById("food-date")?.value || state.foodOrder.date;
+  const liveFoodName = document.getElementById("food-name")?.value.trim();
+  const liveResName = document.getElementById("res-name")?.value.trim();
+  const name = liveFoodName || liveResName || state.foodOrder.name || state.reservation.name || "";
+
+  const liveFoodPhone = document.getElementById("food-phone")?.value.trim();
+  const liveResPhone = document.getElementById("res-phone")?.value.trim();
+  const phone = liveFoodPhone || liveResPhone || state.foodOrder.phone || state.reservation.phone || "";
+
+  const foodDate = document.getElementById("food-date")?.value || state.foodOrder.date || state.reservation.checkInDate;
   const foodMeal = document.getElementById("food-meal")?.value || state.foodOrder.mealType;
 
-  if (foodName) {
-    state.foodOrder.name = foodName;
-    state.reservation.name = foodName;
+  if (name) {
+    state.foodOrder.name = name;
+    state.reservation.name = name;
     const resNameInput = document.getElementById("res-name");
-    if (resNameInput) resNameInput.value = foodName;
+    if (resNameInput && resNameInput.value !== name) resNameInput.value = name;
+    const foodNameInput = document.getElementById("food-name");
+    if (foodNameInput && foodNameInput.value !== name) foodNameInput.value = name;
   }
-  if (foodPhone) {
-    state.foodOrder.phone = foodPhone;
-    state.reservation.phone = foodPhone;
+  if (phone) {
+    state.foodOrder.phone = phone;
+    state.reservation.phone = phone;
     const resPhoneInput = document.getElementById("res-phone");
-    if (resPhoneInput) resPhoneInput.value = foodPhone;
+    if (resPhoneInput && resPhoneInput.value !== phone) resPhoneInput.value = phone;
+    const foodPhoneInput = document.getElementById("food-phone");
+    if (foodPhoneInput && foodPhoneInput.value !== phone) foodPhoneInput.value = phone;
   }
   if (foodDate) {
     state.foodOrder.date = foodDate;
+    if (!state.reservation.checkInDate) {
+      state.reservation.checkInDate = foodDate;
+    }
     try {
       state.foodOrder.dayOfWeek = getJalaliDetails(foodDate).weekday;
     } catch (e) {}
@@ -2511,8 +2737,24 @@ function syncFoodToReservationInputs() {
 function generateUnifiedOrderMessage() {
   const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
 
-  const name = state.reservation.name || state.foodOrder.name || "مهمان گرامی";
-  const phone = state.reservation.phone || state.foodOrder.phone || "";
+  // استخراج نام و شماره با اولویت فیلدهای زنده
+  const liveFoodName = document.getElementById("food-name")?.value.trim();
+  const liveResName = document.getElementById("res-name")?.value.trim();
+  const rawName = liveFoodName || liveResName || state.foodOrder.name || state.reservation.name || "";
+  const name = rawName || "مهمان گرامی";
+
+  const liveFoodPhone = document.getElementById("food-phone")?.value.trim();
+  const liveResPhone = document.getElementById("res-phone")?.value.trim();
+  const phone = liveFoodPhone || liveResPhone || state.foodOrder.phone || state.reservation.phone || "";
+
+  if (rawName) {
+    state.foodOrder.name = rawName;
+    state.reservation.name = rawName;
+  }
+  if (phone) {
+    state.foodOrder.phone = phone;
+    state.reservation.phone = phone;
+  }
   const checkIn = state.reservation.checkInDate;
   const checkOut = state.reservation.checkOutDate || addDaysToDateString(checkIn, state.reservation.nights);
   const nights = state.reservation.nights;
@@ -2907,6 +3149,195 @@ function renderFoodList() {
   }).join("");
 }
 
+/**
+ * تولید ساختار HTML کارت یکپارچه اقامت برای صفحه غذا (مشابه بخش اقامت با امکان انتخاب و ویرایش اتاق)
+ */
+function renderUnifiedStayCardHTML(selectedRooms) {
+  const isSelected = selectedRooms.length > 0;
+  const checkInVal = state.reservation.checkInDate || state.foodOrder.date || getTomorrowFormattedDate();
+  const inJalali = getJalaliDetails(checkInVal);
+  const nightsVal = state.reservation.nights || 1;
+
+  // اتاق‌هایی که هنوز انتخاب نشده‌اند جهت افزودن سریع
+  const unselectedRooms = ROOMS.filter(r => !selectedRooms.some(sr => sr.id === r.id));
+
+  let html = `
+    <div class="unified-stay-header">
+      <span class="unified-stay-title">
+        <span>🏡</span>
+        <span>${isSelected ? `اقامت در خانه برزک (${formatPersianNumber(selectedRooms.length)} اتاق انتخاب شده)` : 'رزرو اقامت و اتاق در خانه برزک (اختیاری)'}</span>
+      </span>
+      <span class="badge-unified" style="${isSelected ? 'background: #e6f4ea; color: #137333; font-weight: 800;' : 'background: var(--brand-surface-subtle); color: var(--brand-text-muted);'}">
+        ${isSelected ? `دارای اقامت (${formatPersianNumber(selectedRooms.length)} اتاق)` : 'بدون اقامت (فقط غذا)'}
+      </span>
+    </div>
+  `;
+
+  if (!isSelected) {
+    html += `
+      <p style="font-size: 12.5px; color: var(--brand-text-muted); line-height: 1.6; margin-bottom: 12px;">
+        اگر مایلید علاوه بر غذا، در اتاق‌های سنتی خانه برزک اقامت داشته باشید، می‌توانید مستقیماً از همین‌جا یا با ورود به صفحه رزرو اقامت، اتاق‌های مد نظر خود را انتخاب و ویرایش فرمایید.
+      </p>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-mustard" style="flex: 1; min-width: 180px; font-size: 13px; font-weight: 800; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;" onclick="openReservationFromFood()">
+          <span>📝 رفتن به صفحه انتخاب اقامت</span>
+          <span>صفحه رزرو ←</span>
+        </button>
+        <button type="button" class="btn btn-outline" style="font-size: 12.5px; font-weight: 700; padding: 10px 14px;" onclick="openRoomsFromFood()">
+          🏠 عکس‌ها و مشخصات ۷ اتاق
+        </button>
+      </div>
+
+      <div style="background: #ffffff; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--brand-border); box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div style="font-size: 13px; font-weight: 800; color: var(--brand-green); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+          <span>⚡ انتخاب مستقیم و سریع اتاق‌های سنتی:</span>
+          <span style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">کلیک جهت انتخاب</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          ${ROOMS.map(r => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: #faf8f5; border: 1px solid #eee8dd; border-radius: 8px;">
+              <div style="text-align: right;">
+                <div style="font-weight: 800; font-size: 13.5px; color: var(--brand-green);">🏠 اتاق ${r.name}</div>
+                <div style="font-size: 11px; color: var(--brand-text-muted); margin-top: 2px;">👥 ${r.shortCapacity || r.capacityDisplay} • ${r.beds}</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #b45309; margin-top: 2px;">${formatToman(r.price)} <small style="font-size: 10px; font-weight: normal;">هر نفر/شب</small></div>
+              </div>
+              <button type="button" class="btn btn-mustard" onclick="quickAddRoomToStay('${r.id}')" style="font-size: 12px; font-weight: 800; padding: 6px 12px; border-radius: 6px; white-space: nowrap;">
+                ➕ انتخاب این اتاق
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    // اقامت انتخاب شده است - نمایش و ویرایش کامل مشابه فرم اقامت
+    const totalGuests = selectedRooms.reduce((sum, r) => {
+      return sum + ((state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2);
+    }, 0);
+    state.reservation.guests = totalGuests;
+
+    const discountData = calculateStayDiscount(checkInVal, nightsVal, totalGuests);
+
+    html += `
+      <!-- نوار ناوبری سریع به صفحه اقامت -->
+      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-mustard" style="flex: 1; min-width: 170px; font-size: 12.5px; font-weight: 800; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center;" onclick="openReservationFromFood()">
+          <span>📝 ویرایش در صفحه رزرو اقامت</span>
+          <span>فرم کامل ←</span>
+        </button>
+        <button type="button" class="btn btn-outline" style="font-size: 12px; font-weight: 700; padding: 9px 12px;" onclick="openRoomsFromFood()">
+          🏠 افزودن اتاق دیگر
+        </button>
+        <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 9px 12px; color: #b91c1c; border-color: #fecaca; background: #fff5f5;" onclick="clearStayFromFoodOrder()">
+          🗑️ فقط غذا (حذف اقامت)
+        </button>
+      </div>
+
+      <!-- لیست اتاق‌های انتخابی با کنترل‌های افزایش/کاهش نفرات و حذف مشابه بخش اقامت -->
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 12.5px; font-weight: 800; color: var(--brand-green); margin-bottom: 8px;">
+          اتاق‌های انتخاب‌شده و کنترل تعداد نفرات:
+        </div>
+        ${selectedRooms.map(room => {
+          const guests = (state.reservation.roomGuests && state.reservation.roomGuests[room.id]) || room.baseCapacity || 2;
+          const costInfo = calculateRoomNightCost(room, guests);
+          const isAtMax = guests >= costInfo.maxCap;
+          const isAtMin = guests <= 1;
+          const isExtra = costInfo.extraGuests > 0;
+
+          return `
+            <div class="selected-room-chip" style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: #ffffff; border: 1px solid var(--brand-border); border-radius: var(--radius-md); margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-weight: 800; font-size: 14px; color: var(--brand-green);">🏠 اتاق ${room.name}</span>
+                  <span style="font-size: 11px; color: var(--brand-text-muted); margin-right: 6px;">(ظرفیت پایه: ${formatPersianNumber(costInfo.baseCap)} نفر${costInfo.extraCap > 0 ? ` + تا ${formatPersianNumber(costInfo.extraCap)} نفر اضافه` : ''})</span>
+                </div>
+                <button type="button" class="selected-room-remove-btn" onclick="removeRoomFromFoodOrder('${room.id}')" title="حذف این اتاق از سفارش" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #fecaca; background: #fff5f5; color: #b91c1c; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">✕</button>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; background: #fbf9f4; border: 1px solid #edd9b8; padding: 8px 12px; border-radius: 8px;">
+                <div>
+                  <span style="font-size: 12.5px; font-weight: 800; color: var(--brand-green);">تعداد نفرات این اتاق:</span>
+                  <span style="font-size: 10.5px; color: var(--brand-text-muted); display: block;">(حداکثر ${formatPersianNumber(costInfo.maxCap)} نفر)</span>
+                </div>
+                <div class="room-booking-counter" style="display: inline-flex; align-items: center; gap: 6px;">
+                  <button type="button" class="room-counter-btn" onclick="changeRoomGuestsFromFood('${room.id}', -1)" title="کاهش نفرات" ${isAtMin ? 'disabled style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e5e5e5; background: #f3f3f3; color: #bbb; font-weight: bold; font-size: 15px; cursor: not-allowed; display: flex; align-items: center; justify-content: center;"' : 'style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;"'}>−</button>
+                  <span style="font-weight: 800; font-size: 14.5px; color: var(--brand-green); min-width: 46px; text-align: center;">${formatPersianNumber(guests)} نفر</span>
+                  <button type="button" class="room-counter-btn" onclick="changeRoomGuestsFromFood('${room.id}', 1)" title="افزایش نفرات" ${isAtMax ? 'disabled style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e5e5e5; background: #f3f3f3; color: #bbb; font-weight: bold; font-size: 15px; cursor: not-allowed; display: flex; align-items: center; justify-content: center;"' : 'style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid #ccc; background: #fff; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;"'}>+</button>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; padding: 2px 4px 0 4px;">
+                <div>
+                  ${isExtra 
+                    ? `<span style="color: #276749; font-weight: 700; background: #edf7ee; padding: 2px 7px; border-radius: 5px; border: 1px solid #c9e8cd;">${formatPersianNumber(costInfo.baseGuests)} نفر پایه + ${formatPersianNumber(costInfo.extraGuests)} نفر اضافه (۱۰٪ تخفیف)</span>`
+                    : `<span style="color: var(--brand-text-muted);">${formatPersianNumber(costInfo.baseGuests)} نفر (ظرفیت پایه با صبحانه)</span>`
+                  }
+                </div>
+                <div style="font-weight: 800; color: var(--brand-green);">
+                  ${formatToman(costInfo.cost)} <small style="font-size: 10.5px; font-weight: normal; color: var(--brand-text-muted);">/ شب</small>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- کنترل‌های تاریخ ورود و مدت اقامت -->
+      <div style="background: #ffffff; border: 1px solid var(--brand-border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: center;">
+          <div>
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--brand-green); margin-bottom: 4px;">📅 تاریخ ورود:</label>
+            <div onclick="openShamsiDatePicker('food-stay')" style="cursor: pointer; background: #faf8f5; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--brand-border); font-size: 12px; font-weight: 700; color: var(--brand-green); display: flex; justify-content: space-between; align-items: center;" title="جهت تغییر تاریخ با تقویم شمسی کلیک کنید">
+              <span>${inJalali.dateOnlyString}</span>
+              <span style="font-size: 10px; color: var(--brand-mustard-dark);">🗓️ ▾</span>
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--brand-green); margin-bottom: 4px;">🌙 مدت اقامت:</label>
+            <div class="stepper" style="margin: 0; width: 100%; height: 34px; background: #faf8f5; padding: 2px 4px;">
+              <button type="button" class="stepper-btn" onclick="changeStayNightsFromFood(-1)" style="width: 26px; height: 26px; font-size: 14px;">-</button>
+              <span class="stepper-val" style="min-width: 40px; font-size: 12px; font-weight: 800;">${formatPersianNumber(nightsVal)} شب</span>
+              <button type="button" class="stepper-btn" onclick="changeStayNightsFromFood(1)" style="width: 26px; height: 26px; font-size: 14px;">+</button>
+            </div>
+          </div>
+        </div>
+
+        ${discountData.hasDiscount ? `
+          <div style="margin-top: 8px; background: #eef7f2; border: 1px solid #c7e6d5; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; font-weight: 700; color: var(--brand-green); display: flex; justify-content: space-between;">
+            <span>🏷️ تخفیف اقامت اعمال‌شده:</span>
+            <span>${formatToman(discountData.totalDiscount)} تخفیف</span>
+          </div>
+        ` : ''}
+
+        <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 800; color: var(--brand-green); border-top: 1px dashed var(--brand-border); padding-top: 6px;">
+          <span>برآورد هزینه کل اقامت (${formatPersianNumber(nightsVal)} شب - ${formatPersianNumber(totalGuests)} نفر):</span>
+          <span>${formatToman(discountData.finalRoomTotal)}</span>
+        </div>
+      </div>
+
+      ${unselectedRooms.length > 0 ? `
+        <div style="margin-top: 10px; background: #faf8f5; border: 1px dashed var(--brand-border); border-radius: 8px; padding: 10px 12px;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--brand-green); margin-bottom: 6px;">⚡ افزودن سریع اتاق‌های دیگر به همین رزرو:</div>
+          <div class="room-quick-chips-row">
+            ${unselectedRooms.map(r => `
+              <button type="button" class="room-quick-chip" onclick="quickAddRoomToStay('${r.id}')" title="افزودن اتاق ${r.name}">
+                <span>+</span>
+                <span>اتاق ${r.name}</span>
+                <small style="opacity: 0.75;">(${r.shortCapacity || r.capacityDisplay})</small>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    `;
+  }
+
+  return html;
+}
+
 function renderFoodSection() {
   const banner = document.getElementById("food-linked-stay-banner");
   const bannerText = document.getElementById("food-linked-stay-text");
@@ -2936,67 +3367,34 @@ function renderFoodSection() {
     }
   }
 
-  // به‌روزرسانی کارت تعاملی اقامت در صفحه غذا (امکان انتخاب اقامت از صفحه غذا)
-  const stayCard = document.getElementById("unified-stay-card");
-  const stayBadge = document.getElementById("unified-stay-badge");
-  const stayContent = document.getElementById("unified-stay-content");
+  // به‌روزرسانی کارت‌های تعاملی اقامت در بالا و پایین صفحه غذا (امکان انتخاب و ویرایش اتاق مستقیماً از صفحه غذا)
+  const topStayCard = document.getElementById("food-stay-top-card");
+  const bottomStayCard = document.getElementById("unified-stay-card");
+  const stayHTML = renderUnifiedStayCardHTML(selectedRooms);
 
-  if (stayCard && stayBadge && stayContent) {
-    if (selectedRooms.length === 0) {
-      stayCard.classList.remove("has-stay");
-      stayBadge.textContent = "بدون اقامت";
-      stayBadge.style.background = "var(--brand-surface-subtle)";
-      stayBadge.style.color = "var(--brand-text-muted)";
-      stayContent.innerHTML = `
-        <p style="font-size: 12.5px; color: var(--brand-text-muted); line-height: 1.6; margin-bottom: 10px;">
-          اگر تمایل دارید علاوه بر غذا، در خانه برزک اقامت داشته باشید، اتاق مورد نظرتان را انتخاب کنید تا هزینه اقامت، تخفیف‌ها و غذا به‌صورت یکپارچه با هم هماهنگ شوند.
-        </p>
-        <button type="button" class="btn btn-outline" style="font-size: 13px; padding: 8px 14px; width: 100%; font-family: inherit;" onclick="navigateToReservationFromFood()">
-          ➕ انتخاب اتاق و رزرو اقامت
-        </button>
-      `;
-      if (submitFoodBtn) {
-        submitFoodBtn.textContent = "ارسال درخواست سفارش غذا ←";
-      }
+  if (topStayCard) {
+    topStayCard.innerHTML = stayHTML;
+    if (selectedRooms.length > 0) {
+      topStayCard.classList.add("has-stay");
     } else {
-      stayCard.classList.add("has-stay");
-      stayBadge.textContent = `دارای اقامت (${formatPersianNumber(selectedRooms.length)} اتاق)`;
-      stayBadge.style.background = "var(--brand-teal-subtle)";
-      stayBadge.style.color = "var(--brand-teal-dark)";
+      topStayCard.classList.remove("has-stay");
+    }
+  }
 
-      const checkInVal = state.reservation.checkInDate || getTomorrowFormattedDate();
-      const inJalali = getJalaliDetails(checkInVal);
-      const nightsVal = state.reservation.nights || 1;
-      const guestsVal = state.reservation.guests || 2;
-      const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
-      const avgPrice = Math.round(sumPrices / selectedRooms.length);
-      const discountData = calculateStayDiscount(checkInVal, nightsVal, guestsVal, avgPrice);
-      const roomNames = selectedRooms.map(r => `اتاق ${r.name}`).join("، ");
+  if (bottomStayCard) {
+    bottomStayCard.innerHTML = stayHTML;
+    if (selectedRooms.length > 0) {
+      bottomStayCard.classList.add("has-stay");
+    } else {
+      bottomStayCard.classList.remove("has-stay");
+    }
+  }
 
-      stayContent.innerHTML = `
-        <div style="font-size: 12.5px; line-height: 1.7; margin-bottom: 10px; background: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--brand-border);">
-          <div style="font-weight: 700; color: var(--brand-teal-dark); margin-bottom: 4px;">
-            🏡 ${roomNames}
-          </div>
-          <div style="color: var(--brand-text-muted);">
-            📅 ورود: ${inJalali.fullString} (${formatPersianNumber(nightsVal)} شب) • ${formatPersianNumber(guestsVal)} نفر مهمان
-          </div>
-          <div style="font-weight: 700; color: var(--brand-green); margin-top: 4px;">
-            برآورد اقامت با تخفیف: ${formatToman(discountData.finalRoomTotal)}
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 7px 12px; flex: 1; font-family: inherit;" onclick="navigateToReservationFromFood()">
-            ✏️ تغییر یا افزودن اتاق
-          </button>
-          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 7px 10px; border-color: #fecaca; background: #fef2f2; color: #b91c1c; font-family: inherit;" onclick="clearStayFromFoodOrder()">
-            حذف اقامت
-          </button>
-        </div>
-      `;
-      if (submitFoodBtn) {
-        submitFoodBtn.textContent = "ارسال درخواست یکپارچه اقامت و غذا ←";
-      }
+  if (submitFoodBtn) {
+    if (selectedRooms.length > 0) {
+      submitFoodBtn.textContent = "ارسال درخواست یکپارچه اقامت و غذا ←";
+    } else {
+      submitFoodBtn.textContent = "ارسال درخواست سفارش غذا ←";
     }
   }
 
@@ -3702,19 +4100,35 @@ function updateFoodOrderSummary() {
 
   // ۱. اقامت (در صورت انتخاب اتاق از صفحه غذا یا اقامت)
   if (selectedRooms.length > 0) {
-    const checkInVal = state.reservation.checkInDate || getTomorrowFormattedDate();
+    const checkInVal = state.reservation.checkInDate || state.foodOrder.date || getTomorrowFormattedDate();
     const nightsVal = state.reservation.nights || 1;
-    const guestsVal = state.reservation.guests || 2;
-    const sumPrices = selectedRooms.reduce((sum, r) => sum + r.price, 0);
-    const avgPrice = Math.round(sumPrices / selectedRooms.length);
-    const discountData = calculateStayDiscount(checkInVal, nightsVal, guestsVal, avgPrice);
+    const totalGuests = selectedRooms.reduce((sum, r) => {
+      return sum + ((state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2);
+    }, 0);
+    const discountData = calculateStayDiscount(checkInVal, nightsVal, totalGuests);
     const roomCost = discountData.finalRoomTotal;
     grandTotal += roomCost;
 
+    const inJalali = getJalaliDetails(checkInVal);
+    const roomListStr = selectedRooms.map(r => {
+      const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+      return `اتاق ${r.name} (${formatPersianNumber(g)} نفر)`;
+    }).join("، ");
+
     summaryRows += `
-      <div class="estimate-row" style="color: var(--brand-teal-dark); font-weight: 700;">
-        <span>🏡 اقامت خانه برزک (${formatPersianNumber(selectedRooms.length)} اتاق، ${formatPersianNumber(nightsVal)} شب):</span>
-        <span>${formatToman(roomCost)}</span>
+      <div style="background: var(--brand-surface-subtle); border: 1px solid var(--brand-border); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px;">
+        <div class="estimate-row" style="color: var(--brand-teal-dark); font-weight: 700; margin-bottom: 3px;">
+          <span>🏡 اقامت خانه برزک (${formatPersianNumber(selectedRooms.length)} اتاق، ${formatPersianNumber(nightsVal)} شب):</span>
+          <span>${formatToman(roomCost)}</span>
+        </div>
+        <div style="font-size: 11px; color: var(--brand-text-muted); line-height: 1.5;">
+          • ${roomListStr} (مجموعاً ${formatPersianNumber(totalGuests)} نفر) | ورود: ${inJalali.dateOnlyString}
+        </div>
+        ${discountData.hasDiscount ? `
+          <div style="font-size: 11px; color: var(--brand-green); font-weight: 600; margin-top: 3px;">
+            ✓ شامل ${formatToman(discountData.totalDiscount)} تخفیف ویژه اقامت
+          </div>
+        ` : ''}
       </div>
     `;
   }
@@ -3777,10 +4191,12 @@ function updateFoodOrderSummary() {
     }
   }
 
+  const totalLabel = selectedRooms.length > 0 ? "جمع کل برآورد اقامت و غذا:" : "جمع کل برآورد سفارش غذا:";
+
   summaryBox.innerHTML = `
     ${summaryRows}
     <div class="estimate-row estimate-total">
-      <span>جمع کل برآورد سفارش غذا:</span>
+      <span>${totalLabel}</span>
       <span>${formatToman(grandTotal)}</span>
     </div>
   `;
@@ -4543,6 +4959,63 @@ document.addEventListener("DOMContentLoaded", () => {
   const homePhone2El = document.getElementById("home-phone-display-2");
   if (homePhone2El) homePhone2El.textContent = CONFIG.phone2Display;
 
+  // اتصال کنترل‌های اسکرول صفحه غذا و همگام‌سازی لحظه‌ای نام و تلفن
+  const btnScrollTop = document.getElementById("btn-food-dock-top");
+  if (btnScrollTop) {
+    btnScrollTop.addEventListener("click", (e) => {
+      e.preventDefault();
+      scrollFoodScreen('top');
+    });
+  }
+
+  const btnScrollBottom = document.getElementById("btn-food-dock-bottom");
+  if (btnScrollBottom) {
+    btnScrollBottom.addEventListener("click", (e) => {
+      e.preventDefault();
+      scrollFoodScreen('bottom');
+    });
+  }
+
+  const boxScrollTop = document.getElementById("box-food-scroll-top");
+  if (boxScrollTop) {
+    boxScrollTop.addEventListener("click", (e) => {
+      e.preventDefault();
+      scrollFoodScreen('top');
+    });
+  }
+
+  const btnFormScrollTop = document.getElementById("btn-food-form-scroll-top");
+  if (btnFormScrollTop) {
+    btnFormScrollTop.addEventListener("click", (e) => {
+      e.preventDefault();
+      scrollFoodScreen('top');
+    });
+  }
+
+  const foodNameInput = document.getElementById("food-name");
+  if (foodNameInput) {
+    foodNameInput.addEventListener("input", (e) => handleGuestNameSync(e.target.value));
+    foodNameInput.addEventListener("change", (e) => handleGuestNameSync(e.target.value));
+  }
+
+  const resNameInput = document.getElementById("res-name");
+  if (resNameInput) {
+    resNameInput.addEventListener("input", (e) => handleGuestNameSync(e.target.value));
+    resNameInput.addEventListener("change", (e) => handleGuestNameSync(e.target.value));
+  }
+
+  const foodPhoneInput = document.getElementById("food-phone");
+  if (foodPhoneInput) {
+    foodPhoneInput.addEventListener("input", (e) => handleGuestPhoneSync(e.target.value));
+    foodPhoneInput.addEventListener("change", (e) => handleGuestPhoneSync(e.target.value));
+  }
+
+  const resPhoneInput = document.getElementById("res-phone");
+  if (resPhoneInput) {
+    resPhoneInput.addEventListener("input", (e) => handleGuestPhoneSync(e.target.value));
+    resPhoneInput.addEventListener("change", (e) => handleGuestPhoneSync(e.target.value));
+  }
+
   // رندر بخش‌ها
   renderRoomsList();
   renderFoodSection();
@@ -4552,6 +5025,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // اکسپورت توابع به پنجره سراسری (Global Window) برای دسترسی آسان در رویدادهای HTML
+window.handleGuestNameSync = handleGuestNameSync;
+window.handleGuestPhoneSync = handleGuestPhoneSync;
 window.navigateTo = navigateTo;
 window.navigateBack = navigateBack;
 window.openExternalUrl = openExternalUrl;
@@ -4601,6 +5076,14 @@ window.navigateToFoodFromReservation = navigateToFoodFromReservation;
 window.navigateToReservationFromFood = navigateToReservationFromFood;
 window.clearStayFromFoodOrder = clearStayFromFoodOrder;
 window.clearFoodFromReservation = clearFoodFromReservation;
+window.scrollFoodScreen = scrollFoodScreen;
+window.openRoomsFromFood = openRoomsFromFood;
+window.openReservationFromFood = openReservationFromFood;
+window.returnToFoodFromRooms = returnToFoodFromRooms;
+window.quickAddRoomToStay = quickAddRoomToStay;
+window.changeRoomGuestsFromFood = changeRoomGuestsFromFood;
+window.removeRoomFromFoodOrder = removeRoomFromFoodOrder;
+window.changeStayNightsFromFood = changeStayNightsFromFood;
 window.removeScheduledMeal = removeScheduledMeal;
 window.addCurrentMealToSchedule = addCurrentMealToSchedule;
 window.quickAddBreakfastMeal = quickAddBreakfastMeal;

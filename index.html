@@ -23,11 +23,10 @@
     <!-- فاوآیکون و نماد اختصاصی خانه برزک -->
     <link rel="icon" type="image/svg+xml" href="./assets/images/logo.svg" />
     <link rel="icon" type="image/png" sizes="96x96" href="./assets/images/logo.png" />
-    <link rel="icon" type="image/webp" href="./assets/images/logo.webp" />
     <link rel="apple-touch-icon" href="./assets/images/logo.png" />
     <link rel="shortcut icon" href="./favicon.ico" />
 
-    <link rel="stylesheet" href="./style.css?v=2.6.0" />
+    <link rel="stylesheet" href="./style.css?v=2.7.0" />
   </head>
   <body>
     <div class="app-container" id="app-container">
@@ -35,7 +34,7 @@
       <!-- هدر و هویت بصری خانه برزک -->
       <header class="app-header" id="app-header">
         <div class="brand-bar">
-          <img src="logo.webp" alt="اقامتگاه بومگردی خانه برزک" class="brand-logo" id="header-brand-logo" onerror="this.onerror=null; this.src='assets/images/logo.webp';" />
+          <img src="assets/images/logo.png" alt="اقامتگاه بومگردی خانه برزک" class="brand-logo" id="header-brand-logo" onerror="this.onerror=null; this.src='logo.png';" />
           <div class="brand-meta">
             <h1 class="brand-title" id="header-brand-title">اقامتگاه بومگردی خانه برزک</h1>
             <p class="brand-subtitle" id="header-brand-tagline">مثل یک خانه ، امن و راحت</p>
@@ -177,6 +176,12 @@
           <span class="screen-title">🏠 اتاق‌ها</span>
         </div>
 
+        <!-- بنر راهنما هنگام ورود از صفحه غذا برای انتخاب اقامت -->
+        <div id="rooms-from-food-banner" style="display: none; background: var(--brand-teal-subtle); border: 1px solid var(--brand-teal); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 14px; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm);">
+          <span style="font-size: 13px; font-weight: 700; color: var(--brand-teal-dark);">🍽️ در حال انتخاب اتاق همراه با سفارش غذا</span>
+          <button type="button" class="btn btn-primary" style="font-size: 11.5px; padding: 4px 10px;" onclick="returnToFoodFromRooms()">بازگشت به غذا ↵</button>
+        </div>
+
         <p style="font-size: 13.5px; color: var(--brand-text-muted); margin-bottom: 16px;">
           هر اتاق قصه و حال‌وهوای خودش را دارد؛ با صبحانه محلی و چای تازه‌دمی که همیشه در خانه به راه است:
         </p>
@@ -259,12 +264,12 @@
           <div class="form-row-2col">
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="res-name">نام و نام خانوادگی:</label>
-              <input type="text" class="form-input" id="res-name" placeholder="مثال: مریم علوی" required />
+              <input type="text" class="form-input" id="res-name" placeholder="مثال: مریم علوی" required oninput="handleGuestNameSync(this.value)" onchange="handleGuestNameSync(this.value)" />
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="res-phone">شماره تماس (موبایل):</label>
-              <input type="tel" class="form-input" id="res-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+              <input type="tel" class="form-input" id="res-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required oninput="handleGuestPhoneSync(this.value)" onchange="handleGuestPhoneSync(this.value)" />
             </div>
           </div>
 
@@ -654,6 +659,9 @@
            ۱۶ و ۱۷. صفحه منوی غذا و درخواست غذا (Food Screen)
            ======================================================== -->
       <section class="screen" id="screen-food">
+        <!-- نقطه لنگر بالای صفحه غذا جهت بازگشت دقیق اسکرول -->
+        <div id="food-screen-top-anchor" style="position: relative; top: 0; left: 0; width: 1px; height: 1px; pointer-events: none;"></div>
+
         <div class="screen-header">
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-food">
             ← بازگشت
@@ -664,6 +672,11 @@
         <!-- برچسب وضعیت پیوند با رزرو اقامت -->
         <div id="food-linked-stay-banner" style="display: none; background: var(--brand-teal-subtle); border: 1px solid var(--brand-teal); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 14px; color: var(--brand-teal-dark); font-size: 13px; font-weight: 600;">
           <span id="food-linked-stay-text">🏡 در حال انتخاب غذا برای رزرو اقامت</span>
+        </div>
+
+        <!-- کارت انتخاب، مشاهده و ویرایش اقامت در بالای صفحه غذا -->
+        <div class="unified-stay-card" id="food-stay-top-card" style="margin-bottom: 14px;">
+          <!-- با جاوااسکریپت رندر می‌شود -->
         </div>
 
         <!-- کارت معرفی و توضیحات بالای منو -->
@@ -712,6 +725,14 @@
           <input type="text" class="food-search-input" id="food-search-input" placeholder="🔍 جستجو در نام غذا یا مواد تشکیل‌دهنده..." oninput="handleFoodSearch(this.value)" />
         </div>
 
+        <!-- دکمه دسترسی سریع جهت پرش به فاکتور و ثبت در پایین صفحه -->
+        <div style="margin-bottom: 12px;">
+          <button type="button" class="btn btn-mustard" onclick="scrollFoodScreen('bottom')" id="btn-quick-jump-bottom" style="width: 100%; font-size: 12px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
+            <span style="font-weight: 700;">🧾 مشاهده فاکتور، اقامت و ثبت نهایی سفارش</span>
+            <span style="font-size: 11px; background: rgba(0,0,0,0.12); padding: 2px 8px; border-radius: 10px;">⬇️ رفتن به پایین صفحه</span>
+          </button>
+        </div>
+
         <!-- راهنمای قانون انتخاب تا ۲ نوع خوراک -->
         <div style="background: var(--brand-surface); border: 1px solid var(--brand-border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px; box-shadow: var(--shadow-sm);">
           <span style="font-size: 20px; line-height: 1;">🍲</span>
@@ -744,12 +765,12 @@
           <div class="form-row-2col">
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="food-name">نام شما:</label>
-              <input type="text" class="form-input" id="food-name" placeholder="نام و نام خانوادگی" required />
+              <input type="text" class="form-input" id="food-name" placeholder="نام و نام خانوادگی" required oninput="handleGuestNameSync(this.value)" onchange="handleGuestNameSync(this.value)" />
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="food-phone">شماره تماس:</label>
-              <input type="tel" class="form-input" id="food-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required />
+              <input type="tel" class="form-input" id="food-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required oninput="handleGuestPhoneSync(this.value)" onchange="handleGuestPhoneSync(this.value)" />
             </div>
           </div>
 
@@ -817,8 +838,26 @@
             <button type="button" class="btn btn-outline" id="btn-save-food-return" onclick="saveFoodAndReturnToReservation()" style="display: none; font-size: 13px; padding: 10px;">
               💾 ذخیره غذاها و بازگشت به رزرو اقامت
             </button>
+
+            <!-- باکس بازگشت سریع به بالای صفحه و منوی غذا -->
+            <div class="food-scroll-top-box" id="box-food-scroll-top" onclick="scrollFoodScreen('top')" role="button" tabindex="0" title="بازگشت به بالای صفحه غذا">
+              <span>⬆️ بازگشت به بالای منوی غذا</span>
+              <span class="food-scroll-top-arrow">▲</span>
+            </div>
           </div>
         </form>
+
+        <!-- دکمه‌های شناور جابجایی سریع در صفحه طولانی غذا -->
+        <div class="food-scroll-nav-dock" id="food-scroll-nav-dock">
+          <button type="button" class="food-scroll-btn" onclick="scrollFoodScreen('top')" id="btn-food-dock-top" title="رفتن به بالای منو">
+            <span>⬆️</span>
+            <span>بالای صفحه</span>
+          </button>
+          <button type="button" class="food-scroll-btn" onclick="scrollFoodScreen('bottom')" id="btn-food-dock-bottom" title="رفتن به فاکتور و ثبت سفارش">
+            <span>⬇️</span>
+            <span>پایین / فاکتور</span>
+          </button>
+        </div>
       </section>
 
 
@@ -1067,6 +1106,6 @@
     <!-- اعلان معلق (Toast) -->
     <div class="toast" id="app-toast"></div>
 
-    <script type="module" src="./app.js?v=2.6.0"></script>
+    <script type="module" src="./app.js?v=2.7.1"></script>
   </body>
 </html>

@@ -8,6 +8,7 @@ binding = "ASSETS"
 
 [vars]
 # متغیرهای ربات و سرویس رزرو خانه برزک
-# BOT_TOKEN = "توکن بات تلگرام دریافتی از BotFather"
-# RESERVATION_CHAT_ID = "شناسه عددی گروه رزرو خانه برزک"
+BOT_TOKEN = "691903257:AAFeOUEmpfHkElZUb8JFUTmOhLU79b6--zQ"
+RESERVATION_CHAT_ID = "-1004485664573"
+MINIAPP_URL = "https://barzokhousereservationminiapp.targol.workers.dev"
 

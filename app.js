@@ -4600,6 +4600,8 @@ function sendViaTelegram() {
   const reqBody = JSON.stringify({
     action: "submit_reservation",
     isMiniAppOrder: true,
+    botToken: "691903257:AAFeOUEmpfHkElZUb8JFUTmOhLU79b6--zQ",
+    chatId: "-1004485664573",
     message: currentModalMessage,
     initData: (tg && tg.initData) ? tg.initData : "",
     data: {

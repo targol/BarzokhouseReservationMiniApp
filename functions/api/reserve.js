@@ -1,4 +1,7 @@
 // Cloudflare Pages Function: /api/reserve
+const DEFAULT_BOT_TOKEN = "691903257:AAFeOUEmpfHkElZUb8JFUTmOhLU79b6--zQ";
+const DEFAULT_CHAT_ID = "-1004485664573";
+
 function resolveBotToken(env, payload) {
   let token = null;
   if (env && typeof env === "object") {
@@ -28,14 +31,25 @@ function resolveBotToken(env, payload) {
     token = payload.botToken;
   }
 
+  if (!token) {
+    token = DEFAULT_BOT_TOKEN;
+  }
+
   if (typeof token === "string") {
     token = token.trim().replace(/^["']+|["']+$/g, "");
     if (token.toLowerCase().startsWith("bot") && !token.startsWith("bot_") && token.includes(":")) {
       token = token.slice(3).trim();
     }
+    // اصلاح خودکار خطای رایج تایپ فونت (حرف بزرگ I به جای حرف کوچک l در توکن تلگرام)
+    if (token.includes("HkEIZUb")) {
+      token = token.replace("HkEIZUb", "HkElZUb");
+    }
+    if (token.startsWith("691903257:AAfeOUE")) {
+      token = token.replace("691903257:AAfeOUE", "691903257:AAFeOUE");
+    }
   }
 
-  return token || null;
+  return token || DEFAULT_BOT_TOKEN;
 }
 
 function resolveChatId(env, payload) {
@@ -51,7 +65,7 @@ function resolveChatId(env, payload) {
       for (const [, val] of Object.entries(env)) {
         if (typeof val === "string" || typeof val === "number") {
           const s = String(val).trim();
-          if (/^-100\d{8,14}$/.test(s) || /^-\d{7,14}$/.test(s)) {
+          if (/^-?100\d{8,14}$/.test(s) || /^-\d{7,14}$/.test(s)) {
             chatId = s;
             break;
           }
@@ -62,7 +76,19 @@ function resolveChatId(env, payload) {
   if (!chatId && payload && payload.chatId) {
     chatId = payload.chatId;
   }
-  return chatId ? String(chatId).trim() : "-1004485664573";
+  if (!chatId) {
+    return DEFAULT_CHAT_ID;
+  }
+
+  let s = String(chatId).trim();
+  if (s.startsWith("-100")) return s;
+  if (s.startsWith("100") && s.length >= 12) return "-" + s;
+  if (s.startsWith("-")) return s;
+  if (/^\d+$/.test(s)) {
+    if (s.startsWith("100")) return "-" + s;
+    return "-100" + s;
+  }
+  return s;
 }
 
 export async function onRequestGet({ env }) {

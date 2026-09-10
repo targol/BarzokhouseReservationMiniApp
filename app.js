@@ -1159,8 +1159,19 @@ function updateScreenStackFor(screenId) {
 
 function navigateTo(screenId, source = null) {
   triggerHaptic('light');
+
+  if (screenId === "screen-home") {
+    try { closeMessageModal(); } catch (_) {}
+    try { closeShamsiDatePicker(); } catch (_) {}
+  }
+
   const currentScreenId = state.screenStack[state.screenStack.length - 1] || "screen-home";
-  if (currentScreenId === screenId) return;
+  if (currentScreenId === screenId) {
+    if (screenId === "screen-home") {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    return;
+  }
 
   if (screenId === "screen-food") {
     if (source === "screen-reservation") {
@@ -5281,6 +5292,30 @@ document.addEventListener("DOMContentLoaded", () => {
     resPhoneInput.addEventListener("change", (e) => handleGuestPhoneSync(e.target.value));
   }
 
+  // پیوند رویدادهای بازگشت به صفحه اول در کل برنامه
+  const headerHomeBtn = document.getElementById("header-home-btn");
+  if (headerHomeBtn) {
+    headerHomeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navigateTo("screen-home");
+    });
+  }
+
+  const headerBrandClickable = document.getElementById("header-brand-clickable");
+  if (headerBrandClickable) {
+    headerBrandClickable.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navigateTo("screen-home");
+    });
+  }
+
+  document.querySelectorAll(".screen-home-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navigateTo("screen-home");
+    });
+  });
+
   // رندر بخش‌ها
   renderRoomsList();
   renderFoodSection();
@@ -5293,6 +5328,7 @@ document.addEventListener("DOMContentLoaded", () => {
 window.handleGuestNameSync = handleGuestNameSync;
 window.handleGuestPhoneSync = handleGuestPhoneSync;
 window.navigateTo = navigateTo;
+window.navigateToHome = () => navigateTo("screen-home");
 window.navigateBack = navigateBack;
 window.openExternalUrl = openExternalUrl;
 window.openRoomDetail = openRoomDetail;

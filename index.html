@@ -26,20 +26,27 @@
     <link rel="apple-touch-icon" href="./assets/images/logo.png" />
     <link rel="shortcut icon" href="./favicon.ico" />
 
-    <link rel="stylesheet" href="./style.css?v=2.7.0" />
+    <link rel="stylesheet" href="./style.css?v=2.9.0" />
   </head>
   <body>
     <div class="app-container" id="app-container">
       
-      <!-- هدر و هویت بصری خانه برزک (کلیک روی آن به صفحه اول بازمی‌گردد) -->
-      <header class="app-header" id="app-header" onclick="navigateTo('screen-home')" role="button" tabindex="0" title="بازگشت به صفحه اول خانه برزک" aria-label="خانه برزک - بازگشت به صفحه اصلی">
+      <!-- هدر و هویت بصری خانه برزک همراه با دکمه اختصاصی بازگشت به صفحه اول -->
+      <header class="app-header" id="app-header" role="banner">
         <div class="brand-bar">
-          <img src="assets/images/logo.png" alt="اقامتگاه بومگردی خانه برزک" class="brand-logo" id="header-brand-logo" onerror="this.onerror=null; this.src='logo.png';" />
-          <div class="brand-meta">
-            <h1 class="brand-title" id="header-brand-title">اقامتگاه بومگردی خانه برزک</h1>
-            <p class="brand-subtitle" id="header-brand-tagline">مثل یک خانه ، امن و راحت</p>
-            <p class="brand-location" id="header-brand-location">کاشان، برزک</p>
+          <div class="brand-clickable-area" id="header-brand-clickable" onclick="navigateTo('screen-home')" role="button" tabindex="0" title="بازگشت به صفحه اول خانه برزک" aria-label="خانه برزک - بازگشت به صفحه اصلی">
+            <img src="assets/images/logo.png" alt="اقامتگاه بومگردی خانه برزک" class="brand-logo" id="header-brand-logo" onerror="this.onerror=null; this.src='logo.png';" />
+            <div class="brand-meta">
+              <h1 class="brand-title" id="header-brand-title">اقامتگاه بومگردی خانه برزک</h1>
+              <p class="brand-subtitle" id="header-brand-tagline">مثل یک خانه ، امن و راحت</p>
+              <p class="brand-location" id="header-brand-location">کاشان، برزک</p>
+            </div>
           </div>
+          <!-- دکمه واضح و مشخص بازگشت به صفحه اصلی -->
+          <button type="button" class="header-home-btn" id="header-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اصلی خانه برزک" aria-label="صفحه اول">
+            <span class="header-home-icon">🏠</span>
+            <span class="header-home-label">صفحه اول</span>
+          </button>
         </div>
       </header>
 
@@ -60,57 +67,81 @@
           </div>
         </div>
 
-        <!-- منوی اصلی (Main Menu Buttons) -->
+        <!-- منوی اصلی یک‌خطی و فشرده (Single-Line Cards) -->
         <div class="menu-grid" id="main-menu-grid">
           
-          <!-- ردیف اول: دو ستون شاخص و متمایز (اتاق‌ها و خوراک‌ها) -->
+          <!-- ۱. اتاق‌ها (شاخص اقامت) -->
           <div class="menu-card pillar-card" id="menu-btn-rooms" onclick="navigateTo('screen-rooms')" role="button" tabindex="0">
-            <div class="menu-card-icon">🏠</div>
-            <div class="menu-card-content">
-              <h4 class="menu-card-title">اتاق‌ها</h4>
-              <span class="pillar-tag">رزرو اقامت ←</span>
+            <div class="menu-card-right">
+              <span class="menu-card-icon">🏠</span>
+              <span class="menu-card-title">اتاق‌ها</span>
+              <span class="pillar-tag">رزرو اقامت</span>
             </div>
+            <span class="menu-card-arrow">←</span>
           </div>
 
+          <!-- ۲. خوراک‌ها (شاخص سفارش غذا) -->
           <div class="menu-card pillar-card" id="menu-btn-food" onclick="navigateTo('screen-food')" role="button" tabindex="0">
-            <div class="menu-card-icon">🍲</div>
-            <div class="menu-card-content">
-              <h4 class="menu-card-title">خوراک‌ها</h4>
-              <span class="pillar-tag">سفارش غذا ←</span>
+            <div class="menu-card-right">
+              <span class="menu-card-icon">🍲</span>
+              <span class="menu-card-title">خوراک‌ها</span>
+              <span class="pillar-tag">سفارش غذا</span>
             </div>
+            <span class="menu-card-arrow">←</span>
           </div>
 
-          <!-- ردیف دوم: نشانی و نقشه / آب و هوا -->
+          <!-- ۳. نشانی و نقشه دسترسی -->
           <div class="menu-card" id="menu-btn-address" onclick="navigateTo('screen-address')" role="button" tabindex="0">
-            <div class="menu-card-icon">📍</div>
-            <h4 class="menu-card-title">نشانی و نقشه</h4>
+            <div class="menu-card-right">
+              <span class="menu-card-icon">📍</span>
+              <span class="menu-card-title">نشانی و نقشه دسترسی</span>
+            </div>
+            <span class="menu-card-arrow">←</span>
           </div>
 
+          <!-- ۴. آب‌وهوا -->
           <div class="menu-card" id="menu-btn-weather" onclick="navigateTo('screen-weather')" role="button" tabindex="0">
-            <div class="menu-card-icon">🌤️</div>
-            <h4 class="menu-card-title">آب‌وهوا</h4>
+            <div class="menu-card-right">
+              <span class="menu-card-icon">🌤️</span>
+              <span class="menu-card-title">آب‌وهوای برزک</span>
+            </div>
+            <span class="menu-card-arrow">←</span>
           </div>
 
-          <!-- ردیف سوم: نکات اقامت / سفر سبز -->
+          <!-- ۵. نکات اقامت -->
           <div class="menu-card" id="menu-btn-rules" onclick="navigateTo('screen-rules')" role="button" tabindex="0">
-            <div class="menu-card-icon">🏡</div>
-            <h4 class="menu-card-title">نکات اقامت</h4>
+            <div class="menu-card-right">
+              <span class="menu-card-icon">🏡</span>
+              <span class="menu-card-title">نکات و مقررات اقامت</span>
+            </div>
+            <span class="menu-card-arrow">←</span>
           </div>
 
+          <!-- ۶. سفر سبز -->
           <div class="menu-card" id="menu-btn-green" onclick="navigateTo('screen-green-travel')" role="button" tabindex="0">
-            <div class="menu-card-icon">🌱</div>
-            <h4 class="menu-card-title">سفر سبز</h4>
+            <div class="menu-card-right">
+              <span class="menu-card-icon">🌱</span>
+              <span class="menu-card-title">سفر سبز و محیط‌زیست</span>
+            </div>
+            <span class="menu-card-arrow">←</span>
           </div>
 
-          <!-- ردیف چهارم: وب‌سایت و شبکه‌های اجتماعی / تجربه و نظرات شما -->
+          <!-- ۷. وب‌سایت و شبکه‌ها -->
           <div class="menu-card" id="menu-btn-social" onclick="navigateTo('screen-social')" role="button" tabindex="0">
-            <div class="menu-card-icon">🌐</div>
-            <h4 class="menu-card-title">وب‌سایت و شبکه‌ها</h4>
+            <div class="menu-card-right">
+              <span class="menu-card-icon">🌐</span>
+              <span class="menu-card-title">وب‌سایت و شبکه‌های اجتماعی</span>
+            </div>
+            <span class="menu-card-arrow">←</span>
           </div>
 
+          <!-- ۸. تجربه و نظرات شما -->
           <div class="menu-card" id="menu-btn-reviews" onclick="navigateTo('screen-reviews')" role="button" tabindex="0">
-            <div class="menu-card-icon">⭐</div>
-            <h4 class="menu-card-title">تجربه و نظرات شما</h4>
+            <div class="menu-card-right">
+              <span class="menu-card-icon">⭐</span>
+              <span class="menu-card-title">تجربه و نظرات شما</span>
+            </div>
+            <span class="menu-card-arrow">←</span>
           </div>
 
         </div>
@@ -175,7 +206,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-rooms">
             ← بازگشت
           </button>
-          <span class="screen-title">🏠 اتاق‌ها</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🏠 اتاق‌ها</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <!-- بنر راهنما هنگام ورود از صفحه غذا برای انتخاب اقامت -->
@@ -201,7 +235,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-room-detail">
             ← بازگشت
           </button>
-          <span class="screen-title" id="detail-room-name">اتاق</span>
+          <span class="screen-title" id="detail-room-name" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">اتاق</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <img src="./assets/rooms/shatoot.webp" alt="تصویر اتاق" class="detail-hero-img" id="detail-room-img" onerror="this.onerror=null; this.src='./assets/rooms/shatoot.svg';" />
@@ -253,7 +290,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-reservation">
             ← بازگشت
           </button>
-          <span class="screen-title">📝 رزرو اقامت</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">📝 رزرو اقامت</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <form class="form-card" id="reservation-form" novalidate onsubmit="submitReservationForm(event)">
@@ -421,7 +461,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-address">
             ← بازگشت
           </button>
-          <span class="screen-title">📍 نشانی و مسیر</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">📍 نشانی و مسیر</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <div class="content-card">
@@ -457,7 +500,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-contact">
             ← بازگشت
           </button>
-          <span class="screen-title">📞 تماس با ما</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">📞 تماس با ما</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <div class="content-card">
@@ -508,7 +554,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-social">
             ← بازگشت
           </button>
-          <span class="screen-title">🌐 وب‌سایت و شبکه‌ها</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🌐 وب‌سایت و شبکه‌ها</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <div class="content-card">
@@ -549,7 +598,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-rules">
             ← بازگشت
           </button>
-          <span class="screen-title">🏡 نکات اقامت</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🏡 نکات اقامت</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <div class="content-card">
@@ -603,7 +655,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-weather">
             ← بازگشت
           </button>
-          <span class="screen-title">🌤️ آب‌وهوا</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🌤️ آب‌وهوا</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <div class="content-card">
@@ -636,7 +691,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-green-travel">
             ← بازگشت
           </button>
-          <span class="screen-title">🌱 سفر سبز</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🌱 سفر سبز</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <div class="content-card">
@@ -684,7 +742,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-food">
             ← بازگشت
           </button>
-          <span class="screen-title">🍽️ خوراک‌های محلی خانه برزک</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🍽️ خوراک‌های محلی</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <!-- برچسب وضعیت پیوند با رزرو اقامت -->
@@ -903,7 +964,10 @@
           <button class="back-btn" onclick="navigateBack()" id="btn-back-from-reviews">
             ← بازگشت
           </button>
-          <span class="screen-title">⭐ تجربه و نظرات شما</span>
+          <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">⭐ تجربه و نظرات شما</span>
+          <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
+            🏠 صفحه اول
+          </button>
         </div>
 
         <div class="content-card">
@@ -1148,6 +1212,6 @@
     <!-- اعلان معلق (Toast) -->
     <div class="toast" id="app-toast"></div>
 
-    <script type="module" src="./app.js?v=2.8.0"></script>
+    <script type="module" src="./app.js?v=2.9.0"></script>
   </body>
 </html>

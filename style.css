@@ -129,8 +129,7 @@ body {
 .brand-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: flex-start;
   width: 100%;
 }
 
@@ -189,42 +188,6 @@ body {
   color: var(--brand-text-muted);
   font-weight: 500;
   margin-top: 1px;
-}
-
-.header-home-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: inherit;
-  color: var(--brand-green);
-  background: #ffffff;
-  border: 1.5px solid var(--brand-mustard);
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(189, 137, 62, 0.15);
-  flex-shrink: 0;
-  transition: all var(--transition-fast);
-}
-
-.header-home-btn:hover, .header-home-btn:active {
-  background: #fff8e8;
-  border-color: #8c5d0a;
-  color: #8c5d0a;
-  transform: scale(0.96);
-}
-
-.header-home-icon {
-  font-size: 13.5px;
-  line-height: 1;
-}
-
-.header-home-label {
-  font-size: 11.5px;
-  font-weight: 700;
 }
 
 /* Navigation Screen System (SPA) */

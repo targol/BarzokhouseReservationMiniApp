@@ -31,7 +31,7 @@
   <body>
     <div class="app-container" id="app-container">
       
-      <!-- هدر و هویت بصری خانه برزک همراه با دکمه اختصاصی بازگشت به صفحه اول -->
+      <!-- هدر و هویت بصری خانه برزک -->
       <header class="app-header" id="app-header" role="banner">
         <div class="brand-bar">
           <div class="brand-clickable-area" id="header-brand-clickable" onclick="navigateTo('screen-home')" role="button" tabindex="0" title="بازگشت به صفحه اول خانه برزک" aria-label="خانه برزک - بازگشت به صفحه اصلی">
@@ -42,11 +42,6 @@
               <p class="brand-location" id="header-brand-location">کاشان، برزک</p>
             </div>
           </div>
-          <!-- دکمه واضح و مشخص بازگشت به صفحه اصلی -->
-          <button type="button" class="header-home-btn" id="header-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اصلی خانه برزک" aria-label="صفحه اول">
-            <span class="header-home-icon">🏠</span>
-            <span class="header-home-label">صفحه اول</span>
-          </button>
         </div>
       </header>
 
@@ -428,13 +423,13 @@
             </div>
           </div>
 
-          <!-- کادر توضیحات و ملاحظات خاص مهمان قبل از ارسال رزرو -->
+          <!-- کادر توضیحات و ملاحظات خاص مهمان (اقامت و خوراک) قبل از ارسال رزرو -->
           <div class="form-group" style="margin-top: 16px; margin-bottom: 14px;">
-            <label for="res-notes" class="form-label" style="display: flex; align-items: center; justify-content: space-between;">
-              <span>📝 توضیحات و ملاحظات خاص مهمان (اختیاری):</span>
-              <span style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">رژیم غذایی، ساعت رسیدن یا نیاز ویژه</span>
+            <label for="res-notes" class="form-label" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+              <span>📝 توضیحات و ملاحظات (اقامت و خوراک):</span>
+              <span style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">ساعت رسیدن، نیازهای اقامت، رژیم یا حساسیت غذایی</span>
             </label>
-            <textarea id="res-notes" class="form-input" rows="3" placeholder="اگر ملاحظه، رژیم غذایی، نیاز ویژه یا هماهنگی خاصی دارید اینجا بنویسید..." oninput="handleGuestNotesSync(this.value)" style="resize: vertical; min-height: 64px; line-height: 1.6; font-size: 13px;"></textarea>
+            <textarea id="res-notes" class="form-input" rows="3" placeholder="اگر ملاحظه یا نیازی برای اقامت (ساعت رسیدن، هماهنگی اتاق) یا خوراک‌ها (رژیم خاص، حساسیت غذایی، زمان سرو) دارید، اینجا بنویسید..." oninput="handleGuestNotesSync(this.value)" style="resize: vertical; min-height: 64px; line-height: 1.6; font-size: 13px;"></textarea>
           </div>
 
           <!-- تاکید بر عدم پرداخت و پیش‌نویس بودن رزرو -->
@@ -916,13 +911,13 @@
           <!-- خلاصه سفارش غذا -->
           <div class="estimate-box" id="food-order-summary"></div>
 
-          <!-- کادر توضیحات و ملاحظات خاص مهمان قبل از ارسال سفارش غذا -->
+          <!-- کادر توضیحات و ملاحظات خاص مهمان (اقامت و خوراک) قبل از ارسال سفارش غذا -->
           <div class="form-group" style="margin-top: 14px; margin-bottom: 8px;">
-            <label for="food-notes" class="form-label" style="display: flex; align-items: center; justify-content: space-between;">
-              <span>📝 توضیحات و ملاحظات خاص (اختیاری):</span>
-              <span style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">حساسیت غذایی، نحوه سرو یا زمان‌بندی</span>
+            <label for="food-notes" class="form-label" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+              <span>📝 توضیحات و ملاحظات (اقامت و خوراک):</span>
+              <span style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">ساعت رسیدن، نیازهای اقامت، رژیم یا حساسیت غذایی</span>
             </label>
-            <textarea id="food-notes" class="form-input" rows="2" placeholder="اگر ملاحظه، رژیم خاص یا ساعت تحویل مد نظرتان است بنویسید..." oninput="handleGuestNotesSync(this.value)" style="resize: vertical; min-height: 56px; line-height: 1.6; font-size: 13px;"></textarea>
+            <textarea id="food-notes" class="form-input" rows="2" placeholder="اگر ملاحظه یا نیازی برای اقامت (ساعت رسیدن، هماهنگی اتاق) یا خوراک‌ها (رژیم خاص، حساسیت غذایی، زمان سرو) دارید، اینجا بنویسید..." oninput="handleGuestNotesSync(this.value)" style="resize: vertical; min-height: 56px; line-height: 1.6; font-size: 13px;"></textarea>
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
@@ -1062,7 +1057,7 @@
         <!-- کارت توضیحات و ملاحظات مهمان در صورت وجود -->
         <div class="preview-summary-card" id="preview-notes-card" style="display: none; background: #fffcf6; border-color: #e8d7b8;">
           <div style="font-size: 12px; font-weight: 800; color: #8c5d0a; margin-bottom: 4px;">
-            📝 ملاحظات و توضیحات شما:
+            📝 ملاحظات و توضیحات شما (اقامت و خوراک):
           </div>
           <div id="preview-notes-text" style="font-size: 12px; color: var(--brand-text); line-height: 1.6; white-space: pre-line;"></div>
         </div>
@@ -1209,9 +1204,12 @@
       </div>
     </div>
 
-    <!-- اعلان معلق (Toast) -->
-    <div class="toast" id="app-toast"></div>
+    <!-- اعلان معلق (Toast) همراه با دکمه ضربدر بستن -->
+    <div class="toast" id="app-toast" role="alert" aria-live="assertive">
+      <span class="toast-text" id="toast-text"></span>
+      <button type="button" class="toast-close-btn" id="toast-close-btn" onclick="hideToast()" title="بستن پیام" aria-label="بستن">✕</button>
+    </div>
 
-    <script type="module" src="./app.js?v=2.9.0"></script>
+    <script type="module" src="./app.js?v=3.0.0"></script>
   </body>
 </html>

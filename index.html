@@ -11,6 +11,74 @@
     <!-- Telegram WebApp Official JS SDK (deferred for instant rendering) -->
     <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
 
+    <!-- تضمین پایداری و تعریف فوری توابع ناوبری جهت جلوگیری قطعی از ReferenceError -->
+    <script>
+      (function() {
+        window._pendingNav = null;
+        function safeNavigateTo(screenId, source) {
+          if (typeof window._realNavigateTo === 'function') {
+            return window._realNavigateTo(screenId, source);
+          }
+          window._pendingNav = { screenId: screenId, source: source };
+        }
+        window.navigateTo = safeNavigateTo;
+        window.navigateToHome = function() { safeNavigateTo('screen-home'); };
+        window.navigateBack = function() {
+          if (typeof window._realNavigateBack === 'function') {
+            return window._realNavigateBack();
+          }
+        };
+        window.hideToast = function() {
+          var t = document.getElementById("app-toast");
+          if (t) t.classList.remove("show");
+        };
+        window.showToast = function(msg) {
+          var t = document.getElementById("app-toast");
+          var tt = document.getElementById("toast-text") || t;
+          if (tt) tt.textContent = msg;
+          if (t) t.classList.add("show");
+        };
+        window.navigateToFoodFromReservation = function() {
+          safeNavigateTo('screen-food', 'screen-reservation');
+        };
+        window.navigateToReservationFromFood = function() {
+          safeNavigateTo('screen-reservation', 'screen-food');
+        };
+        window.openReservationScreen = function() {
+          if (typeof window.renderSelectedRoomsInForm === 'function') {
+            window.renderSelectedRoomsInForm();
+          }
+          safeNavigateTo('screen-reservation');
+        };
+        window.handleSocialLinkClick = function(e, url) {
+          if (e && e.stopPropagation) {
+            try { e.stopPropagation(); } catch (_) {}
+          }
+          if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+            try {
+              if (e && e.preventDefault) e.preventDefault();
+              window.Telegram.WebApp.openLink(url);
+            } catch (_) {}
+          }
+        };
+        window.dismissFloatingBookingBar = function(e) {
+          if (e && e.stopPropagation) {
+            try { e.stopPropagation(); } catch (_) {}
+          }
+          var bar = document.getElementById("floating-booking-bar");
+          if (bar) bar.style.display = "none";
+        };
+        window.closeMessageModal = function() {
+          var m = document.getElementById("message-modal");
+          if (m) m.classList.remove("active");
+        };
+        window.closeShamsiDatePicker = function() {
+          var d = document.getElementById("shamsi-datepicker-modal");
+          if (d) d.classList.remove("active");
+        };
+      })();
+    </script>
+
     <!-- بهینه‌سازی سرعت بارگذاری با رندر آنی، سیستم فونت بومی و لود غیرمسدودکننده فونت -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -898,6 +898,16 @@ const state = {
 // ۵. راه‌اندازی Telegram WebApp API
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
+// اتصال فوری و بی‌درنگ توابع حیاتی ناوبری به پنجره سراسری (Global Window) برای جلوگیری از خطای ReferenceError
+window.navigateTo = navigateTo;
+window._realNavigateTo = navigateTo;
+window.navigateBack = navigateBack;
+window._realNavigateBack = navigateBack;
+window.navigateToHome = () => navigateTo("screen-home");
+window.hideToast = hideToast;
+window.showToast = showToast;
+window.handleSocialLinkClick = handleSocialLinkClick;
+
 function initTelegramWebApp() {
   if (tg) {
     try {
@@ -1210,6 +1220,20 @@ function navigateBack() {
 
   updateScreenStackFor(targetParent);
   renderCurrentScreen();
+}
+
+window.navigateTo = navigateTo;
+window._realNavigateTo = navigateTo;
+window.navigateBack = navigateBack;
+window._realNavigateBack = navigateBack;
+
+// اجرای ناوبری در صف انتظار در صورتی که کاربر قبل از بارگذاری کامل کلیک کرده باشد
+if (window._pendingNav) {
+  const _p = window._pendingNav;
+  window._pendingNav = null;
+  try {
+    navigateTo(_p.screenId, _p.source);
+  } catch (_) {}
 }
 
 function renderCurrentScreen() {
@@ -4959,6 +4983,9 @@ function sendViaTelegram() {
   });
 }
 
+// اعلان Toast و متغیر زمان‌بندی
+let toastTimeout = null;
+
 // پنهان‌سازی سریع اعلان Toast با انیمیشن روان
 function hideToast() {
   const toast = document.getElementById("app-toast");
@@ -4977,7 +5004,6 @@ function hideToast() {
 window.hideToast = hideToast;
 
 // نمایش پیام Toast همراه با دکمه بستن
-let toastTimeout = null;
 function showToast(msg) {
   const toast = document.getElementById("app-toast");
   if (!toast) return;

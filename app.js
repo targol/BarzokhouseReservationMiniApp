@@ -62,7 +62,7 @@ const ROOMS = [
       "وای‌فای",
       "صبحانه محلی"
     ],
-    images: ["./assets/rooms/shatoot.webp"]
+    images: ["./assets/rooms/shatoot.webp?v=2", "./assets/rooms/shatoot.webp"]
   },
   {
     id: "ghaali",
@@ -89,7 +89,7 @@ const ROOMS = [
       "وای‌فای",
       "صبحانه محلی"
     ],
-    images: ["./assets/rooms/ghaali.webp"]
+    images: ["./assets/rooms/ghaali.webp?v=2", "./assets/rooms/ghali.webp", "./assets/rooms/ghaali.webp"]
   },
   {
     id: "abi",
@@ -117,7 +117,7 @@ const ROOMS = [
       "وای‌فای",
       "صبحانه محلی"
     ],
-    images: ["./assets/rooms/abi.webp"]
+    images: ["./assets/rooms/abi.webp?v=2", "./assets/rooms/abi.webp"]
   },
   {
     id: "sara",
@@ -146,7 +146,7 @@ const ROOMS = [
       "وای‌فای",
       "صبحانه محلی"
     ],
-    images: ["./assets/rooms/sara.webp"]
+    images: ["./assets/rooms/sara.webp?v=2", "./assets/rooms/sara.webp"]
   },
   {
     id: "balakhoneh",
@@ -173,7 +173,7 @@ const ROOMS = [
       "وای‌فای",
       "صبحانه محلی"
     ],
-    images: ["./assets/rooms/balakhoneh.webp"]
+    images: ["./assets/rooms/balakhoneh.webp?v=2", "./assets/rooms/balakhooneh.webp", "./assets/rooms/balakhoneh.webp"]
   }
 ];
 
@@ -1927,11 +1927,13 @@ function renderRoomsList() {
 
   container.innerHTML = ROOMS.map(room => {
     const isSelected = selectedIds.includes(room.id);
+    const primaryImg = room.images[0];
+    const altImg = room.images[1] || primaryImg;
     return `
       <div class="room-card" id="room-card-${room.id}" style="position: relative;">
         ${isSelected ? '<span class="room-card-selected-badge">✓ در لیست رزرو شما</span>' : ''}
         <div class="room-card-img-wrap">
-          <img src="${room.images[0]}" alt="${room.name}" class="room-card-img" loading="lazy" onerror="if(!this.dataset.err){this.dataset.err='1';this.src='./assets/rooms/${room.id}.svg';}" />
+          <img src="${primaryImg}" alt="${room.name}" class="room-card-img" loading="lazy" onerror="if(!this.dataset.err){this.dataset.err='1';this.src='${altImg}';}else if(this.dataset.err==='1'){this.dataset.err='2';this.src='./assets/rooms/${room.id}.svg';}" />
           <span class="room-card-capacity">👥 ${room.shortCapacity || room.capacityDisplay}</span>
         </div>
         <div class="room-card-body">
@@ -1971,9 +1973,13 @@ function openRoomDetail(roomId) {
   if (detailImg) {
     detailImg.src = room.images[0];
     detailImg.alt = room.name;
+    detailImg.dataset.err = '';
     detailImg.onerror = function() {
-      if (!this.dataset.err) {
+      if (!this.dataset.err && room.images[1]) {
         this.dataset.err = '1';
+        this.src = room.images[1];
+      } else if (this.dataset.err !== '2') {
+        this.dataset.err = '2';
         this.src = `./assets/rooms/${room.id}.svg`;
       }
     };
@@ -2635,7 +2641,6 @@ function scrollFoodScreen(direction) {
 
     // ۲. اسکرول به نقطه لنگر بالای صفحه غذا با scrollIntoView
     const topAnchor = document.getElementById('food-screen-top-anchor') ||
-                      document.getElementById('food-stay-top-card') ||
                       document.getElementById('food-linked-stay-banner') ||
                       document.getElementById('screen-food');
     if (topAnchor) {
@@ -3417,7 +3422,7 @@ function renderFoodList() {
 }
 
 /**
- * تولید ساختار HTML کارت یکپارچه اقامت برای صفحه غذا (مشابه بخش اقامت با امکان انتخاب و ویرایش اتاق)
+ * تولید ساختار HTML کارت یکپارچه اقامت برای صفحه غذا (بدون انتخاب مستقیم اتاق‌ها - هدایت به صفحه اتاق‌ها)
  */
 function renderUnifiedStayCardHTML(selectedRooms) {
   const isSelected = selectedRooms.length > 0;
@@ -3425,14 +3430,11 @@ function renderUnifiedStayCardHTML(selectedRooms) {
   const inJalali = getJalaliDetails(checkInVal);
   const nightsVal = state.reservation.nights || 1;
 
-  // اتاق‌هایی که هنوز انتخاب نشده‌اند جهت افزودن سریع
-  const unselectedRooms = ROOMS.filter(r => !selectedRooms.some(sr => sr.id === r.id));
-
   let html = `
     <div class="unified-stay-header">
       <span class="unified-stay-title">
         <span>🏡</span>
-        <span>${isSelected ? `اقامت در خانه برزک (${formatPersianNumber(selectedRooms.length)} اتاق انتخاب شده)` : 'رزرو اقامت و اتاق در خانه برزک (اختیاری)'}</span>
+        <span>${isSelected ? `اقامت در خانه برزک (${formatPersianNumber(selectedRooms.length)} اتاق انتخاب شده)` : 'رزرو اقامت در خانه برزک (اختیاری)'}</span>
       </span>
       <span class="badge-unified" style="${isSelected ? 'background: #e6f4ea; color: #137333; font-weight: 800;' : 'background: var(--brand-surface-subtle); color: var(--brand-text-muted);'}">
         ${isSelected ? `دارای اقامت (${formatPersianNumber(selectedRooms.length)} اتاق)` : 'بدون اقامت (فقط غذا)'}
@@ -3442,43 +3444,17 @@ function renderUnifiedStayCardHTML(selectedRooms) {
 
   if (!isSelected) {
     html += `
-      <p style="font-size: 12.5px; color: var(--brand-text-muted); line-height: 1.6; margin-bottom: 12px;">
-        اگر مایلید علاوه بر غذا، در اتاق‌های سنتی خانه برزک اقامت داشته باشید، می‌توانید مستقیماً از همین‌جا یا با ورود به صفحه رزرو اقامت، اتاق‌های مد نظر خود را انتخاب و ویرایش فرمایید.
+      <p style="font-size: 13px; color: var(--brand-text-muted); line-height: 1.6; margin: 8px 0 14px 0;">
+        در صورتی که مایلید علاوه بر سفارش غذای محلی، در اتاق‌های سنتی خانه برزک نیز اقامت داشته باشید، می‌توانید وارد صفحه انتخاب اتاق‌ها شوید:
       </p>
 
-      <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
-        <button type="button" class="btn btn-mustard" style="flex: 1; min-width: 180px; font-size: 13px; font-weight: 800; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;" onclick="openReservationFromFood()">
-          <span>📝 رفتن به صفحه انتخاب اقامت</span>
-          <span>صفحه رزرو ←</span>
-        </button>
-        <button type="button" class="btn btn-outline" style="font-size: 12.5px; font-weight: 700; padding: 10px 14px;" onclick="openRoomsFromFood()">
-          🏠 عکس‌ها و مشخصات ۷ اتاق
-        </button>
-      </div>
-
-      <div style="background: #ffffff; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--brand-border); box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-        <div style="font-size: 13px; font-weight: 800; color: var(--brand-green); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-          <span>⚡ انتخاب مستقیم و سریع اتاق‌های سنتی:</span>
-          <span style="font-size: 11px; font-weight: normal; color: var(--brand-text-muted);">کلیک جهت انتخاب</span>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          ${ROOMS.map(r => `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: #faf8f5; border: 1px solid #eee8dd; border-radius: 8px;">
-              <div style="text-align: right;">
-                <div style="font-weight: 800; font-size: 13.5px; color: var(--brand-green);">🏠 اتاق ${r.name}</div>
-                <div style="font-size: 11px; color: var(--brand-text-muted); margin-top: 2px;">👥 ${r.shortCapacity || r.capacityDisplay} • ${r.beds}</div>
-                <div style="font-size: 11.5px; font-weight: 700; color: #b45309; margin-top: 2px;">${formatToman(r.price)} <small style="font-size: 10px; font-weight: normal;">هر نفر/شب</small></div>
-              </div>
-              <button type="button" class="btn btn-mustard" onclick="quickAddRoomToStay('${r.id}')" style="font-size: 12px; font-weight: 800; padding: 6px 12px; border-radius: 6px; white-space: nowrap;">
-                ➕ انتخاب این اتاق
-              </button>
-            </div>
-          `).join('')}
-        </div>
-      </div>
+      <button type="button" class="btn btn-mustard" style="width: 100%; font-size: 13.5px; font-weight: 800; padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);" onclick="openRoomsFromFood()">
+        <span>🏠 رفتن به صفحه انتخاب اتاق‌ها</span>
+        <span>مشاهده و انتخاب اتاق ←</span>
+      </button>
     `;
   } else {
-    // اقامت انتخاب شده است - نمایش و ویرایش کامل مشابه فرم اقامت
+    // اقامت انتخاب شده است - نمایش خلاصه اتاق‌ها و کنترل نفرات
     const totalGuests = selectedRooms.reduce((sum, r) => {
       return sum + ((state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2);
     }, 0);
@@ -3487,24 +3463,21 @@ function renderUnifiedStayCardHTML(selectedRooms) {
     const discountData = calculateStayDiscount(checkInVal, nightsVal, totalGuests);
 
     html += `
-      <!-- نوار ناوبری سریع به صفحه اقامت -->
-      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-        <button type="button" class="btn btn-mustard" style="flex: 1; min-width: 170px; font-size: 12.5px; font-weight: 800; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center;" onclick="openReservationFromFood()">
-          <span>📝 ویرایش در صفحه رزرو اقامت</span>
-          <span>فرم کامل ←</span>
+      <!-- نوار ناوبری به صفحه اتاق‌ها یا حذف اقامت -->
+      <div style="display: flex; gap: 8px; margin: 10px 0 14px 0; flex-wrap: wrap;">
+        <button type="button" class="btn btn-mustard" style="flex: 1; min-width: 180px; font-size: 12.5px; font-weight: 800; padding: 9px 14px; display: flex; justify-content: space-between; align-items: center;" onclick="openRoomsFromFood()">
+          <span>🏠 تغییر یا انتخاب اتاق در صفحه اتاق‌ها</span>
+          <span>صفحه اتاق‌ها ←</span>
         </button>
-        <button type="button" class="btn btn-outline" style="font-size: 12px; font-weight: 700; padding: 9px 12px;" onclick="openRoomsFromFood()">
-          🏠 افزودن اتاق دیگر
-        </button>
-        <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 9px 12px; color: #b91c1c; border-color: #fecaca; background: #fff5f5;" onclick="clearStayFromFoodOrder()">
+        <button type="button" class="btn btn-outline" style="font-size: 12px; font-weight: 700; padding: 9px 12px; color: #b91c1c; border-color: #fecaca; background: #fff5f5;" onclick="clearStayFromFoodOrder()">
           🗑️ فقط غذا (حذف اقامت)
         </button>
       </div>
 
-      <!-- لیست اتاق‌های انتخابی با کنترل‌های افزایش/کاهش نفرات و حذف مشابه بخش اقامت -->
+      <!-- لیست اتاق‌های انتخابی با کنترل‌های افزایش/کاهش نفرات -->
       <div style="margin-bottom: 12px;">
         <div style="font-size: 12.5px; font-weight: 800; color: var(--brand-green); margin-bottom: 8px;">
-          اتاق‌های انتخاب‌شده و کنترل تعداد نفرات:
+          اتاق‌های انتخاب‌شده و تعداد نفرات:
         </div>
         ${selectedRooms.map(room => {
           const guests = (state.reservation.roomGuests && state.reservation.roomGuests[room.id]) || room.baseCapacity || 2;
@@ -3584,21 +3557,6 @@ function renderUnifiedStayCardHTML(selectedRooms) {
           <span>${formatToman(discountData.finalRoomTotal)}</span>
         </div>
       </div>
-
-      ${unselectedRooms.length > 0 ? `
-        <div style="margin-top: 10px; background: #faf8f5; border: 1px dashed var(--brand-border); border-radius: 8px; padding: 10px 12px;">
-          <div style="font-size: 12px; font-weight: 700; color: var(--brand-green); margin-bottom: 6px;">⚡ افزودن سریع اتاق‌های دیگر به همین رزرو:</div>
-          <div class="room-quick-chips-row">
-            ${unselectedRooms.map(r => `
-              <button type="button" class="room-quick-chip" onclick="quickAddRoomToStay('${r.id}')" title="افزودن اتاق ${r.name}">
-                <span>+</span>
-                <span>اتاق ${r.name}</span>
-                <small style="opacity: 0.75;">(${r.shortCapacity || r.capacityDisplay})</small>
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      ` : ''}
     `;
   }
 
@@ -3634,19 +3592,15 @@ function renderFoodSection() {
     }
   }
 
-  // به‌روزرسانی کارت‌های تعاملی اقامت در بالا و پایین صفحه غذا (امکان انتخاب و ویرایش اتاق مستقیماً از صفحه غذا)
+  // به‌روزرسانی کارت تعاملی اقامت در انتهای فرم غذا
   const topStayCard = document.getElementById("food-stay-top-card");
+  if (topStayCard) {
+    topStayCard.innerHTML = "";
+    topStayCard.style.display = "none";
+  }
+
   const bottomStayCard = document.getElementById("unified-stay-card");
   const stayHTML = renderUnifiedStayCardHTML(selectedRooms);
-
-  if (topStayCard) {
-    topStayCard.innerHTML = stayHTML;
-    if (selectedRooms.length > 0) {
-      topStayCard.classList.add("has-stay");
-    } else {
-      topStayCard.classList.remove("has-stay");
-    }
-  }
 
   if (bottomStayCard) {
     bottomStayCard.innerHTML = stayHTML;

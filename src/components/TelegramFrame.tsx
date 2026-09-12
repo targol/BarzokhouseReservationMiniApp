@@ -67,7 +67,7 @@ export const TelegramFrame: React.FC<TelegramFrameProps> = ({
       text: `سلام ${user.first_name}! خوش آمدید 👋\n\nاین بات با **Cloudflare Workers** اجرا می‌شود و دارای **Telegram Mini App** اختصاصی است.\n\n👇 برای باز کردن مینی‌اپ، روی دکمه زیر کلیک کنید:`,
       time: '12:35',
       hasMiniAppButton: true,
-      buttonText: '🚀 باز کردن مینی‌اپ (Mini App)'
+      buttonText: '🏡 ورود به مینی‌اپ'
     }
   ]);
 
@@ -124,7 +124,7 @@ export const TelegramFrame: React.FC<TelegramFrameProps> = ({
           text: replyText,
           time: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
           hasMiniAppButton: hasButton,
-          buttonText: '🚀 باز کردن مینی‌اپ (Mini App)'
+          buttonText: '🏡 ورود به مینی‌اپ'
         }
       ]);
     }, 600);
@@ -258,10 +258,10 @@ export const TelegramFrame: React.FC<TelegramFrameProps> = ({
                           <button
                             id="btn-chat-launch-miniapp"
                             onClick={() => setActiveView('miniapp')}
-                            className="w-full py-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition-all"
+                            className="w-full max-w-full px-3 py-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition-all overflow-hidden"
                           >
-                            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                            <span>{msg.buttonText || 'باز کردن مینی‌اپ'}</span>
+                            <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                            <span className="truncate">{msg.buttonText || 'ورود به مینی‌اپ'}</span>
                           </button>
                         </div>
                       )}

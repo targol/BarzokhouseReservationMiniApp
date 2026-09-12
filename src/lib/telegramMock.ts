@@ -277,6 +277,35 @@ export class TelegramBridge {
         this.backgroundColor = color;
         TelegramBridge.notify('bgColor', color);
       },
+
+      requestContact(callback?: (granted: boolean, response: any) => void) {
+        const phone = activeUser?.phone_number || '09123456789';
+        if (callback) {
+          callback(true, {
+            status: 'sent',
+            contact: {
+              phone_number: phone,
+              first_name: activeUser?.first_name || 'مهمان',
+              user_id: activeUser?.id || 12345678
+            },
+            responseUnsafe: {
+              contact: {
+                phone_number: phone,
+                first_name: activeUser?.first_name || 'مهمان',
+                user_id: activeUser?.id || 12345678
+              }
+            }
+          });
+        }
+        TelegramBridge.notify('contactRequested', {
+          status: 'sent',
+          response: {
+            contact: {
+              phone_number: phone
+            }
+          }
+        });
+      },
     };
 
     // Attach to window.Telegram if not already present

@@ -343,20 +343,9 @@
         <h4 style="font-size: 14px; font-weight: 700; color: var(--brand-green); margin-bottom: 8px;">امکانات:</h4>
         <div class="amenities-list" id="detail-amenities" style="margin-bottom: 22px;"></div>
 
-        <!-- دکمه درخواست رزرو این اتاق -->
-        <div id="detail-actions-box">
-          <button class="btn btn-mustard" id="btn-request-reservation" onclick="handleRoomDetailBookingClick()">
-            رزرو این اتاق ←
-          </button>
-          
-          <div id="detail-room-options" style="display: none; margin-top: 10px; display: none; gap: 8px;">
-            <button type="button" class="btn btn-outline" style="flex: 1; font-size: 13px; padding: 10px;" onclick="navigateTo('screen-rooms')">
-              🏠 انتخاب اتاق دیگر
-            </button>
-            <button type="button" class="btn btn-mustard" style="flex: 1.2; font-size: 13px; padding: 10px;" onclick="openReservationScreen()">
-              ارسال درخواست رزرو ←
-            </button>
-          </div>
+        <!-- دکمه‌های اقدام رزرو، لغو رزرو و انتخاب اتاق دیگر -->
+        <div id="detail-actions-box" style="margin-top: 10px;">
+          <!-- محتوای این بخش به صورت پویا با updateRoomDetailButtons پر می‌شود -->
         </div>
       </section>
 
@@ -1264,16 +1253,16 @@
       </div>
     </div>
 
-    <!-- نوار شناور وضعیت رزرو (قابل دسترسی در سراسر مینی‌اپ) -->
+    <!-- نوار شناور وضعیت رزرو (قابل دسترسی در سراسر مینی‌اپ با امکان لغو رزرو مستقیم) -->
     <div class="floating-booking-bar" id="floating-booking-bar" style="display: none;">
       <div class="floating-booking-info">
         <span class="floating-booking-icon">🛎️</span>
         <div class="floating-booking-text">
           <strong class="floating-booking-title" id="floating-booking-title">۱ اتاق در لیست رزرو</strong>
-          <small class="floating-booking-sub" id="floating-booking-sub">آماده ارسال درخواست به میزبان</small>
+          <div class="floating-booking-cancels" id="floating-booking-cancels"></div>
         </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 6px;">
+      <div class="floating-booking-actions">
         <button type="button" class="btn btn-mustard floating-booking-btn" id="btn-floating-booking" onclick="openReservationScreen()">
           مشاهده و ارسال ←
         </button>

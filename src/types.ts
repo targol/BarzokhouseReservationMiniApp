@@ -3,6 +3,7 @@ export interface TelegramUser {
   first_name: string;
   last_name?: string;
   username?: string;
+  phone_number?: string;
   language_code?: string;
   is_premium?: boolean;
   photo_url?: string;
@@ -98,6 +99,7 @@ export interface TelegramWebAppBridge {
   showPopup: (params: { title?: string; message: string; buttons?: Array<{ id?: string; type?: string; text?: string }> }, callback?: (id?: string) => void) => void;
   setHeaderColor: (color: string) => void;
   setBackgroundColor: (color: string) => void;
+  requestContact?: (callback?: (granted: boolean, response: any) => void) => void;
 }
 
 export interface ProductItem {

@@ -150,6 +150,9 @@ function resolveChatId(env, payload) {
   return s;
 }
 
+// حافظه موقت برای ذخیره شماره‌های دریافتی از تلگرام جهت واکشی توسط مینی‌اپ
+const USER_CONTACTS_CACHE = {};
+
 export default {
   async fetch(request, env, ctx) {
     // پاسخ به درخواست‌های مقدماتی CORS (Preflight)
@@ -161,6 +164,21 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // ۰. مسیر استعلام شماره تماس تأییدشده کاربر از تلگرام (/api/user-phone)
+    if (url.pathname === "/api/user-phone" || url.pathname.startsWith("/api/user-phone")) {
+      const uId = url.searchParams.get("user_id") || url.searchParams.get("userId");
+      if (uId && USER_CONTACTS_CACHE[uId]) {
+        return new Response(JSON.stringify({ ok: true, contact: USER_CONTACTS_CACHE[uId] }), {
+          status: 200,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
+        });
+      }
+      return new Response(JSON.stringify({ ok: false, message: "شماره هنوز ثبت نشده است" }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" }
+      });
+    }
 
     // ۱. هندل کردن مسیر اختصاصی API ثبت رزرو مینی‌اپ (/api/reserve)
     if (url.pathname === "/api/reserve" || url.pathname.startsWith("/api/reserve")) {
@@ -407,7 +425,7 @@ async function handleTelegramUpdate(update, env, currentUrl) {
         inline_keyboard: [
           [
             {
-              text: "🏡 ورود مستقیم به مینی‌اپ خانه برزک",
+              text: "🏡 ورود به مینی‌اپ",
               web_app: { url: appUrl }
             }
           ]
@@ -459,6 +477,39 @@ async function handleTelegramUpdate(update, env, currentUrl) {
         })
       });
     } catch (_) {}
+    return;
+  }
+
+  // د: دریافت و ثبت خودکار شماره تماس از دکمه تلگرام (Contact Sharing)
+  if (message.contact) {
+    const contact = message.contact;
+    const rawPhone = contact.phone_number || "";
+    let cleanPhone = rawPhone.replace(/[^\\d+]/g, '');
+    if (cleanPhone.startsWith("+98")) cleanPhone = "0" + cleanPhone.slice(3);
+    else if (cleanPhone.startsWith("98") && cleanPhone.length === 12) cleanPhone = "0" + cleanPhone.slice(2);
+    else if (cleanPhone.startsWith("0098")) cleanPhone = "0" + cleanPhone.slice(4);
+    else if (!cleanPhone.startsWith("0") && cleanPhone.length === 10) cleanPhone = "0" + cleanPhone;
+
+    const fromUser = message.from || {};
+    const uName = [fromUser.first_name, fromUser.last_name].filter(Boolean).join(" ") || contact.first_name || "مهمان گرامی";
+    const username = fromUser.username ? ("@" + fromUser.username) : "ندارد";
+
+    const contactPayload = {
+      phone: cleanPhone,
+      rawPhone: rawPhone,
+      name: uName,
+      username: username,
+      timestamp: Date.now()
+    };
+
+    // ثبت در حافظه کش سرور برای تمامی شناسه‌های احتمالی کاربر جهت دسترسی سریع فرم مینی‌اپ
+    if (fromUser.id) USER_CONTACTS_CACHE[String(fromUser.id)] = contactPayload;
+    if (contact.user_id) USER_CONTACTS_CACHE[String(contact.user_id)] = contactPayload;
+    if (chatId) USER_CONTACTS_CACHE[String(chatId)] = contactPayload;
+
+    // طبق خواسته کاربر: ارسال پیام خام شماره به بات یا گروه انجام نمی‌شود.
+    // شماره صرفاً در باکس فرم پر می‌شود و هنگام ارسال نهایی فرم توسط کاربر به گروه می‌رود.
+    return;
   }
 }
 

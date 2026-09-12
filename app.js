@@ -957,6 +957,19 @@ function initTelegramWebApp() {
 
         updateTelegramUserBadges();
       }
+
+      // شنود مستقیم رویداد بومی ارسال شماره تماس تلگرام
+      if (typeof tg.onEvent === 'function') {
+        tg.onEvent('contactRequested', (event) => {
+          if (event && (event.status === 'sent' || event.status === 'allowed')) {
+            const raw = event.response?.contact?.phone_number || event.responseUnsafe?.contact?.phone_number;
+            if (raw) {
+              fillTelegramPhone(raw);
+              showToast("✓ شماره همراه شما دریافت شد و در کادر قرار گرفت.");
+            }
+          }
+        });
+      }
     } catch (e) {
       console.warn("Telegram WebApp initialization note:", e);
     }
@@ -964,30 +977,84 @@ function initTelegramWebApp() {
 }
 
 /**
+ * استخراج عمیق و هوشمند شماره تلفن از هر ساختار ارسالی تلگرام
+ */
+function extractPhoneNumberFromTelegram(data) {
+  if (!data) return null;
+  if (typeof data === 'string') {
+    try {
+      const parsed = JSON.parse(data);
+      const inner = extractPhoneNumberFromTelegram(parsed);
+      if (inner) return inner;
+    } catch (_) {}
+    const cleaned = data.replace(/[^\d+]/g, '');
+    if (cleaned.length >= 10 && (cleaned.startsWith("09") || cleaned.startsWith("+98") || cleaned.startsWith("98"))) {
+      return cleaned;
+    }
+    return null;
+  }
+  if (typeof data === 'object') {
+    if (data.phone_number) return String(data.phone_number);
+    if (data.phone) return String(data.phone);
+    if (data.contact) {
+      const inner = extractPhoneNumberFromTelegram(data.contact);
+      if (inner) return inner;
+    }
+    if (data.responseUnsafe) {
+      const inner = extractPhoneNumberFromTelegram(data.responseUnsafe);
+      if (inner) return inner;
+    }
+    if (data.response) {
+      const inner = extractPhoneNumberFromTelegram(data.response);
+      if (inner) return inner;
+    }
+    for (const key of Object.keys(data)) {
+      if (key.toLowerCase().includes('phone') && typeof data[key] === 'string') {
+        return data[key];
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * درخواست بومی شماره تماس از تلگرام (Telegram WebApp Request Contact)
  */
 function requestTelegramContact(targetField = 'res') {
   triggerHaptic('medium');
+
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
+  const userId = tgUser ? (tgUser.id || tgUser.user_id) : null;
+
+  // ۱. بررسی فوری اگر شماره قبلاً در حافظه محلی یا استیت وجود داشته باشد
+  const savedPhone = state.telegramUser?.phone || (tgUser && tgUser.phone_number);
+  if (savedPhone) {
+    fillTelegramPhone(savedPhone);
+    showToast("✓ شماره همراه شما در کادر فرم قرار گرفت.");
+    return;
+  }
+
+  // ۲. فراخوانی API رسمی تلگرام
   if (tg && typeof tg.requestContact === 'function') {
     try {
+      showToast("در حال دریافت شماره از حساب تلگرام شما...");
       tg.requestContact((granted, response) => {
         if (granted) {
-          let phone = "";
-          if (response && response.responseUnsafe && response.responseUnsafe.contact) {
-            phone = response.responseUnsafe.contact.phone_number;
-          } else if (response && response.phone_number) {
-            phone = response.phone_number;
-          } else if (typeof response === 'string') {
-            phone = response;
-          }
-          if (phone) {
-            fillTelegramPhone(phone);
-            showToast("شماره تلگرام شما با موفقیت دریافت و درج شد.");
+          const directPhone = extractPhoneNumberFromTelegram(response);
+          if (directPhone) {
+            fillTelegramPhone(directPhone);
+            showToast("✓ شماره همراه در کادر فرم قرار گرفت.");
             return;
           }
-          showToast("شماره تماس تلگرام شما ثبت شد.");
+
+          // اگر در کلاینت شماره در کالبک نبود، واکشی از حافظه موقت سرور با شناسه کاربر
+          if (userId) {
+            pollTelegramPhoneFromServer(userId);
+          } else {
+            showToast("شماره تلگرام دریافت شد.");
+          }
         } else {
-          showToast("دسترسی به شماره داده نشد. لطفاً شماره را به صورت دستی وارد فرمایید.");
+          showToast("دسترسی به شماره داده نشد. لطفاً شماره را در کادر بنویسید.");
         }
       });
       return;
@@ -996,23 +1063,41 @@ function requestTelegramContact(targetField = 'res') {
     }
   }
 
-  const savedPhone = state.telegramUser?.phone;
-  if (savedPhone) {
-    fillTelegramPhone(savedPhone);
-    showToast("شماره تلگرام شما در فیلد قرار گرفت.");
-    return;
-  }
-
-  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
-  if (tgUser && tgUser.username) {
-    showToast(`حساب کاربری @${tgUser.username} شناسایی شد؛ لطفاً شماره تماس خود را در کادر بنویسید.`);
+  // در صورتی که خارج از محیط مستقیم تلگرام باشد
+  if (userId) {
+    pollTelegramPhoneFromServer(userId, 3);
   } else {
-    showToast("این قابلیت درون پیام‌رسان تلگرام شماره همراه حساب شما را دریافت می‌کند.");
+    showToast("لطفاً شماره تماس خود را در کادر وارد فرمایید.");
   }
 }
 
 /**
- * استانداردسازی و درج شماره تماس دریافت‌شده از تلگرام
+ * واکشی شماره دریافت‌شده از سرور ورکر جهت پر کردن فوری کادر ورودی فرم
+ */
+function pollTelegramPhoneFromServer(userId, maxAttempts = 15) {
+  let attempts = 0;
+  const timer = setInterval(async () => {
+    attempts++;
+    try {
+      const res = await fetch(`/api/user-phone?user_id=${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && data.contact && data.contact.phone) {
+          clearInterval(timer);
+          fillTelegramPhone(data.contact.phone);
+          showToast("✓ شماره همراه در کادر فرم قرار گرفت.");
+          return;
+        }
+      }
+    } catch (_) {}
+    if (attempts >= maxAttempts) {
+      clearInterval(timer);
+    }
+  }, 650);
+}
+
+/**
+ * استانداردسازی و درج مستقیم شماره تماس در کادرهای ورودی فرم
  */
 function fillTelegramPhone(rawPhone) {
   if (!rawPhone) return;
@@ -1027,12 +1112,27 @@ function fillTelegramPhone(rawPhone) {
     clean = "0" + clean;
   }
   handleGuestPhoneSync(clean);
+
   const resPhoneEl = document.getElementById("res-phone");
   const foodPhoneEl = document.getElementById("food-phone");
-  if (resPhoneEl) resPhoneEl.value = clean;
-  if (foodPhoneEl) foodPhoneEl.value = clean;
+
+  if (resPhoneEl) {
+    resPhoneEl.value = clean;
+    resPhoneEl.dispatchEvent(new Event('input', { bubbles: true }));
+    resPhoneEl.dispatchEvent(new Event('change', { bubbles: true }));
+    resPhoneEl.classList.add("input-filled-highlight");
+    setTimeout(() => resPhoneEl.classList.remove("input-filled-highlight"), 1800);
+  }
+  if (foodPhoneEl) {
+    foodPhoneEl.value = clean;
+    foodPhoneEl.dispatchEvent(new Event('input', { bubbles: true }));
+    foodPhoneEl.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
   state.reservation.phone = clean;
   state.foodOrder.phone = clean;
+  if (!state.telegramUser) state.telegramUser = {};
+  state.telegramUser.phone = clean;
 }
 
 /**
@@ -2037,25 +2137,47 @@ function openRoomDetail(roomId) {
 
 function updateRoomDetailButtons() {
   const roomId = state.selectedRoomId;
+  const room = ROOMS.find(r => r.id === roomId);
+  const roomName = room ? room.name : "";
   const isAdded = state.reservation.selectedRoomIds && state.reservation.selectedRoomIds.includes(roomId);
-  const btn = document.getElementById("btn-request-reservation");
-  const optionsBox = document.getElementById("detail-room-options");
+  const container = document.getElementById("detail-actions-box");
+  if (!container) return;
 
-  if (btn) {
-    if (isAdded) {
-      btn.innerHTML = `✓ اتاق ${ROOMS.find(r => r.id === roomId)?.name || ''} در لیست رزرو شماست`;
-      btn.classList.remove("btn-mustard");
-      btn.classList.add("btn-primary");
-    } else {
-      btn.innerHTML = `رزرو این اتاق ←`;
-      btn.classList.remove("btn-primary");
-      btn.classList.add("btn-mustard");
-    }
+  if (isAdded) {
+    container.innerHTML = `
+      <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 700; color: #166534;">✓ اتاق ${roomName} در لیست رزرو شماست</span>
+        <button type="button" class="btn-cancel-room-detail" onclick="cancelCurrentRoomDetail('${roomId}')" title="لغو رزرو این اتاق">
+          🗑️ لغو رزرو
+        </button>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-mustard" style="flex: 1.2; min-width: 140px; padding: 11px 16px;" onclick="openReservationScreen()">
+          تکمیل و ارسال رزرو ←
+        </button>
+        <button type="button" class="btn btn-outline" style="flex: 1; min-width: 130px; padding: 11px 16px;" onclick="navigateTo('screen-rooms')">
+          🏠 انتخاب اتاق دیگر
+        </button>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-mustard" style="flex: 1.2; min-width: 140px; padding: 11px 16px;" id="btn-request-reservation" onclick="handleRoomDetailBookingClick()">
+          رزرو این اتاق ←
+        </button>
+        <button type="button" class="btn btn-outline" style="flex: 1; min-width: 130px; padding: 11px 16px;" onclick="navigateTo('screen-rooms')">
+          🏠 انتخاب اتاق دیگر
+        </button>
+      </div>
+    `;
   }
+}
 
-  if (optionsBox) {
-    optionsBox.style.display = isAdded ? "flex" : "none";
-  }
+function cancelCurrentRoomDetail(roomId) {
+  triggerHaptic('light');
+  removeRoomFromReservation(roomId);
+  showToast(`رزرو اتاق ${ROOMS.find(r => r.id === roomId)?.name || ''} لغو شد.`);
 }
 
 function handleRoomDetailBookingClick() {
@@ -2305,14 +2427,19 @@ function updateFloatingBookingBar() {
       document.body.classList.add("has-floating-bar");
     }
     const count = selectedRooms.length;
-    const roomNames = selectedRooms.map(r => r.name).join(" و ");
     const titleEl = document.getElementById("floating-booking-title");
-    const subEl = document.getElementById("floating-booking-sub");
     if (titleEl) {
-      titleEl.textContent = `${formatPersianNumber(count)} اتاق در درخواست رزرو (${roomNames})`;
+      titleEl.textContent = `${formatPersianNumber(count)} اتاق در درخواست رزرو:`;
     }
-    if (subEl) {
-      subEl.textContent = "برای مشاهده و ارسال نهایی کلیک کنید";
+
+    const cancelsContainer = document.getElementById("floating-booking-cancels");
+    if (cancelsContainer) {
+      cancelsContainer.innerHTML = selectedRooms.map(r => `
+        <button type="button" class="floating-cancel-chip" onclick="cancelRoomFromFloatingBar('${r.id}', event)" title="لغو رزرو اتاق ${r.name}">
+          <span>${r.name}</span>
+          <span class="cancel-x" aria-hidden="true">✕</span>
+        </button>
+      `).join("");
     }
   } else {
     bar.style.display = "none";
@@ -2320,6 +2447,17 @@ function updateFloatingBookingBar() {
       document.body.classList.remove("has-floating-bar");
     }
   }
+}
+
+function cancelRoomFromFloatingBar(roomId, event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  triggerHaptic('medium');
+  const room = ROOMS.find(r => r.id === roomId);
+  removeRoomFromReservation(roomId);
+  showToast(`رزرو اتاق «${room ? room.name : ''}» لغو شد.`);
 }
 
 // ۹. فرم و محاسبات درخواست رزرو یکپارچه (اقامت + خوراک)
@@ -5405,4 +5543,6 @@ window.FOOD_MENU = FOOD_MENU;
 window.requestTelegramContact = requestTelegramContact;
 window.fillTelegramPhone = fillTelegramPhone;
 window.updateTelegramUserBadges = updateTelegramUserBadges;
+window.cancelRoomFromFloatingBar = cancelRoomFromFloatingBar;
+window.cancelCurrentRoomDetail = cancelCurrentRoomDetail;
 

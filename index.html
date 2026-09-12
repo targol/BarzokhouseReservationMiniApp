@@ -121,16 +121,7 @@
             <span class="menu-card-arrow">←</span>
           </div>
 
-          <!-- ۷. وب‌سایت و شبکه‌ها -->
-          <div class="menu-card" id="menu-btn-social" onclick="navigateTo('screen-social')" role="button" tabindex="0">
-            <div class="menu-card-right">
-              <span class="menu-card-icon">🌐</span>
-              <span class="menu-card-title">وب‌سایت و شبکه‌های اجتماعی</span>
-            </div>
-            <span class="menu-card-arrow">←</span>
-          </div>
-
-          <!-- ۸. تجربه و نظرات شما -->
+          <!-- ۷. تجربه و نظرات شما -->
           <div class="menu-card" id="menu-btn-reviews" onclick="navigateTo('screen-reviews')" role="button" tabindex="0">
             <div class="menu-card-right">
               <span class="menu-card-icon">⭐</span>
@@ -145,13 +136,13 @@
         <div class="content-card home-contact-card" id="home-contact-section" style="margin-top: 14px; margin-bottom: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
           <h3 style="display: flex; align-items: center; gap: 8px; font-size: 15.5px; color: var(--brand-green); margin-bottom: 8px;">
             <span>📞</span>
-            <span>اطلاعات تماس</span>
+            <span>اطلاعات تماس و ارتباط</span>
           </h3>
           <p style="font-size: 13px; line-height: 1.7; color: var(--brand-text); margin-bottom: 14px;">
             خوشحال می‌شویم صدایتان را بشنویم! برای هماهنگی ساعت ورود یا هر سؤالی، می‌توانید با ما تماس بگیرید:
           </p>
 
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px;">
             <!-- شماره تماس اول -->
             <div style="background: var(--brand-surface-subtle); padding: 12px 10px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--brand-border); display: flex; flex-direction: column; justify-content: space-between;">
               <div>
@@ -177,6 +168,22 @@
                 📞 تماس با شماره دوم
               </a>
             </div>
+          </div>
+
+          <!-- دکمه‌های وب‌سایت، تلگرام و اینستاگرام زیر شماره‌های تلفن -->
+          <div class="home-social-grid" id="home-social-buttons-grid">
+            <a class="home-social-btn home-social-web" id="home-btn-website" data-config-website href="https://barzokhouse.com" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://barzokhouse.com')" title="مشاهده وب‌سایت رسمی خانه برزک">
+              <span class="social-icon">🌐</span>
+              <span class="social-label">وب‌سایت</span>
+            </a>
+            <a class="home-social-btn home-social-tg" id="home-btn-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://t.me/barzokhouse')" title="کانال و ارتباط در تلگرام">
+              <span class="social-icon">✈️</span>
+              <span class="social-label">تلگرام</span>
+            </a>
+            <a class="home-social-btn home-social-insta" id="home-btn-instagram" data-config-instagram href="https://instagram.com/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://instagram.com/barzokhouse')" title="صفحه رسمی اینستاگرام خانه برزک">
+              <span class="social-icon">📷</span>
+              <span class="social-label">اینستاگرام</span>
+            </a>
           </div>
 
           <!-- توضیحات صفحه تماس -->

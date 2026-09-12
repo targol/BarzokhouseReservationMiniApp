@@ -1159,6 +1159,7 @@ function updateScreenStackFor(screenId) {
 
 function navigateTo(screenId, source = null) {
   triggerHaptic('light');
+  hideToast();
 
   if (screenId === "screen-home") {
     try { closeMessageModal(); } catch (_) {}
@@ -1196,6 +1197,7 @@ function navigateTo(screenId, source = null) {
 
 function navigateBack() {
   triggerHaptic('light');
+  hideToast();
   const currentScreenId = state.screenStack[state.screenStack.length - 1] || "screen-home";
   if (currentScreenId === "screen-home") return;
 
@@ -2924,8 +2926,8 @@ function generateUnifiedOrderMessage(target = 'guest') {
     state.foodOrder.notes = rawNotes;
     state.reservation.notes = rawNotes;
   }
-  const notesLine = rawNotes ? `\n📝 توضیحات و ملاحظات مهمان:\n${rawNotes}` : "";
-  const notesLineInline = rawNotes ? `\n\n📝 توضیحات و ملاحظات مهمان:\n${rawNotes}` : "";
+  const notesLine = rawNotes ? `\n📝 توضیحات و ملاحظات (اقامت و خوراک):\n${rawNotes}` : "";
+  const notesLineInline = rawNotes ? `\n\n📝 توضیحات و ملاحظات (اقامت و خوراک):\n${rawNotes}` : "";
 
   const checkIn = state.reservation.checkInDate;
   const checkOut = state.reservation.checkOutDate || addDaysToDateString(checkIn, state.reservation.nights);
@@ -4957,12 +4959,30 @@ function sendViaTelegram() {
   });
 }
 
-// نمایش پیام Toast
+// پنهان‌سازی سریع اعلان Toast با انیمیشن روان
+function hideToast() {
+  const toast = document.getElementById("app-toast");
+  if (!toast) return;
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+    toastTimeout = null;
+  }
+  toast.classList.remove("show");
+  setTimeout(() => {
+    if (!toast.classList.contains("show")) {
+      toast.style.visibility = "hidden";
+    }
+  }, 220);
+}
+window.hideToast = hideToast;
+
+// نمایش پیام Toast همراه با دکمه بستن
 let toastTimeout = null;
 function showToast(msg) {
   const toast = document.getElementById("app-toast");
   if (!toast) return;
-  toast.textContent = msg;
+  const toastText = document.getElementById("toast-text") || toast;
+  toastText.textContent = msg;
 
   const isBarVisible = document.body.classList.contains("has-floating-bar");
   if (isBarVisible) {
@@ -4971,12 +4991,31 @@ function showToast(msg) {
     toast.style.bottom = "24px";
   }
 
+  toast.style.visibility = "visible";
+  void toast.offsetWidth; // ریفلو مرورگر برای اجرای درست انیمیشن
   toast.classList.add("show");
+
   if (toastTimeout) clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => {
-    toast.classList.remove("show");
-  }, 3500);
+    hideToast();
+  }, 4500);
 }
+window.showToast = showToast;
+
+// مدیریت کلیک روی لینک‌های شبکه‌های اجتماعی و وب‌سایت در وب و تلگرام
+function handleSocialLinkClick(e, url) {
+  if (e) {
+    try { e.stopPropagation(); } catch (_) {}
+  }
+  if (tg && tg.openLink) {
+    try {
+      e?.preventDefault();
+      tg.openLink(url);
+      return;
+    } catch (_) {}
+  }
+}
+window.handleSocialLinkClick = handleSocialLinkClick;
 
 // ۱۳. راه‌اندازی در هنگام بارگذاری صفحه (DOMContentLoaded)
 document.addEventListener("DOMContentLoaded", () => {
@@ -5293,14 +5332,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // پیوند رویدادهای بازگشت به صفحه اول در کل برنامه
-  const headerHomeBtn = document.getElementById("header-home-btn");
-  if (headerHomeBtn) {
-    headerHomeBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      navigateTo("screen-home");
-    });
-  }
-
   const headerBrandClickable = document.getElementById("header-brand-clickable");
   if (headerBrandClickable) {
     headerBrandClickable.addEventListener("click", (e) => {

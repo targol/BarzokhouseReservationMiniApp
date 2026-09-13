@@ -936,10 +936,11 @@ function initTelegramWebApp() {
         const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ");
         state.telegramUser = {
           id: u.id || null,
-          username: u.username || "",
+          username: (u.username || "").replace(/^@/, ""),
           firstName: u.first_name || "",
           lastName: u.last_name || "",
-          phone: u.phone_number || ""
+          phone: u.phone_number || "",
+          usedTelegramButton: false
         };
 
         if (fullName) {
@@ -962,11 +963,20 @@ function initTelegramWebApp() {
       if (typeof tg.onEvent === 'function') {
         tg.onEvent('contactRequested', (event) => {
           if (event && (event.status === 'sent' || event.status === 'allowed')) {
+            if (!state.telegramUser) state.telegramUser = {};
+            state.telegramUser.usedTelegramButton = true;
+            const contactObj = event.response?.contact || event.responseUnsafe?.contact;
+            if (contactObj) {
+              if (contactObj.user_id) state.telegramUser.id = contactObj.user_id;
+              if (contactObj.first_name) state.telegramUser.firstName = contactObj.first_name;
+              if (contactObj.last_name) state.telegramUser.lastName = contactObj.last_name;
+            }
             const raw = event.response?.contact?.phone_number || event.responseUnsafe?.contact?.phone_number;
             if (raw) {
               fillTelegramPhone(raw);
               showToast("✓ شماره همراه شما دریافت شد و در کادر قرار گرفت.");
             }
+            updateTelegramUserBadges();
           }
         });
       }
@@ -1023,13 +1033,23 @@ function extractPhoneNumberFromTelegram(data) {
 function requestTelegramContact(targetField = 'res') {
   triggerHaptic('medium');
 
+  if (!state.telegramUser) state.telegramUser = {};
+  state.telegramUser.usedTelegramButton = true;
+
   const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
+  if (tgUser) {
+    if (tgUser.username) state.telegramUser.username = String(tgUser.username).replace(/^@/, '');
+    if (tgUser.id) state.telegramUser.id = tgUser.id;
+    if (tgUser.first_name) state.telegramUser.firstName = tgUser.first_name;
+    if (tgUser.last_name) state.telegramUser.lastName = tgUser.last_name;
+  }
   const userId = tgUser ? (tgUser.id || tgUser.user_id) : null;
 
   // ۱. بررسی فوری اگر شماره قبلاً در حافظه محلی یا استیت وجود داشته باشد
   const savedPhone = state.telegramUser?.phone || (tgUser && tgUser.phone_number);
   if (savedPhone) {
     fillTelegramPhone(savedPhone);
+    updateTelegramUserBadges();
     showToast("✓ شماره همراه شما در کادر فرم قرار گرفت.");
     return;
   }
@@ -1040,9 +1060,11 @@ function requestTelegramContact(targetField = 'res') {
       showToast("در حال دریافت شماره از حساب تلگرام شما...");
       tg.requestContact((granted, response) => {
         if (granted) {
+          state.telegramUser.usedTelegramButton = true;
           const directPhone = extractPhoneNumberFromTelegram(response);
           if (directPhone) {
             fillTelegramPhone(directPhone);
+            updateTelegramUserBadges();
             showToast("✓ شماره همراه در کادر فرم قرار گرفت.");
             return;
           }
@@ -1084,7 +1106,19 @@ function pollTelegramPhoneFromServer(userId, maxAttempts = 15) {
         const data = await res.json();
         if (data.ok && data.contact && data.contact.phone) {
           clearInterval(timer);
+          if (!state.telegramUser) state.telegramUser = {};
+          state.telegramUser.usedTelegramButton = true;
+          if (data.contact.username && data.contact.username !== "ندارد") {
+            state.telegramUser.username = String(data.contact.username).replace(/^@/, '');
+          }
+          if (data.contact.name) {
+            state.telegramUser.name = data.contact.name;
+          }
+          if (data.contact.user_id || userId) {
+            state.telegramUser.id = data.contact.user_id || userId;
+          }
           fillTelegramPhone(data.contact.phone);
+          updateTelegramUserBadges();
           showToast("✓ شماره همراه در کادر فرم قرار گرفت.");
           return;
         }
@@ -1133,6 +1167,8 @@ function fillTelegramPhone(rawPhone) {
   state.foodOrder.phone = clean;
   if (!state.telegramUser) state.telegramUser = {};
   state.telegramUser.phone = clean;
+  state.telegramUser.usedTelegramButton = true;
+  updateTelegramUserBadges();
 }
 
 /**
@@ -1141,18 +1177,25 @@ function fillTelegramPhone(rawPhone) {
 function updateTelegramUserBadges() {
   const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
   if (!tgUser) return;
-  const username = tgUser.username || "";
+  const rawUsername = (tgUser.username || state.telegramUser?.username || "").replace(/^@/, "").trim();
+  const userId = tgUser.id || state.telegramUser?.id || null;
   const badges = [
     document.getElementById("tg-user-badge-res"),
     document.getElementById("tg-user-badge-food")
   ];
   badges.forEach(badge => {
     if (!badge) return;
-    if (username) {
+    if (rawUsername) {
       badge.style.display = "flex";
       badge.innerHTML = `
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#1f8578" style="flex-shrink: 0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-        <span>حساب تلگرام شما: <strong>@${username}</strong> <span style="font-size: 10.5px; opacity: 0.85;">(میزبان در صورت نیاز مستقیماً به شما در تلگرام پیام خواهد داد)</span></span>
+        <span>اکانت تلگرام: <strong>@${rawUsername}</strong> <span style="font-size: 10.5px; opacity: 0.85;">(لینک مستقیم شما به گروه رزرو ارسال می‌شود)</span></span>
+      `;
+    } else if (userId && (state.telegramUser?.usedTelegramButton || state.telegramUser?.phone)) {
+      badge.style.display = "flex";
+      badge.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#1f8578" style="flex-shrink: 0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+        <span>ارتباط مستقیم تلگرام فعال است <span style="font-size: 10.5px; opacity: 0.85;">(شناسه شما در پیام رزرو درج می‌شود)</span></span>
       `;
     } else {
       badge.style.display = "none";
@@ -3109,10 +3152,20 @@ function generateUnifiedOrderMessage(target = 'guest') {
   const checkOutJalali = getJalaliDetails(checkOut);
   const stayDaysText = `${checkInJalali.weekday} تا ${checkOutJalali.weekday}`;
 
-  // بررسی وجود آیدی تلگرام مهمان (فقط آیدی بدون آدرس کامل تلگرام طبق درخواست)
-  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser;
-  const telegramUsername = tgUser?.username || "";
-  const telegramLine = telegramUsername ? `\n💬 آیدی تلگرام مهمان: @${telegramUsername}` : "";
+  // بررسی وجود اکانت تلگرام مهمان (در صورتی که کاربر شماره تلگرام رو زد یا دارای آیدی تلگرام باشد)
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser || {};
+  const rawUsername = (tgUser.username || state.telegramUser?.username || "").replace(/^@/, "").trim();
+  const rawUserId = tgUser.id || state.telegramUser?.id || null;
+  const isTgContactUsed = !!(state.telegramUser?.usedTelegramButton || rawUsername || rawUserId);
+
+  let telegramLine = "";
+  if (rawUsername) {
+    telegramLine = `\n💬 اکانت تلگرام: @${rawUsername} (https://t.me/${rawUsername})`;
+  } else if (rawUserId && isTgContactUsed) {
+    telegramLine = `\n💬 اکانت تلگرام: tg://user?id=${rawUserId} (شناسه: ${rawUserId})`;
+  } else if (state.telegramUser?.usedTelegramButton && state.telegramUser?.phone) {
+    telegramLine = `\n💬 اکانت تلگرام: ارسال‌شده از حساب تلگرام مهمان`;
+  }
 
   let roomsDetailText = "";
 
@@ -3396,9 +3449,12 @@ function setFoodCategoryFilter(cat) {
   // به‌روزرسانی استایل دکمه‌های دسته‌بندی
   const tabs = document.querySelectorAll("#food-category-tabs .food-tab-btn");
   tabs.forEach(btn => {
+    const dataCat = btn.getAttribute("data-category");
     const text = btn.textContent;
     let isTarget = false;
-    if (cat === 'all' && text.includes('همه')) {
+    if (dataCat && (dataCat === cat || (cat === 'all' && dataCat === 'all'))) {
+      isTarget = true;
+    } else if (cat === 'all' && text.includes('همه')) {
       isTarget = true;
     } else if (cat === 'خوراک‌های گوشتی با برنج' && text.includes('گوشتی با برنج')) {
       isTarget = true;
@@ -4699,13 +4755,30 @@ function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
   if (subtitleEl) subtitleEl.textContent = subtitle || "خلاصه درخواست شما جهت بررسی و ارسال نهایی:";
   if (previewEl) previewEl.textContent = currentModalMessage;
 
-  // ۱. نام و شماره تماس در دو ستون مجزا
+  // ۱. نام و شماره تماس در دو ستون مجزا (و نمایش اکانت تلگرام در صورت وجود)
   const guestName = state.reservation.name || state.foodOrder.name || "مهمان گرامی";
   const guestPhone = state.reservation.phone || state.foodOrder.phone || "ثبت‌نشده";
   const previewNameEl = document.getElementById("preview-guest-name");
   const previewPhoneEl = document.getElementById("preview-guest-phone");
   if (previewNameEl) previewNameEl.textContent = guestName;
   if (previewPhoneEl) previewPhoneEl.textContent = formatPersianNumber(guestPhone);
+
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser || {};
+  const tgUsername = (tgUser.username || state.telegramUser?.username || "").replace(/^@/, "").trim();
+  const tgUserId = tgUser.id || state.telegramUser?.id || null;
+  const previewTgCol = document.getElementById("preview-guest-tg-col");
+  const previewTgEl = document.getElementById("preview-guest-tg");
+  if (previewTgCol && previewTgEl) {
+    if (tgUsername) {
+      previewTgCol.style.display = "flex";
+      previewTgEl.textContent = `@${tgUsername}`;
+    } else if (tgUserId && (state.telegramUser?.usedTelegramButton || state.telegramUser?.phone)) {
+      previewTgCol.style.display = "flex";
+      previewTgEl.textContent = `تلگرام (${tgUserId})`;
+    } else {
+      previewTgCol.style.display = "none";
+    }
+  }
 
   // ۲. تاریخ‌های ورود و خروج کاملاً شمسی و تفکیک‌شده به صورت زیر هم
   const selectedRooms = (state.reservation.selectedRoomIds || []).map(id => ROOMS.find(r => r.id === id)).filter(Boolean);
@@ -4989,6 +5062,10 @@ function sendViaTelegram() {
   // ارسال فرمت خلاصه و بدون موارد اضافی مخصوص گروه رزرو
   const groupMessageToSend = currentGroupMessage || generateUnifiedOrderMessage('group');
 
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || state.telegramUser || {};
+  const rawUsername = (tgUser.username || state.telegramUser?.username || "").replace(/^@/, "").trim();
+  const rawUserId = tgUser.id || state.telegramUser?.id || null;
+
   const reqBody = JSON.stringify({
     action: "submit_reservation",
     isMiniAppOrder: true,
@@ -4998,7 +5075,13 @@ function sendViaTelegram() {
     initData: (tg && tg.initData) ? tg.initData : "",
     data: {
       reservation: state.reservation,
-      foodOrder: state.foodOrder
+      foodOrder: state.foodOrder,
+      telegramUser: {
+        username: rawUsername || "",
+        id: rawUserId || null,
+        phone: state.telegramUser?.phone || state.reservation?.phone || "",
+        usedTelegramButton: !!state.telegramUser?.usedTelegramButton
+      }
     }
   });
 
@@ -5543,6 +5626,14 @@ window.FOOD_MENU = FOOD_MENU;
 window.requestTelegramContact = requestTelegramContact;
 window.fillTelegramPhone = fillTelegramPhone;
 window.updateTelegramUserBadges = updateTelegramUserBadges;
+function openBarzokTelegramChat() {
+  triggerHaptic('light');
+  const accountUrl = CONFIG.telegramAccountUrl || "https://t.me/barzokhouse";
+  openExternalUrl(accountUrl);
+}
+
+window.openBarzokTelegramChat = openBarzokTelegramChat;
+window.sendToBarzokTelegramAccount = sendToBarzokTelegramAccount;
 window.cancelRoomFromFloatingBar = cancelRoomFromFloatingBar;
 window.cancelCurrentRoomDetail = cancelCurrentRoomDetail;
 

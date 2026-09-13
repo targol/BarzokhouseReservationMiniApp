@@ -1690,34 +1690,42 @@ body.has-floating-bar .toast {
 /* دکمه‌های فیلتر دسته‌بندی خوراک‌ها */
 .food-filter-tabs {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  margin-bottom: 10px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.food-filter-tabs::-webkit-scrollbar {
-  display: none;
+  flex-wrap: wrap;
+  gap: 7px 6px;
+  padding: 4px 0 6px 0;
+  margin-bottom: 12px;
 }
 
 .food-tab-btn {
   background: var(--brand-surface);
   border: 1px solid var(--brand-border);
   border-radius: var(--radius-full);
-  padding: 6px 12px;
+  padding: 6px 11px;
   font-size: 12px;
   font-weight: 700;
   color: var(--brand-text-muted);
   cursor: pointer;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: all var(--transition-fast);
+}
+
+.food-tab-btn:hover {
+  background: var(--brand-surface-subtle);
+  border-color: var(--brand-teal);
+  color: var(--brand-green);
 }
 
 .food-tab-btn.active {
   background: var(--brand-green);
   border-color: var(--brand-green);
   color: #ffffff;
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.25);
 }
 
 /* جستجوی خوراک */
@@ -2291,7 +2299,7 @@ body.has-floating-booking-bar .food-scroll-nav-dock {
 
 .preview-grid-2col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
   gap: 10px;
   background: #fdfbf7;
   border: 1px solid #ebd9b5;

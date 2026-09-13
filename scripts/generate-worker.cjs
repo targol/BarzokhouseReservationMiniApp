@@ -314,16 +314,40 @@ async function handleDirectReservation(payload, env) {
   let lastResData = null;
   let lastError = null;
 
+  const tgUser = payload.data?.telegramUser || {};
+  let guestUsername = (tgUser.username || "").replace(/^@/, '').trim();
+  if (!guestUsername && messageText.includes("@")) {
+    const match = messageText.match(/@([a-zA-Z0-9_]{4,32})/);
+    if (match && match[1] && match[1].toLowerCase() !== "barzokhouse") {
+      guestUsername = match[1];
+    }
+  }
+
   for (const targetChatId of candidateIds) {
     try {
+      const sendBody = {
+        chat_id: targetChatId,
+        text: messageText,
+        disable_web_page_preview: true
+      };
+
+      if (guestUsername) {
+        sendBody.reply_markup = {
+          inline_keyboard: [
+            [
+              {
+                text: \`💬 ارتباط مستقیم با مهمان (@\${guestUsername})\`,
+                url: \`https://t.me/\${guestUsername}\`
+              }
+            ]
+          ]
+        };
+      }
+
       const res = await fetch(\`https://api.telegram.org/bot\${token}/sendMessage\`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: targetChatId,
-          text: messageText,
-          disable_web_page_preview: true
-        })
+        body: JSON.stringify(sendBody)
       });
 
       const resData = await res.json().catch(() => ({}));
@@ -499,6 +523,7 @@ async function handleTelegramUpdate(update, env, currentUrl) {
       rawPhone: rawPhone,
       name: uName,
       username: username,
+      user_id: contact.user_id || fromUser.id || null,
       timestamp: Date.now()
     };
 

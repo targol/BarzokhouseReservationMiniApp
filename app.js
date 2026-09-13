@@ -19,8 +19,8 @@ const CONFIG = {
   telegramUsername: "barzokhouse",        // آیدی کانال تلگرام خانه برزک
   hostTelegramUserId: "5507912901",       // آیدی عددی اکانت شخصی میزبان در تلگرام
   hostTelegramPhone: "09334868840",       // شماره اکانت تلگرام میزبان
-  hostTelegramChatUrl: "https://web.telegram.org/k/#5507912901", // لینک وب چت مستقیم با میزبان
-  hostTelegramUri: "tg://user?id=5507912901", // دیپ لینک اختصاصی گفتگوی مستقیم در اپ تلگرام
+  hostTelegramChatUrl: "https://t.me/+989334868840", // لینک تلگرام چت مستقیم با میزبان در تلگرام
+  hostTelegramUri: "tg://resolve?phone=989334868840", // دیپ لینک اختصاصی گفتگوی مستقیم در اپ تلگرام
   instagram: "https://instagram.com/barzokhouse", // آدرس اینستاگرام
   website: "https://barzokhouse.com",     // وب‌سایت رسمی خانه برزک
   address: "استان اصفهان، شهرستان کاشان، شهر برزک، محله سَرِدُل، بعد از اداره آب، اقامتگاه بومگردی خانه برزک",
@@ -1226,7 +1226,7 @@ function openExternalUrl(url) {
   triggerHaptic('light');
   if (!url) return;
 
-  if (url.startsWith('tel:')) {
+  if (url.startsWith('tel:') || url.startsWith('sms:')) {
     window.location.href = url;
     return;
   }
@@ -4880,6 +4880,16 @@ function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
     previewGrandTotal.textContent = formatToman(totals.grandTotal);
   }
 
+  // تنظیم خودکار لینک پیش‌نویس پیامک روی دکمه پیامک در مدال
+  const smsBtn = document.getElementById("btn-modal-sms");
+  if (smsBtn) {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const sep = isIOS ? '&' : '?';
+    const phone = CONFIG.phone1 || "09334868840";
+    const bodyText = currentModalMessage || "درخواست رزرو اقامتگاه خانه برزک";
+    smsBtn.setAttribute("href", `sms:${phone}${sep}body=${encodeURIComponent(bodyText)}`);
+  }
+
   const modal = document.getElementById("message-modal");
   if (modal) modal.classList.add("active");
 }
@@ -5033,34 +5043,40 @@ function sendDirectToReservationGroup() {
 function sendViaSMS(e) {
   triggerHaptic('medium');
   
-  // ۱. کپی بدون وقفه متن کامل رزرو در کلیپ‌بورد کاربر
+  // ۱. کپی بدون وقفه متن کامل رزرو در کلیپ‌بورد کاربر به عنوان نسخه پشتیبان مطمئن
   copyModalMessage();
   
   const phone = CONFIG.phone1 || "09334868840";
-  const guestName = (state.reservation && state.reservation.name) ? state.reservation.name : "مهمان";
-  
-  // ۲. متن خلاصه و سبک برای پیش‌نویس پیامک جهت جلوگیری کامل از قفل یا هنگ کردن وب‌ویو و سیستم‌عامل
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const separator = isIOS ? '&' : '?';
-  const shortSummary = `سلام، درخواست رزرو اقامتگاه خانه برزک (${guestName}) - متن کامل در کلیپ‌بورد کپی شد.`;
-  const safeSmsUrl = `sms:${phone}${separator}body=${encodeURIComponent(shortSummary)}`;
+  const bodyText = currentModalMessage || "درخواست رزرو اقامتگاه خانه برزک";
+  const smsUrl = `sms:${phone}${separator}body=${encodeURIComponent(bodyText)}`;
   
-  // تنظیم لینک روی تگ دکمه
+  // تنظیم یا به‌روزرسانی ویژگی href دکمه
   const smsBtn = document.getElementById("btn-modal-sms");
   if (smsBtn) {
-    smsBtn.setAttribute("href", safeSmsUrl);
+    smsBtn.setAttribute("href", smsUrl);
   }
 
-  showToast("متن کامل رزرو کپی شد؛ در حال باز کردن پیامک...");
+  showToast("متن رزرو کپی شد؛ در حال باز کردن پیامک گوشی...");
 
-  // در وب‌اپ تلگرام، لینک‌های sms: را می‌توان مستقیماً با openLink فراخوانی کرد
-  if (tg && tg.openLink) {
+  // هرگز preventDefault اجرا نمی‌شود تا رفتار طبیعی کلیک برای پروتکل sms: مسدود نشود.
+  // همچنین با یک وقفه کوتاه، اجرای مستقیم پروتکل با window.location انجام می‌گیرد
+  setTimeout(() => {
     try {
-      if (e && e.preventDefault) e.preventDefault();
-      tg.openLink(safeSmsUrl);
-      return;
-    } catch (_) {}
-  }
+      window.location.href = smsUrl;
+    } catch (_) {
+      try {
+        const tempLink = document.createElement("a");
+        tempLink.href = smsUrl;
+        tempLink.rel = "external";
+        tempLink.style.display = "none";
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        setTimeout(() => tempLink.remove(), 600);
+      } catch (err) {}
+    }
+  }, 100);
 }
 
 /**
@@ -5393,7 +5409,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
   document.querySelectorAll("[data-config-host-telegram]").forEach(el => {
-    el.href = CONFIG.hostTelegramChatUrl || "https://web.telegram.org/k/#5507912901";
+    el.href = CONFIG.hostTelegramChatUrl || "https://t.me/+989334868840";
     el.addEventListener("click", (e) => {
       openBarzokTelegramChat(e);
     });
@@ -5673,29 +5689,31 @@ window.fillTelegramPhone = fillTelegramPhone;
 window.updateTelegramUserBadges = updateTelegramUserBadges;
 function openBarzokTelegramChat(e) {
   triggerHaptic('light');
-  const webUrl = CONFIG.hostTelegramChatUrl || "https://web.telegram.org/k/#5507912901";
+  if (e && e.preventDefault) e.preventDefault();
 
-  // ۱. بررسی محیط Telegram WebApp
-  if (tg) {
-    if (tg.openLink) {
-      try {
-        tg.openLink(webUrl);
-        if (e && e.preventDefault) e.preventDefault();
-        return;
-      } catch (err) {
-        console.warn("tg.openLink failed", err);
-      }
-    }
-  }
+  const tgChatUrl = CONFIG.hostTelegramChatUrl || "https://t.me/+989334868840";
+  const appUri = CONFIG.hostTelegramUri || "tg://resolve?phone=989334868840";
 
-  // ۲. در محیط‌های دیگر یا در صورت عدم حضور رویداد کلیک طبیعی:
-  if (!e) {
+  // ۱. بررسی محیط Telegram WebApp:
+  // مستقیماً درون همان کلاینت تلگرام کاربر (اپلیکیشن موبایل، دسکتاپ یا نسخه وب تلگرام) باز می‌شود
+  // بدون باز کردن تب خارجی یا اجبار به ورود در مرورگر وب
+  if (tg && tg.openTelegramLink) {
     try {
-      window.open(webUrl, '_blank', 'noopener,noreferrer');
-    } catch (_) {
-      window.location.href = webUrl;
+      tg.openTelegramLink(tgChatUrl);
+      return;
+    } catch (err) {
+      console.warn("tg.openTelegramLink failed", err);
     }
   }
+
+  // ۲. در محیط‌های خارج از تلگرام (مرورگر معمولی):
+  try {
+    window.location.href = appUri;
+  } catch (_) {}
+
+  setTimeout(() => {
+    window.open(tgChatUrl, '_blank', 'noopener,noreferrer');
+  }, 400);
 }
 
 window.openBarzokTelegramChat = openBarzokTelegramChat;

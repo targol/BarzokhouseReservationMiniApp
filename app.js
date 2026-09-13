@@ -5354,6 +5354,12 @@ document.addEventListener("DOMContentLoaded", () => {
       openExternalUrl(CONFIG.telegram);
     });
   });
+  document.querySelectorAll("[data-config-host-telegram]").forEach(el => {
+    el.href = CONFIG.hostTelegramChatUrl || "https://web.telegram.org/k/#5507912901";
+    el.addEventListener("click", (e) => {
+      openBarzokTelegramChat(e);
+    });
+  });
   document.querySelectorAll("[data-config-instagram]").forEach(el => {
     el.href = CONFIG.instagram;
     el.addEventListener("click", (e) => {
@@ -5629,36 +5635,31 @@ window.FOOD_MENU = FOOD_MENU;
 window.requestTelegramContact = requestTelegramContact;
 window.fillTelegramPhone = fillTelegramPhone;
 window.updateTelegramUserBadges = updateTelegramUserBadges;
-function openBarzokTelegramChat() {
+function openBarzokTelegramChat(e) {
   triggerHaptic('light');
   const webUrl = CONFIG.hostTelegramChatUrl || "https://web.telegram.org/k/#5507912901";
-  const tgUri = CONFIG.hostTelegramUri || "tg://user?id=5507912901";
 
-  if (tg && tg.openTelegramLink) {
-    try {
-      tg.openTelegramLink(tgUri);
-      return;
-    } catch (e) {
-      console.warn("tg.openTelegramLink tgUri failed", e);
-    }
-    try {
-      tg.openTelegramLink(webUrl);
-      return;
-    } catch (e) {
-      console.warn("tg.openTelegramLink webUrl failed", e);
+  // ۱. بررسی محیط Telegram WebApp
+  if (tg) {
+    if (tg.openLink) {
+      try {
+        tg.openLink(webUrl);
+        if (e && e.preventDefault) e.preventDefault();
+        return;
+      } catch (err) {
+        console.warn("tg.openLink failed", err);
+      }
     }
   }
 
-  if (tg && tg.openLink) {
+  // ۲. در محیط‌های دیگر یا در صورت عدم حضور رویداد کلیک طبیعی:
+  if (!e) {
     try {
-      tg.openLink(webUrl);
-      return;
-    } catch (e) {
-      console.warn("tg.openLink failed", e);
+      window.open(webUrl, '_blank', 'noopener,noreferrer');
+    } catch (_) {
+      window.location.href = webUrl;
     }
   }
-
-  openExternalUrl(webUrl);
 }
 
 window.openBarzokTelegramChat = openBarzokTelegramChat;

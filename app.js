@@ -5031,15 +5031,36 @@ function sendDirectToReservationGroup() {
  * ۴. ارسال مستقیم متن رزرو از طریق پیامک (SMS) به شماره میزبان
  */
 function sendViaSMS(e) {
-  if (e) e.preventDefault();
   triggerHaptic('medium');
+  
+  // ۱. کپی بدون وقفه متن کامل رزرو در کلیپ‌بورد کاربر
   copyModalMessage();
+  
   const phone = CONFIG.phone1 || "09334868840";
-  const smsUrl = `sms:${phone}?body=${encodeURIComponent(currentModalMessage)}`;
-  showToast("متن کپی شد؛ در حال انتقال به پیامک گوشی...");
-  setTimeout(() => {
-    window.location.href = smsUrl;
-  }, 300);
+  const guestName = (state.reservation && state.reservation.name) ? state.reservation.name : "مهمان";
+  
+  // ۲. متن خلاصه و سبک برای پیش‌نویس پیامک جهت جلوگیری کامل از قفل یا هنگ کردن وب‌ویو و سیستم‌عامل
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const separator = isIOS ? '&' : '?';
+  const shortSummary = `سلام، درخواست رزرو اقامتگاه خانه برزک (${guestName}) - متن کامل در کلیپ‌بورد کپی شد.`;
+  const safeSmsUrl = `sms:${phone}${separator}body=${encodeURIComponent(shortSummary)}`;
+  
+  // تنظیم لینک روی تگ دکمه
+  const smsBtn = document.getElementById("btn-modal-sms");
+  if (smsBtn) {
+    smsBtn.setAttribute("href", safeSmsUrl);
+  }
+
+  showToast("متن کامل رزرو کپی شد؛ در حال باز کردن پیامک...");
+
+  // در وب‌اپ تلگرام، لینک‌های sms: را می‌توان مستقیماً با openLink فراخوانی کرد
+  if (tg && tg.openLink) {
+    try {
+      if (e && e.preventDefault) e.preventDefault();
+      tg.openLink(safeSmsUrl);
+      return;
+    } catch (_) {}
+  }
 }
 
 /**
@@ -5208,16 +5229,34 @@ window.showToast = showToast;
 
 // مدیریت کلیک روی لینک‌های شبکه‌های اجتماعی و وب‌سایت در وب و تلگرام
 function handleSocialLinkClick(e, url) {
-  if (e) {
-    try { e.stopPropagation(); } catch (_) {}
+  triggerHaptic('light');
+  if (!url) return;
+
+  // اگر در محیط وب‌اپ تلگرام باشیم:
+  if (tg) {
+    // لینک‌های تلگرام (کانال، گروه، چت) باید با openTelegramLink باز شوند
+    if ((url.includes('t.me/') || url.startsWith('tg://')) && tg.openTelegramLink) {
+      try {
+        if (e && e.preventDefault) e.preventDefault();
+        tg.openTelegramLink(url);
+        return;
+      } catch (err) {
+        console.warn("tg.openTelegramLink failed", err);
+      }
+    }
+    // سایر پیوندهای خارجی وب (سایت، اینستاگرام و...) با openLink باز می‌شوند
+    if (tg.openLink) {
+      try {
+        if (e && e.preventDefault) e.preventDefault();
+        tg.openLink(url);
+        return;
+      } catch (err) {
+        console.warn("tg.openLink failed", err);
+      }
+    }
   }
-  if (tg && tg.openLink) {
-    try {
-      e?.preventDefault();
-      tg.openLink(url);
-      return;
-    } catch (_) {}
-  }
+
+  // در مرورگر عادی: رفتار استاندارد <a> با target="_blank" بدون دخالت پاپ‌آپ اجرا می‌شود
 }
 window.handleSocialLinkClick = handleSocialLinkClick;
 
@@ -5350,8 +5389,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-config-telegram]").forEach(el => {
     el.href = CONFIG.telegram;
     el.addEventListener("click", (e) => {
-      e.preventDefault();
-      openExternalUrl(CONFIG.telegram);
+      handleSocialLinkClick(e, CONFIG.telegram);
     });
   });
   document.querySelectorAll("[data-config-host-telegram]").forEach(el => {
@@ -5363,15 +5401,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-config-instagram]").forEach(el => {
     el.href = CONFIG.instagram;
     el.addEventListener("click", (e) => {
-      e.preventDefault();
-      openExternalUrl(CONFIG.instagram);
+      handleSocialLinkClick(e, CONFIG.instagram);
     });
   });
   document.querySelectorAll("[data-config-website]").forEach(el => {
     el.href = CONFIG.website;
     el.addEventListener("click", (e) => {
-      e.preventDefault();
-      openExternalUrl(CONFIG.website);
+      handleSocialLinkClick(e, CONFIG.website);
     });
   });
   document.querySelectorAll("[data-config-weather]").forEach(el => {

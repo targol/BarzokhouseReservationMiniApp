@@ -238,6 +238,19 @@
             </div>
           </div>
 
+          <!-- دکمه ویژه گفتگوی مستقیم با میزبان در تلگرام در صفحه اول -->
+          <div style="background: rgba(34, 158, 217, 0.08); padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid rgba(34, 158, 217, 0.35); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+            <div style="text-align: right;">
+              <div style="font-size: 12px; color: #1d69a3; font-weight: 700;">💬 گفتگوی مستقیم با میزبان در تلگرام:</div>
+              <div style="font-size: 13.5px; font-weight: 800; color: #1d69a3;">
+                <span dir="ltr">0933 486 8840</span>
+              </div>
+            </div>
+            <a class="btn" id="home-btn-direct-tg" href="https://web.telegram.org/k/#5507912901" target="_blank" rel="noopener noreferrer" data-config-host-telegram onclick="openBarzokTelegramChat(event)" style="padding: 7px 12px; font-size: 12px; background: #229ED9; color: #ffffff; font-weight: 800; border: 1px solid #1a82b3; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+              💬 شروع چت مستقیم
+            </a>
+          </div>
+
           <!-- دکمه‌های وب‌سایت، تلگرام و اینستاگرام زیر شماره‌های تلفن -->
           <div class="home-social-grid" id="home-social-buttons-grid">
             <a class="home-social-btn home-social-web" id="home-btn-website" data-config-website href="https://barzokhouse.com" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://barzokhouse.com')" title="مشاهده وب‌سایت رسمی خانه برزک">
@@ -246,7 +259,7 @@
             </a>
             <a class="home-social-btn home-social-tg" id="home-btn-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://t.me/barzokhouse')" title="کانال و ارتباط در تلگرام">
               <span class="social-icon">✈️</span>
-              <span class="social-label">تلگرام</span>
+              <span class="social-label">کانال تلگرام</span>
             </a>
             <a class="home-social-btn home-social-insta" id="home-btn-instagram" data-config-instagram href="https://instagram.com/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://instagram.com/barzokhouse')" title="صفحه رسمی اینستاگرام خانه برزک">
               <span class="social-icon">📷</span>
@@ -1220,9 +1233,9 @@
           </button>
 
           <!-- ۴. ارسال از طریق پیامک به میزبان -->
-          <button class="btn btn-outline" id="btn-modal-sms" onclick="sendViaSMS(event)" style="font-size: 12px; padding: 8px 12px; color: var(--brand-text-muted);">
+          <a class="btn btn-outline" id="btn-modal-sms" href="sms:09334868840" onclick="sendViaSMS(event)" style="font-size: 12px; padding: 8px 12px; color: var(--brand-text-muted); text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
             📱 ارسال پیامک مستقیم به میزبان (۰۹۳۳۴۸۶۸۸۴۰)
-          </button>
+          </a>
 
           <button class="btn" id="btn-modal-cancel" style="background: transparent; color: var(--brand-text-muted); font-size: 12px; padding: 5px 10px;" onclick="closeMessageModal()">
             انصراف و ویرایش اطلاعات
@@ -1337,6 +1350,6 @@
       <button type="button" class="toast-close-btn" id="toast-close-btn" onclick="hideToast()" title="بستن پیام" aria-label="بستن">✕</button>
     </div>
 
-    <script type="module" src="./app.js?v=3.0.0"></script>
+    <script type="module" src="./app.js?v=3.2.0"></script>
   </body>
 </html> 

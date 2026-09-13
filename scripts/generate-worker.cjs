@@ -261,7 +261,7 @@ export default {
         headers: {
           ...CORS_HEADERS,
           "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "public, max-age=300"
+          "Cache-Control": "no-cache, no-store, must-revalidate"
         }
       });
     }

@@ -15,9 +15,12 @@ const CONFIG = {
   phone2Display: "0912 547 2055",         // شماره تماس دوم جهت نمایش LTR
   phone: "09334868840",                  // پشتیبانی از کد‌های قدیمی
   phoneDisplay: "0933 486 8840",
-  telegram: "https://t.me/barzokhouse",   // آدرس چنل یا پشتیبانی تلگرام
-  telegramUsername: "barzokhouse",        // آیدی اکانت تلگرام خانه برزک
-  telegramAccountUrl: "https://t.me/barzokhouse", // لینک مستقیم به اکانت تلگرام
+  telegram: "https://t.me/barzokhouse",   // آدرس چنل تلگرام
+  telegramUsername: "barzokhouse",        // آیدی کانال تلگرام خانه برزک
+  hostTelegramUserId: "5507912901",       // آیدی عددی اکانت شخصی میزبان در تلگرام
+  hostTelegramPhone: "09334868840",       // شماره اکانت تلگرام میزبان
+  hostTelegramChatUrl: "https://web.telegram.org/k/#5507912901", // لینک وب چت مستقیم با میزبان
+  hostTelegramUri: "tg://user?id=5507912901", // دیپ لینک اختصاصی گفتگوی مستقیم در اپ تلگرام
   instagram: "https://instagram.com/barzokhouse", // آدرس اینستاگرام
   website: "https://barzokhouse.com",     // وب‌سایت رسمی خانه برزک
   address: "استان اصفهان، شهرستان کاشان، شهر برزک، محله سَرِدُل، بعد از اداره آب، اقامتگاه بومگردی خانه برزک",
@@ -5628,8 +5631,34 @@ window.fillTelegramPhone = fillTelegramPhone;
 window.updateTelegramUserBadges = updateTelegramUserBadges;
 function openBarzokTelegramChat() {
   triggerHaptic('light');
-  const accountUrl = CONFIG.telegramAccountUrl || "https://t.me/barzokhouse";
-  openExternalUrl(accountUrl);
+  const webUrl = CONFIG.hostTelegramChatUrl || "https://web.telegram.org/k/#5507912901";
+  const tgUri = CONFIG.hostTelegramUri || "tg://user?id=5507912901";
+
+  if (tg && tg.openTelegramLink) {
+    try {
+      tg.openTelegramLink(tgUri);
+      return;
+    } catch (e) {
+      console.warn("tg.openTelegramLink tgUri failed", e);
+    }
+    try {
+      tg.openTelegramLink(webUrl);
+      return;
+    } catch (e) {
+      console.warn("tg.openTelegramLink webUrl failed", e);
+    }
+  }
+
+  if (tg && tg.openLink) {
+    try {
+      tg.openLink(webUrl);
+      return;
+    } catch (e) {
+      console.warn("tg.openLink failed", e);
+    }
+  }
+
+  openExternalUrl(webUrl);
 }
 
 window.openBarzokTelegramChat = openBarzokTelegramChat;

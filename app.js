@@ -3248,39 +3248,38 @@ ${mealsTextBlocks}
   const grandTotal = roomTotal + foodTotal;
 
   // ۱. در صورتی که کاربر اتاق انتخاب کرده باشد (سفارش یکپارچه اقامت + غذا)
+  // فرمت استاندارد، تمیز و کاملاً یکسان با گروه رزرو تلگرام برای هر دو حالت پیش‌نمایش و ارسال
   if (selectedRooms.length > 0) {
-    // ۱-الف: فرمت مختصر و استاندارد گروه رزرو تلگرام خانه برزک (بدون شرایط تخفیف، بدون جزئیات اضافی قیمت هر اتاق، و حذف غذا در صورت عدم سفارش)
-    if (target === 'group') {
-      const roomsSummaryGroup = selectedRooms.map(r => {
-        const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
-        return `  ▫️ اتاق ${r.name} (${formatPersianNumber(g)} نفر)`;
-      }).join("\n");
+    const roomsSummaryGroup = selectedRooms.map(r => {
+      const g = (state.reservation.roomGuests && state.reservation.roomGuests[r.id]) || r.baseCapacity || 2;
+      return `  ▫️ اتاق ${r.name} (${formatPersianNumber(g)} نفر)`;
+    }).join("\n");
 
-      let stayPriceGroup = `• برآورد اقامت: ${formatToman(discountData.totalBaseRoom)}`;
-      if (discountData.hasDiscount) {
-        stayPriceGroup = `• برآورد اقامت: ${formatToman(discountData.finalRoomTotal)} (با کسر ${formatToman(discountData.totalDiscount)} تخفیف)`;
-      }
+    let stayPriceGroup = `• برآورد اقامت: ${formatToman(discountData.totalBaseRoom)}`;
+    if (discountData.hasDiscount) {
+      stayPriceGroup = `• برآورد اقامت: ${formatToman(discountData.finalRoomTotal)} (با کسر ${formatToman(discountData.totalDiscount)} تخفیف)`;
+    }
 
-      // در گروه تلگرام: اگر غذا سفارش داده نشده باشد، اصلاً هیچ بخشی از غذا نشان داده نمی‌شود
-      let foodSectionGroup = "";
-      if (sortedScheduled.length > 0) {
-        const mealsTextBlocksGroup = sortedScheduled.map((m, idx) => {
-          const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
-          const mJalali = getJalaliDetails(m.date);
-          const dishesLines = m.dishes.map(d => `    ▫️ ${d.name} × ${formatPersianNumber(d.quantity)} پرس`).join("\n");
-          return `  ${icon} وعده ${formatPersianNumber(idx + 1)}: ${m.mealType} (${mJalali.weekday} ${mJalali.dateOnlyString})
+    // در متن پیام: اگر غذا سفارش داده نشده باشد، اصلاً هیچ بخشی از غذا نشان داده نمی‌شود
+    let foodSectionGroup = "";
+    if (sortedScheduled.length > 0) {
+      const mealsTextBlocksGroup = sortedScheduled.map((m, idx) => {
+        const icon = m.mealType === 'صبحانه' ? '🍳' : m.mealType === 'شام' ? '🌙' : '🍲';
+        const mJalali = getJalaliDetails(m.date);
+        const dishesLines = m.dishes.map(d => `    ▫️ ${d.name} × ${formatPersianNumber(d.quantity)} پرس`).join("\n");
+        return `  ${icon} وعده ${formatPersianNumber(idx + 1)}: ${m.mealType} (${mJalali.weekday} ${mJalali.dateOnlyString})
 ${dishesLines}
     جمع وعده: ${formatToman(m.subtotal)}`;
-        }).join("\n\n");
+      }).join("\n\n");
 
-        foodSectionGroup = `
+      foodSectionGroup = `
 
 🍽️ وعده‌های غذایی انتخابی (${formatPersianNumber(sortedScheduled.length)} وعده):
 ${mealsTextBlocksGroup}
 • برآورد خوراک: ${formatToman(foodTotal)}`;
-      }
+    }
 
-      return `🌿 درخواست رزرو در خانه برزک
+    return `🌿 درخواست رزرو در خانه برزک
 
 👤 مهمان: ${name}
 📞 تماس: ${phone}${telegramLine}
@@ -3297,49 +3296,10 @@ ${stayPriceGroup}${foodSectionGroup}${notesLineInline}
 
 💰 جمع کل برآورد: ${formatToman(grandTotal)}
 #درخواست_رزرو`;
-    }
-
-    // ۱-ب: فرمت کامل پیش‌نمایش برای مهمان (شامل توضیحات شرایط تخفیف و یادداشت‌های بررسی میزبان)
-    let stayPriceLines = `• برآورد اقامت: ${formatToman(discountData.totalBaseRoom)}`;
-    if (discountData.hasDiscount) {
-      stayPriceLines = `• مبلغ پایه اقامت: ${formatToman(discountData.totalBaseRoom)}
-• تخفیف اقامت (وسط هفته / شب دوم): - ${formatToman(discountData.totalDiscount)}
-• مبلغ خالص اقامت پس از تخفیف: ${formatToman(discountData.finalRoomTotal)}`;
-    }
-
-    const discountStatusNote = discountData.hasDiscount
-      ? `✨ وضعیت تخفیف این رزرو: مشمول ${formatToman(discountData.totalDiscount)} تخفیف برآورد اولیه (اعمال نهایی توسط میزبان در پیش‌فاکتور انجام خواهد شد)`
-      : `✨ وضعیت تخفیف این رزرو: تاریخ‌های انتخابی در پایان هفته یا ایام تعطیل است`;
-
-    return `🌿 درخواست رزرو در خانه برزک
-
-👤 مهمان: ${name}
-📞 تماس: ${phone}${telegramLine}
-⏰ زمان ثبت درخواست: ${nowJalaliString}
-
-🏡 مشخصات اقامت:
-${roomsDetailText}
-• تاریخ و روز ورود: ${checkInJalali.fullString}
-• تاریخ و روز خروج: ${checkOutJalali.fullString}
-• مدت اقامت: ${formatPersianNumber(nights)} شب (روزهای اقامت: ${stayDaysText})
-• تعداد نفرات کل: ${formatPersianNumber(guests)} نفر (همراه با صبحانه سنتی روستایی)
-${stayPriceLines}
-
-🏷️ شرایط تخفیف اقامت:
-برای روزهای وسط هفته و غیر تعطیل (از شنبه تا سه‌شنبه) ۱۰ درصد تخفیف، و برای اقامت بیش از یک شب ۱۰ درصد تخفیف در شب دوم در نظر گرفته می‌شود.
-${discountStatusNote}
-
-${foodSectionText}${notesLineInline}
-
-💰 جمع کل برآورد نهایی: ${formatToman(grandTotal)}
-
-🌱 این درخواست پس از بررسی میزبان تایید و نهایی می‌شود.
-#درخواست_رزرو`;
   }
 
   // ۲. در صورتی که سفارش صرفاً برای غذا و صبحانه باشد (مستقل از اقامت)
-  if (target === 'group') {
-    return `🍽️ درخواست سفارش غذای محلی و پذیرایی در خانه برزک
+  return `🍽️ درخواست سفارش غذای محلی و پذیرایی در خانه برزک
 
 👤 مهمان: ${name}
 📞 تماس: ${phone}${telegramLine}
@@ -3348,21 +3308,6 @@ ${foodSectionText}${notesLineInline}
 ${foodSectionText}${notesLineInline}
 
 💰 برآورد کل سفارش: ${formatToman(foodTotal)}
-#سفارش_غذا`;
-  }
-
-  return `🍽️ درخواست سفارش غذای محلی و پذیرایی در خانه برزک
-
-👤 مهمان: ${name}
-📞 تماس: ${phone}${telegramLine}
-⏰ زمان ثبت درخواست: ${nowJalaliString}
-
-${foodSectionText}${notesLineInline}
-
-💰 برآورد کل سفارش: ${formatToman(foodTotal)}
-
-✨ تذکر: امکان پذیرایی در حیاط مصفای خانه برزک برای مهمانان آزاد فراهم می‌باشد (هزینه خدمات نفری ۲۰۰,۰۰۰ تومان).
-🌱 سفارش شما پس از بررسی میزبان تایید و آماده‌سازی خواهد شد.
 #سفارش_غذا`;
 }
 
@@ -4736,7 +4681,7 @@ function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
     if (portionsCount < 10) {
       checkGroupRuleViolation(() => {
         updateReservationCalculations();
-        const refreshedText = generateUnifiedOrderMessage('guest');
+        const refreshedText = generateUnifiedOrderMessage('group');
         openMessagePreviewModal({
           title: title,
           subtitle: subtitle,
@@ -4748,8 +4693,8 @@ function openMessagePreviewModal({ title, subtitle, messageText, actionType }) {
     }
   }
 
-  currentModalMessage = messageText || generateUnifiedOrderMessage('guest');
-  currentGroupMessage = generateUnifiedOrderMessage('group');
+  currentGroupMessage = messageText || generateUnifiedOrderMessage('group');
+  currentModalMessage = currentGroupMessage;
   const titleEl = document.getElementById("modal-title");
   const subtitleEl = document.getElementById("modal-subtitle");
   const previewEl = document.getElementById("modal-message-preview");
@@ -4991,14 +4936,16 @@ function shareViaTelegram() {
   }
 
   copyModalMessage();
-  const shareUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(currentModalMessage)}`;
+  const textToSend = currentGroupMessage || currentModalMessage || generateUnifiedOrderMessage('group');
+  const shareUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(textToSend)}`;
   
   showToast("در حال باز کردن تلگرام با متن آماده و پیش‌نویس رزرو...");
   
   setTimeout(() => {
-    if (tg && tg.openTelegramLink) {
+    const tgApp = window.Telegram?.WebApp || tg;
+    if (tgApp && tgApp.openTelegramLink) {
       try {
-        tg.openTelegramLink(shareUrl);
+        tgApp.openTelegramLink(shareUrl);
         closeMessageModal();
         return;
       } catch (e) {
@@ -5015,7 +4962,7 @@ function shareViaTelegram() {
  */
 function sendDirectToReservationGroup() {
   triggerHaptic('medium');
-  const msgToSend = currentGroupMessage || currentModalMessage;
+  const msgToSend = currentGroupMessage || currentModalMessage || generateUnifiedOrderMessage('group');
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(msgToSend).catch(() => {});
   }
@@ -5023,9 +4970,10 @@ function sendDirectToReservationGroup() {
   showToast("در حال باز کردن تلگرام با متن مخصوص گروه رزرو...");
 
   setTimeout(() => {
-    if (tg && tg.openTelegramLink) {
+    const tgApp = window.Telegram?.WebApp || tg;
+    if (tgApp && tgApp.openTelegramLink) {
       try {
-        tg.openTelegramLink(shareUrl);
+        tgApp.openTelegramLink(shareUrl);
         closeMessageModal();
         return;
       } catch (e) {
@@ -5041,6 +4989,10 @@ function sendDirectToReservationGroup() {
  * ۴. ارسال مستقیم متن رزرو از طریق پیامک (SMS) به شماره میزبان
  */
 function sendViaSMS(e) {
+  if (e) {
+    try { e.preventDefault(); } catch (_) {}
+    try { e.stopPropagation(); } catch (_) {}
+  }
   triggerHaptic('medium');
   
   // ۱. کپی بدون وقفه متن کامل رزرو در کلیپ‌بورد کاربر به عنوان نسخه پشتیبان مطمئن
@@ -5049,34 +5001,26 @@ function sendViaSMS(e) {
   const phone = CONFIG.phone1 || "09334868840";
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const separator = isIOS ? '&' : '?';
-  const bodyText = currentModalMessage || "درخواست رزرو اقامتگاه خانه برزک";
+  const bodyText = currentGroupMessage || currentModalMessage || generateUnifiedOrderMessage('group');
   const smsUrl = `sms:${phone}${separator}body=${encodeURIComponent(bodyText)}`;
   
-  // تنظیم یا به‌روزرسانی ویژگی href دکمه
-  const smsBtn = document.getElementById("btn-modal-sms");
-  if (smsBtn) {
-    smsBtn.setAttribute("href", smsUrl);
-  }
-
   showToast("متن رزرو کپی شد؛ در حال باز کردن پیامک گوشی...");
 
-  // هرگز preventDefault اجرا نمی‌شود تا رفتار طبیعی کلیک برای پروتکل sms: مسدود نشود.
-  // همچنین با یک وقفه کوتاه، اجرای مستقیم پروتکل با window.location انجام می‌گیرد
-  setTimeout(() => {
-    try {
-      window.location.href = smsUrl;
-    } catch (_) {
-      try {
-        const tempLink = document.createElement("a");
-        tempLink.href = smsUrl;
-        tempLink.rel = "external";
-        tempLink.style.display = "none";
-        document.body.appendChild(tempLink);
-        tempLink.click();
-        setTimeout(() => tempLink.remove(), 600);
-      } catch (err) {}
-    }
-  }, 100);
+  // هرگز window.location.href تغییر داده نمی‌شود تا وب‌اپ دچار خطا یا سفیدی صفحه نشود
+  try {
+    const tempLink = document.createElement("a");
+    tempLink.href = smsUrl;
+    tempLink.target = "_blank";
+    tempLink.rel = "noopener noreferrer";
+    tempLink.style.display = "none";
+    document.body.appendChild(tempLink);
+    tempLink.click();
+    setTimeout(() => {
+      try { tempLink.remove(); } catch (_) {}
+    }, 500);
+  } catch (err) {
+    console.warn("sendViaSMS intent failed", err);
+  }
 }
 
 /**
@@ -5244,35 +5188,48 @@ function showToast(msg) {
 window.showToast = showToast;
 
 // مدیریت کلیک روی لینک‌های شبکه‌های اجتماعی و وب‌سایت در وب و تلگرام
+let _lastSocialClick = 0;
 function handleSocialLinkClick(e, url) {
+  const now = Date.now();
+  if (now - _lastSocialClick < 350) {
+    if (e && e.preventDefault) e.preventDefault();
+    return;
+  }
+  _lastSocialClick = now;
+
   triggerHaptic('light');
   if (!url) return;
 
+  const tgApp = window.Telegram?.WebApp || tg;
+  const isTelegramLink = url.includes('t.me/') || url.startsWith('tg://');
+
   // اگر در محیط وب‌اپ تلگرام باشیم:
-  if (tg) {
+  if (tgApp) {
     // لینک‌های تلگرام (کانال، گروه، چت) باید با openTelegramLink باز شوند
-    if ((url.includes('t.me/') || url.startsWith('tg://')) && tg.openTelegramLink) {
+    if (isTelegramLink && typeof tgApp.openTelegramLink === 'function') {
       try {
         if (e && e.preventDefault) e.preventDefault();
-        tg.openTelegramLink(url);
+        tgApp.openTelegramLink(url);
         return;
       } catch (err) {
-        console.warn("tg.openTelegramLink failed", err);
+        console.warn("tgApp.openTelegramLink failed", err);
       }
     }
     // سایر پیوندهای خارجی وب (سایت، اینستاگرام و...) با openLink باز می‌شوند
-    if (tg.openLink) {
+    if (!isTelegramLink && typeof tgApp.openLink === 'function') {
       try {
         if (e && e.preventDefault) e.preventDefault();
-        tg.openLink(url);
+        tgApp.openLink(url);
         return;
       } catch (err) {
-        console.warn("tg.openLink failed", err);
+        console.warn("tgApp.openLink failed", err);
       }
     }
   }
 
-  // در مرورگر عادی: رفتار استاندارد <a> با target="_blank" بدون دخالت پاپ‌آپ اجرا می‌شود
+  // در مرورگر عادی یا در صورت بروز هرگونه خطای وب‌اپ تلگرام
+  if (e && e.preventDefault) e.preventDefault();
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 window.handleSocialLinkClick = handleSocialLinkClick;
 

@@ -8,6 +8,11 @@
     <meta property="og:title" content="اقامتگاه بومگردی خانه برزک" />
     <meta property="og:description" content="اقامتگاه بومگردی خانه برزک - مثل یک خانه، امن و راحت. کاشان، برزک. رزرو اتاق‌ها و سفارش خوراک‌های سنتی." />
     
+    <!-- جلوگیری قطعی از کش شدن نسخه قدیمی در مرورگرهای موبایل و وب‌اپ تلگرام -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <!-- Telegram WebApp Official JS SDK (deferred for instant rendering) -->
     <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
 
@@ -51,15 +56,29 @@
           safeNavigateTo('screen-reservation');
         };
         window.handleSocialLinkClick = function(e, url) {
-          if (e && e.stopPropagation) {
+          if (!url) return;
+          if (e) {
+            try { e.preventDefault(); } catch (_) {}
             try { e.stopPropagation(); } catch (_) {}
           }
-          if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
-            try {
-              if (e && e.preventDefault) e.preventDefault();
-              window.Telegram.WebApp.openLink(url);
-            } catch (_) {}
+          var tgApp = window.Telegram && window.Telegram.WebApp;
+          var isTgLink = url.indexOf("t.me/") !== -1 || url.indexOf("tg://") === 0;
+
+          if (tgApp) {
+            if (isTgLink && typeof tgApp.openTelegramLink === "function") {
+              try {
+                tgApp.openTelegramLink(url);
+                return;
+              } catch (_) {}
+            } else if (!isTgLink && typeof tgApp.openLink === "function") {
+              try {
+                tgApp.openLink(url);
+                return;
+              } catch (_) {}
+            }
           }
+
+          window.open(url, "_blank", "noopener,noreferrer");
         };
         window.dismissFloatingBookingBar = function(e) {
           if (e && e.stopPropagation) {
@@ -94,7 +113,7 @@
     <link rel="apple-touch-icon" href="./assets/images/logo.png" />
     <link rel="shortcut icon" href="./favicon.ico" />
 
-    <link rel="stylesheet" href="./style.css?v=2.9.0" />
+    <link rel="stylesheet" href="./style.css?v=3.5.0" />
   </head>
   <body>
     <div class="app-container" id="app-container">
@@ -1215,9 +1234,9 @@
           </button>
 
           <!-- ۴. ارسال از طریق پیامک به میزبان -->
-          <a class="btn btn-outline" id="btn-modal-sms" href="sms:09334868840" onclick="sendViaSMS(event)" style="font-size: 12px; padding: 8px 12px; color: var(--brand-text-muted); text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            📱 ارسال پیامک مستقیم به میزبان (۰۹۳۳۴۸۶۸۸۴۰)
-          </a>
+          <button type="button" class="btn btn-outline" id="btn-modal-sms" onclick="sendViaSMS(event)" style="font-size: 12px; padding: 8px 12px; color: var(--brand-text-muted); text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            📱 ارسال پیامک به میزبان (۰۹۳۳۴۸۶۸۸۴۰)
+          </button>
 
           <button class="btn" id="btn-modal-cancel" style="background: transparent; color: var(--brand-text-muted); font-size: 12px; padding: 5px 10px;" onclick="closeMessageModal()">
             انصراف و ویرایش اطلاعات
@@ -1332,6 +1351,6 @@
       <button type="button" class="toast-close-btn" id="toast-close-btn" onclick="hideToast()" title="بستن پیام" aria-label="بستن">✕</button>
     </div>
 
-    <script type="module" src="./app.js?v=3.2.0"></script>
+    <script type="module" src="./app.js?v=3.5.0"></script>
   </body>
 </html> 

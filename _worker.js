@@ -12,12 +12,23 @@ export default {
 
     // سرو فایل‌های استاتیک در صورتی که بایندر ASSETS فعال باشد
     if (env.ASSETS && typeof env.ASSETS.fetch === "function") {
-      const assetResponse = await env.ASSETS.fetch(request);
-      if (assetResponse.status !== 404) {
-        return assetResponse;
+      let assetResponse = await env.ASSETS.fetch(request);
+      if (assetResponse.status === 404) {
+        // در صورت ۴۰۴ در SPA، صفحه اصلی index.html بازگردانده شود
+        assetResponse = await env.ASSETS.fetch(new URL("/", request.url));
       }
-      // در صورت ۴۰۴ در SPA، صفحه اصلی index.html بازگردانده شود
-      return env.ASSETS.fetch(new URL("/", request.url));
+      
+      const newHeaders = new Headers(assetResponse.headers);
+      newHeaders.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      newHeaders.set("Pragma", "no-cache");
+      newHeaders.set("Expires", "0");
+      newHeaders.set("Access-Control-Allow-Origin", "*");
+
+      return new Response(assetResponse.body, {
+        status: assetResponse.status,
+        statusText: assetResponse.statusText,
+        headers: newHeaders
+      });
     }
 
     return worker.fetch(request, env, ctx);

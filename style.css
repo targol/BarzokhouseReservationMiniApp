@@ -334,6 +334,7 @@ body.has-floating-bar .screen {
   color: var(--brand-green);
   margin-bottom: 10px;
   line-height: 1.4;
+  text-align: center;
 }
 
 .welcome-text {
@@ -346,6 +347,7 @@ body.has-floating-bar .screen {
 .welcome-badges {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
   margin-top: 14px;
 }
@@ -2280,9 +2282,22 @@ body.has-floating-booking-bar .food-scroll-nav-dock {
   margin-bottom: 12px;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 480px) {
   .form-row-2col {
     gap: 8px;
+  }
+  .welcome-card {
+    padding: 16px 14px;
+  }
+  .welcome-heading {
+    text-align: center;
+    font-size: 16px;
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+  }
+  .welcome-badges {
+    justify-content: center;
   }
 }
 

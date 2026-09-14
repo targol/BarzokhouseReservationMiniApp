@@ -67,7 +67,7 @@ export const TelegramFrame: React.FC<TelegramFrameProps> = ({
       text: `سلام ${user.first_name}! خوش آمدید 👋\n\nاین بات با **Cloudflare Workers** اجرا می‌شود و دارای **Telegram Mini App** اختصاصی است.\n\n👇 برای باز کردن مینی‌اپ، روی دکمه زیر کلیک کنید:`,
       time: '12:35',
       hasMiniAppButton: true,
-      buttonText: '🏡 ورود به مینی‌اپ'
+      buttonText: '🏡 به خانه برزک خوش آمدید'
     }
   ]);
 

@@ -431,7 +431,7 @@ async function handleTelegramUpdate(update, env, currentUrl) {
         inline_keyboard: [
           [
             {
-              text: "🏡 ورود به مینی‌اپ",
+              text: "🏡 به خانه برزک خوش آمدید",
               web_app: { url: appUrl }
             }
           ]
@@ -439,7 +439,7 @@ async function handleTelegramUpdate(update, env, currentUrl) {
         keyboard: [
           [
             {
-              text: "🏡 ورود به مینی‌اپ خانه برزک",
+              text: "🏡 به خانه برزک خوش آمدید",
               web_app: { url: appUrl }
             }
           ]

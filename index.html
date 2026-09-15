@@ -95,6 +95,18 @@
           var d = document.getElementById("shamsi-datepicker-modal");
           if (d) d.classList.remove("active");
         };
+        window.addEventListener("load", function() {
+          setTimeout(function() {
+            var g = document.getElementById("home-social-buttons-grid");
+            if (g) {
+              g.classList.remove("is-loading");
+              var btns = g.querySelectorAll(".home-social-btn");
+              for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove("is-loading");
+              }
+            }
+          }, 700);
+        });
       })();
     </script>
 
@@ -270,18 +282,24 @@
             </a>
           </div>
 
-          <!-- دکمه‌های وب‌سایت، تلگرام و اینستاگرام زیر شماره‌های تلفن -->
-          <div class="home-social-grid" id="home-social-buttons-grid">
-            <a class="home-social-btn home-social-web" id="home-btn-website" data-config-website href="https://barzokhouse.com" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://barzokhouse.com')" title="مشاهده وب‌سایت رسمی خانه برزک">
-              <span class="social-icon">🌐</span>
+          <!-- دکمه‌های دایره‌ای آیکون‌محور وب‌سایت، تلگرام و اینستاگرام زیر شماره‌های تلفن -->
+          <div class="home-social-grid is-loading" id="home-social-buttons-grid">
+            <a class="home-social-btn home-social-web is-loading" id="home-btn-website" data-config-website href="https://barzokhouse.com" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://barzokhouse.com')" title="مشاهده وب‌سایت رسمی خانه برزک" aria-label="وب‌سایت رسمی خانه برزک">
+              <span class="social-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              </span>
               <span class="social-label">وب‌سایت</span>
             </a>
-            <a class="home-social-btn home-social-tg" id="home-btn-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://t.me/barzokhouse')" title="کانال و ارتباط در تلگرام">
-              <span class="social-icon">✈️</span>
+            <a class="home-social-btn home-social-tg is-loading" id="home-btn-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://t.me/barzokhouse')" title="کانال و ارتباط در تلگرام" aria-label="کانال تلگرام خانه برزک">
+              <span class="social-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+              </span>
               <span class="social-label">کانال تلگرام</span>
             </a>
-            <a class="home-social-btn home-social-insta" id="home-btn-instagram" data-config-instagram href="https://instagram.com/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://instagram.com/barzokhouse')" title="صفحه رسمی اینستاگرام خانه برزک">
-              <span class="social-icon">📷</span>
+            <a class="home-social-btn home-social-insta is-loading" id="home-btn-instagram" data-config-instagram href="https://instagram.com/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://instagram.com/barzokhouse')" title="صفحه رسمی اینستاگرام خانه برزک" aria-label="اینستاگرام رسمی خانه برزک">
+              <span class="social-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+              </span>
               <span class="social-label">اینستاگرام</span>
             </a>
           </div>
@@ -305,12 +323,12 @@
            ======================================================== -->
       <section class="screen" id="screen-rooms">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-rooms">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-rooms" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🏠 اتاق‌ها</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -343,12 +361,12 @@
            ======================================================== -->
       <section class="screen" id="screen-room-detail">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-room-detail">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-room-detail" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" id="detail-room-name" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">اتاق</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -387,12 +405,12 @@
            ======================================================== -->
       <section class="screen" id="screen-reservation">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-reservation">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-reservation" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">📝 رزرو اقامت</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -564,12 +582,12 @@
            ======================================================== -->
       <section class="screen" id="screen-address">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-address">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-address" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">📍 نشانی و مسیر</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -603,12 +621,12 @@
            ======================================================== -->
       <section class="screen" id="screen-contact">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-contact">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-contact" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">📞 تماس با ما</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -671,12 +689,12 @@
            ======================================================== -->
       <section class="screen" id="screen-social">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-social">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-social" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🌐 وب‌سایت و شبکه‌ها</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -719,12 +737,12 @@
            ======================================================== -->
       <section class="screen" id="screen-rules">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-rules">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-rules" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🏡 نکات اقامت</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -776,12 +794,12 @@
            ======================================================== -->
       <section class="screen" id="screen-weather">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-weather">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-weather" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🌤️ آب‌وهوا</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -812,12 +830,12 @@
            ======================================================== -->
       <section class="screen" id="screen-green-travel">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-green-travel">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-green-travel" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🌱 سفر سبز</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -863,12 +881,12 @@
         <div id="food-screen-top-anchor" style="position: relative; top: 0; left: 0; width: 1px; height: 1px; pointer-events: none;"></div>
 
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-food">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-food" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">🍽️ خوراک‌های محلی</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 
@@ -1076,13 +1094,11 @@
 
         <!-- دکمه‌های شناور جابجایی سریع در صفحه طولانی غذا -->
         <div class="food-scroll-nav-dock" id="food-scroll-nav-dock">
-          <button type="button" class="food-scroll-btn" onclick="scrollFoodScreen('top')" id="btn-food-dock-top" title="رفتن به بالای منو">
-            <span>⬆️</span>
-            <span>بالای صفحه</span>
+          <button type="button" class="food-scroll-btn" onclick="scrollFoodScreen('top')" id="btn-food-dock-top" title="رفتن به بالای منو" aria-label="رفتن به بالای منو">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>
           </button>
-          <button type="button" class="food-scroll-btn" onclick="scrollFoodScreen('bottom')" id="btn-food-dock-bottom" title="رفتن به فاکتور و ثبت سفارش">
-            <span>⬇️</span>
-            <span>پایین / فاکتور</span>
+          <button type="button" class="food-scroll-btn" onclick="scrollFoodScreen('bottom')" id="btn-food-dock-bottom" title="رفتن به فاکتور و ثبت سفارش" aria-label="رفتن به پایین صفحه و فاکتور">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
           </button>
         </div>
       </section>
@@ -1093,12 +1109,12 @@
            ======================================================== -->
       <section class="screen" id="screen-reviews">
         <div class="screen-header">
-          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-reviews">
-            ← بازگشت
+          <button class="back-btn" onclick="navigateBack()" id="btn-back-from-reviews" title="بازگشت" aria-label="بازگشت">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
           </button>
           <span class="screen-title" onclick="navigateTo('screen-home')" role="button" title="بازگشت به صفحه اول">⭐ تجربه و نظرات شما</span>
           <button type="button" class="screen-home-btn" onclick="navigateTo('screen-home')" title="بازگشت به صفحه اول" aria-label="صفحه اول">
-            🏠 صفحه اول
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           </button>
         </div>
 

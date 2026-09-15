@@ -15,12 +15,12 @@ const CONFIG = {
   phone2Display: "0912 547 2055",         // شماره تماس دوم جهت نمایش LTR
   phone: "09334868840",                  // پشتیبانی از کد‌های قدیمی
   phoneDisplay: "0933 486 8840",
-  telegram: "https://t.me/barzokhouse",   // آدرس چنل تلگرام
+  telegram: "https://t.me/barzokhouse",   // آدرس کانال تلگرام
   telegramUsername: "barzokhouse",        // آیدی کانال تلگرام خانه برزک
   hostTelegramUserId: "5507912901",       // آیدی عددی اکانت شخصی میزبان در تلگرام
   hostTelegramPhone: "09334868840",       // شماره اکانت تلگرام میزبان
   hostTelegramChatUrl: "https://t.me/+989334868840", // لینک تلگرام چت مستقیم با میزبان در تلگرام
-  hostTelegramUri: "tg://resolve?phone=989334868840", // دیپ لینک اختصاصی گفتگوی مستقیم در اپ تلگرام
+  hostTelegramUri: "tg://resolve?phone=989334868840", // لینک اختصاصی گفتگوی مستقیم در اپ تلگرام
   instagram: "https://instagram.com/barzokhouse", // آدرس اینستاگرام
   website: "https://barzokhouse.com",     // وب‌سایت رسمی خانه برزک
   address: "استان اصفهان، شهرستان کاشان، شهر برزک، محله سَرِدُل، بعد از اداره آب و نرسیده به بهداری، اقامتگاه بومگردی خانه برزک",

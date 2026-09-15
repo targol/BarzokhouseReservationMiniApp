@@ -17,6 +17,7 @@ const CONFIG = {
   phoneDisplay: "0933 486 8840",
   telegram: "https://t.me/barzokhouse",   // آدرس کانال تلگرام
   telegramUsername: "barzokhouse",        // آیدی کانال تلگرام خانه برزک
+  telegramUri: "tg://resolve?domain=barzokhouse", // دیپ‌لینک مستقیم کانال تلگرام جهت اجرا در گوشی موبایل
   hostTelegramUserId: "5507912901",       // آیدی عددی اکانت شخصی میزبان در تلگرام
   hostTelegramPhone: "09334868840",       // شماره اکانت تلگرام میزبان
   hostTelegramChatUrl: "https://t.me/+989334868840", // لینک تلگرام چت مستقیم با میزبان در تلگرام
@@ -1407,6 +1408,8 @@ function renderCurrentScreen() {
     renderRoomsList();
   } else if (targetId === "screen-food") {
     renderFoodSection();
+  } else if (targetId === "screen-weather") {
+    if (typeof initBarzokWeather === "function") initBarzokWeather();
   }
 
   // مدیریت نمایش داک شناور اسکرول در صفحه غذا
@@ -5371,7 +5374,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-config-telegram]").forEach(el => {
     el.href = CONFIG.telegram;
     el.addEventListener("click", (e) => {
-      handleSocialLinkClick(e, CONFIG.telegram);
+      openBarzokTelegramChannel(e);
     });
   });
   document.querySelectorAll("[data-config-host-telegram]").forEach(el => {
@@ -5581,6 +5584,12 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSelectedRoomsInForm();
   updateReservationCalculations();
   updateFloatingBookingBar();
+  initBarzokWeather();
+
+  // برداشتن پرده لودینگ اولیه صفحه
+  if (typeof window.dismissInitialLoader === "function") {
+    setTimeout(window.dismissInitialLoader, 650);
+  }
 });
 
 // اکسپورت توابع به پنجره سراسری (Global Window) برای دسترسی آسان در رویدادهای HTML
@@ -5683,7 +5692,301 @@ function openBarzokTelegramChat(e) {
 }
 
 window.openBarzokTelegramChat = openBarzokTelegramChat;
+
+function openBarzokTelegramChannel(e) {
+  triggerHaptic('light');
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+
+  const channelWebUrl = CONFIG.telegram || "https://t.me/barzokhouse";
+  const channelAppUri = CONFIG.telegramUri || "tg://resolve?domain=barzokhouse";
+
+  const tgApp = window.Telegram?.WebApp || tg;
+  if (tgApp && typeof tgApp.openTelegramLink === 'function') {
+    try {
+      tgApp.openTelegramLink(channelWebUrl);
+      return;
+    } catch (err) {
+      console.warn("tg.openTelegramLink failed", err);
+    }
+  }
+
+  // در گوشی موبایل (اندروید و iOS): دیپ‌لینک tg:// سریع‌ترین و مطمئن‌ترین شیوه باز شدن کانال بدون وب‌پراکسی است
+  try {
+    window.location.href = channelAppUri;
+  } catch (_) {}
+
+  setTimeout(() => {
+    try {
+      window.open(channelWebUrl, '_blank', 'noopener,noreferrer');
+    } catch (_) {
+      window.location.href = channelWebUrl;
+    }
+  }, 400);
+}
+
+window.openBarzokTelegramChannel = openBarzokTelegramChannel;
 window.sendToBarzokTelegramAccount = sendToBarzokTelegramAccount;
 window.cancelRoomFromFloatingBar = cancelRoomFromFloatingBar;
 window.cancelCurrentRoomDetail = cancelCurrentRoomDetail;
+
+// ==========================================================================
+// دریافت زنده اطلاعات آب‌وهوای برزک از سرویس رایگان Open-Meteo
+// مختصات جغرافیایی برزک: ۳۳.۷۸۸۶ شمالی، ۵۱.۲۲۶۷ شرقی، ارتفاع: ۲۰۵۰ متر
+// ==========================================================================
+let _barzokWeatherCache = null;
+let _barzokWeatherLastFetch = 0;
+
+function getWeatherConditionInfo(code, isDay = 1) {
+  const c = Number(code);
+  switch (c) {
+    case 0:
+      return {
+        text: isDay ? "صاف و آفتابی" : "صاف و مهتابی",
+        icon: isDay ? "☀️" : "🌙",
+        desc: "آسمان کاملاً بدون ابر و زلال"
+      };
+    case 1:
+      return {
+        text: isDay ? "غالباً آفتابی" : "غالباً صاف",
+        icon: isDay ? "🌤️" : "🌤️",
+        desc: "لکه‌های کم‌تراکم ابر در آسمان"
+      };
+    case 2:
+      return {
+        text: "نیمه‌ابری",
+        icon: "⛅",
+        desc: "هوای مطبوع با پوشش ابر پراکنده"
+      };
+    case 3:
+      return {
+        text: "ابری",
+        icon: "☁️",
+        desc: "آسمان پوشیده از ابرهای کوهستانی"
+      };
+    case 45:
+    case 48:
+      return {
+        text: "مه‌آلود کوهستانی",
+        icon: "🌫️",
+        desc: "کاهش دید و مه در ارتفاعات"
+      };
+    case 51:
+    case 53:
+    case 55:
+      return {
+        text: "نم‌نم باران",
+        icon: "🌦️",
+        desc: "بارش ملایم و مطبوع"
+      };
+    case 61:
+    case 63:
+    case 65:
+      return {
+        text: "بارانی",
+        icon: "🌧️",
+        desc: "بارندگی همراه با طراوت کوهستان"
+      };
+    case 71:
+    case 73:
+    case 75:
+    case 77:
+      return {
+        text: "بارش برف",
+        icon: "❄️",
+        desc: "برف سپید کوهستان و سرمای زمستانی"
+      };
+    case 80:
+    case 81:
+    case 82:
+      return {
+        text: "رگبار باران",
+        icon: "🌧️",
+        desc: "رگبارهای بهاری و پاییزی کرکس"
+      };
+    case 85:
+    case 86:
+      return {
+        text: "کولاک و برف",
+        icon: "🌨️",
+        desc: "بارش برف در ارتفاعات"
+      };
+    case 95:
+    case 96:
+    case 99:
+      return {
+        text: "رعدوبرق کوهستانی",
+        icon: "⛈️",
+        desc: "هوای طوفانی همراه با صاعقه"
+      };
+    default:
+      return {
+        text: "مطبوع کوهستانی",
+        icon: "🌤️",
+        desc: "هوای خنک و پاک کوهستانی"
+      };
+  }
+}
+
+function renderBarzokWeatherUI(data) {
+  if (!data || !data.current) return;
+  const current = data.current;
+  const daily = data.daily || {};
+
+  const temp = Math.round(current.temperature_2m);
+  const feelsLike = Math.round(current.apparent_temperature ?? temp);
+  const humidity = Math.round(current.relative_humidity_2m ?? 20);
+  const wind = Math.round(current.wind_speed_10m ?? 10);
+  const isDay = current.is_day !== undefined ? current.is_day : 1;
+  const condition = getWeatherConditionInfo(current.weather_code, isDay);
+
+  const maxTemp = (daily.temperature_2m_max && daily.temperature_2m_max[0] !== undefined) ? Math.round(daily.temperature_2m_max[0]) : temp + 2;
+  const minTemp = (daily.temperature_2m_min && daily.temperature_2m_min[0] !== undefined) ? Math.round(daily.temperature_2m_min[0]) : temp - 8;
+
+  // ۰. به‌روزرسانی ویجت فشرده بالای صفحه (Header Compact Weather)
+  const headerTempEl = document.getElementById("header-weather-temp");
+  if (headerTempEl) headerTempEl.textContent = temp;
+
+  const headerIconEl = document.getElementById("header-weather-icon");
+  if (headerIconEl) headerIconEl.textContent = condition.icon;
+
+  const menuWeatherIcon = document.getElementById("menu-weather-icon");
+  if (menuWeatherIcon) menuWeatherIcon.textContent = condition.icon;
+
+  const menuWeatherTag = document.getElementById("menu-weather-tag");
+  if (menuWeatherTag) menuWeatherTag.textContent = `${temp}°C`;
+
+  // ۱. به‌روزرسانی ویجت بصری در صفحه اول (Home Screen)
+  const homeTempEl = document.getElementById("home-weather-temp");
+  if (homeTempEl) homeTempEl.textContent = temp;
+
+  const homeDescEl = document.getElementById("home-weather-desc");
+  if (homeDescEl) homeDescEl.textContent = condition.text;
+
+  const homeIconEl = document.getElementById("home-weather-icon");
+  if (homeIconEl) homeIconEl.textContent = condition.icon;
+
+  const homeRangeEl = document.getElementById("home-weather-range");
+  if (homeRangeEl) homeRangeEl.textContent = `${maxTemp}° / ${minTemp}°`;
+
+  const homeFeelsEl = document.getElementById("home-weather-feels");
+  if (homeFeelsEl) homeFeelsEl.textContent = `${feelsLike}°C`;
+
+  const homeWindEl = document.getElementById("home-weather-wind");
+  if (homeWindEl) homeWindEl.textContent = `${wind} km/h`;
+
+  const homeHumidityEl = document.getElementById("home-weather-humidity");
+  if (homeHumidityEl) homeHumidityEl.textContent = `${humidity}%`;
+
+  // ۲. به‌روزرسانی کارت آب‌وهوای تفصیلی در صفحه آب‌وهوا (Screen Weather)
+  const detailTempEl = document.getElementById("detail-weather-temp");
+  if (detailTempEl) detailTempEl.textContent = temp;
+
+  const detailDescEl = document.getElementById("detail-weather-desc");
+  if (detailDescEl) detailDescEl.textContent = `${condition.text} (${condition.desc})`;
+
+  const detailFeelsEl = document.getElementById("detail-weather-feels");
+  if (detailFeelsEl) detailFeelsEl.textContent = `${feelsLike}°C`;
+
+  const detailWindEl = document.getElementById("detail-weather-wind");
+  if (detailWindEl) detailWindEl.textContent = `${wind} km/h`;
+
+  const detailHumidityEl = document.getElementById("detail-weather-humidity");
+  if (detailHumidityEl) detailHumidityEl.textContent = `${humidity}%`;
+
+  const detailIconEl = document.getElementById("detail-weather-icon");
+  if (detailIconEl) detailIconEl.textContent = condition.icon;
+
+  // رندر کارت‌های پیش‌بینی ۳ روزه
+  const forecastGrid = document.getElementById("weather-forecast-grid");
+  if (forecastGrid && daily.time && daily.time.length >= 3) {
+    const dayLabels = ["امروز", "فردا", "پس‌فردا"];
+    let forecastHtml = "";
+    for (let i = 0; i < 3; i++) {
+      const dMax = Math.round(daily.temperature_2m_max[i] ?? (temp + 2));
+      const dMin = Math.round(daily.temperature_2m_min[i] ?? (temp - 7));
+      const dCode = daily.weather_code ? daily.weather_code[i] : 1;
+      const dCond = getWeatherConditionInfo(dCode, 1);
+      forecastHtml += `
+        <div class="forecast-day-card">
+          <div class="forecast-day-title">${dayLabels[i]}</div>
+          <div class="forecast-day-icon">${dCond.icon}</div>
+          <div class="forecast-day-temp">${dMax}° / ${dMin}°</div>
+          <div class="forecast-day-desc">${dCond.text}</div>
+        </div>
+      `;
+    }
+    forecastGrid.innerHTML = forecastHtml;
+  }
+}
+
+async function initBarzokWeather() {
+  const now = Date.now();
+  // اگر کش تا ۱۵ دقیقه معتبر باشد، بلافاصله از کش رندر کن
+  if (_barzokWeatherCache && (now - _barzokWeatherLastFetch < 15 * 60 * 1000)) {
+    renderBarzokWeatherUI(_barzokWeatherCache);
+    return;
+  }
+
+  // تلاش برای خواندن از localStorage
+  try {
+    const stored = localStorage.getItem("barzok_weather_cache");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.timestamp && (now - parsed.timestamp < 15 * 60 * 1000) && parsed.data) {
+        _barzokWeatherCache = parsed.data;
+        _barzokWeatherLastFetch = parsed.timestamp;
+        renderBarzokWeatherUI(_barzokWeatherCache);
+        return;
+      }
+    }
+  } catch (_) {}
+
+  // دریافت زنده از سرویس رایگان Open-Meteo
+  const apiUrl = "https://api.open-meteo.com/v1/forecast?latitude=33.7886&longitude=51.2267&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTehran";
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(apiUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      _barzokWeatherCache = data;
+      _barzokWeatherLastFetch = Date.now();
+      try {
+        localStorage.setItem("barzok_weather_cache", JSON.stringify({
+          timestamp: _barzokWeatherLastFetch,
+          data: data
+        }));
+      } catch (_) {}
+      renderBarzokWeatherUI(data);
+    } else {
+      throw new Error("API status " + res.status);
+    }
+  } catch (err) {
+    console.warn("Could not fetch live weather, using seasonal mountain data:", err);
+    // داده‌های پیش‌فرض فصلی کوهستانی برزک جهت جلوگیری از خالی ماندن ویجت
+    const fallbackData = {
+      current: {
+        temperature_2m: 25,
+        apparent_temperature: 23,
+        relative_humidity_2m: 18,
+        wind_speed_10m: 12,
+        is_day: 1,
+        weather_code: 1
+      },
+      daily: {
+        time: ["today", "tomorrow", "day3"],
+        temperature_2m_max: [27, 28, 26],
+        temperature_2m_min: [16, 17, 15],
+        weather_code: [1, 0, 2]
+      }
+    };
+    renderBarzokWeatherUI(fallbackData);
+  }
+}
+
+window.initBarzokWeather = initBarzokWeather;
 

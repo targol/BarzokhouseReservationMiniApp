@@ -55,11 +55,49 @@
           }
           safeNavigateTo('screen-reservation');
         };
+        window.dismissInitialLoader = function() {
+          var loader = document.getElementById("app-initial-loader");
+          if (!loader || loader.classList.contains("loaded")) return;
+          loader.classList.add("loaded");
+          setTimeout(function() {
+            if (loader && loader.parentNode) loader.style.display = "none";
+          }, 520);
+        };
+        window.openBarzokTelegramChannel = function(e) {
+          if (e) {
+            try { e.preventDefault(); } catch (_) {}
+            try { e.stopPropagation(); } catch (_) {}
+          }
+          var channelWeb = "https://t.me/barzokhouse";
+          var channelUri = "tg://resolve?domain=barzokhouse";
+          var tgApp = window.Telegram && window.Telegram.WebApp;
+          if (tgApp && typeof tgApp.openTelegramLink === "function") {
+            try {
+              tgApp.openTelegramLink(channelWeb);
+              return;
+            } catch (_) {}
+          }
+          // در موبایل: ارسال دیپ لینک جهت باز کردن مستقیم اپلیکیشن تلگرام بدون گیر افتادن در فیلتر وب
+          try {
+            window.location.href = channelUri;
+          } catch (_) {}
+          setTimeout(function() {
+            try {
+              window.open(channelWeb, "_blank", "noopener,noreferrer");
+            } catch (_) {
+              window.location.href = channelWeb;
+            }
+          }, 450);
+        };
         window.handleSocialLinkClick = function(e, url) {
           if (!url) return;
           if (e) {
             try { e.preventDefault(); } catch (_) {}
             try { e.stopPropagation(); } catch (_) {}
+          }
+          if (url.indexOf("barzokhouse") !== -1 && (url.indexOf("t.me") !== -1 || url.indexOf("tg://") !== -1)) {
+            window.openBarzokTelegramChannel(e);
+            return;
           }
           var tgApp = window.Telegram && window.Telegram.WebApp;
           var isTgLink = url.indexOf("t.me/") !== -1 || url.indexOf("tg://") === 0;
@@ -78,6 +116,9 @@
             }
           }
 
+          if (isTgLink) {
+            try { window.location.href = url.replace("https://t.me/", "tg://resolve?domain="); } catch (_) {}
+          }
           window.open(url, "_blank", "noopener,noreferrer");
         };
         window.dismissFloatingBookingBar = function(e) {
@@ -106,7 +147,19 @@
               }
             }
           }, 700);
+
+          setTimeout(function() {
+            if (typeof window.dismissInitialLoader === "function") {
+              window.dismissInitialLoader();
+            }
+          }, 800);
         });
+        // فال‌بک ایمن برداشته شدن لودینگ اولیه حداکثر پس از ۲.۲ ثانیه
+        setTimeout(function() {
+          if (typeof window.dismissInitialLoader === "function") {
+            window.dismissInitialLoader();
+          }
+        }, 2200);
       })();
     </script>
 
@@ -128,6 +181,22 @@
     <link rel="stylesheet" href="./style.css?v=3.5.0" />
   </head>
   <body>
+    <!-- پرده لودینگ اولیه صفحه (Initial Loading Screen) -->
+    <div id="app-initial-loader" class="app-initial-loader" role="status" aria-live="polite">
+      <div class="loader-content">
+        <div class="loader-logo-ring">
+          <img src="assets/images/logo.png" alt="خانه برزک" class="loader-logo" onerror="this.onerror=null; this.src='logo.png';" />
+          <div class="loader-spinner"></div>
+        </div>
+        <h2 class="loader-title">اقامتگاه بومگردی خانه برزک</h2>
+        <p class="loader-subtitle">مثل یک خانه ، امن و راحت</p>
+        <div class="loader-bar-wrap">
+          <div class="loader-bar-fill"></div>
+        </div>
+        <span class="loader-text" id="loader-status-message">در حال آماده‌سازی و بارگذاری...</span>
+      </div>
+    </div>
+
     <div class="app-container" id="app-container">
       
       <!-- هدر و هویت بصری خانه برزک -->
@@ -139,6 +208,15 @@
               <h1 class="brand-title" id="header-brand-title">اقامتگاه بومگردی خانه برزک</h1>
               <p class="brand-subtitle" id="header-brand-tagline">مثل یک خانه ، امن و راحت</p>
               <p class="brand-location" id="header-brand-location">کاشان، برزک</p>
+            </div>
+          </div>
+
+          <!-- ویجت خلاصه و مینیاتوری آب‌وهوای برزک در بالای صفحه (فقط آیکون و دما) -->
+          <div class="header-weather-compact" id="header-weather-compact" onclick="navigateTo('screen-weather')" role="button" tabindex="0" title="مشاهده وضعیت و پیش‌بینی کامل آب‌وهوای برزک" aria-label="آب‌وهوای برزک">
+            <span class="header-weather-icon" id="header-weather-icon">🌤️</span>
+            <div class="header-weather-temp-wrap">
+              <span class="header-weather-temp" id="header-weather-temp">--</span>
+              <span class="header-weather-unit">°C</span>
             </div>
           </div>
         </div>
@@ -193,16 +271,7 @@
             <span class="menu-card-arrow">←</span>
           </div>
 
-          <!-- ۴. آب‌وهوا -->
-          <div class="menu-card" id="menu-btn-weather" onclick="navigateTo('screen-weather')" role="button" tabindex="0">
-            <div class="menu-card-right">
-              <span class="menu-card-icon">🌤️</span>
-              <span class="menu-card-title">آب‌وهوای برزک</span>
-            </div>
-            <span class="menu-card-arrow">←</span>
-          </div>
-
-          <!-- ۵. نکات اقامت -->
+          <!-- ۴. نکات اقامت -->
           <div class="menu-card" id="menu-btn-rules" onclick="navigateTo('screen-rules')" role="button" tabindex="0">
             <div class="menu-card-right">
               <span class="menu-card-icon">🏡</span>
@@ -241,45 +310,55 @@
             خوشحال می‌شویم صدایتان را بشنویم! برای هماهنگی ساعت ورود یا هر سؤالی، می‌توانید با ما تماس بگیرید:
           </p>
 
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px;">
-            <!-- شماره تماس اول -->
-            <div style="background: var(--brand-surface-subtle); padding: 12px 10px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--brand-border); display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="font-size: 11.5px; color: var(--brand-text-muted); margin-bottom: 4px;">شماره اول:</div>
-                <div style="font-size: 14.5px; font-weight: 800; color: var(--brand-green); margin-bottom: 8px;">
-                  <span dir="ltr" style="display: inline-block; direction: ltr; unicode-bidi: isolate; letter-spacing: 0.5px;" id="home-phone-display-1">0933 486 8840</span>
+          <!-- اطلاعات تماس: کارت‌های تماس دو ستونه و چت مستقیم زیر آن -->
+          <div class="home-contact-container" id="home-quick-calls-grid" style="margin: 14px 0 16px 0;">
+            <!-- ردیف ۲ ستونه برای شماره‌های تماس -->
+            <div class="home-contact-cards-2col" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+              <!-- کارت شماره تماس اول -->
+              <div class="home-contact-subcard" style="background: var(--brand-surface-subtle); padding: 12px 10px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--brand-border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 11.5px; color: var(--brand-text-muted); margin-bottom: 4px; font-weight: 700;">شماره اول:</div>
+                  <div style="font-size: 15px; font-weight: 800; color: var(--brand-green); margin-bottom: 10px; line-height: 1.2;">
+                    <span dir="ltr" style="display: inline-block; direction: ltr; unicode-bidi: isolate; letter-spacing: 0.5px;" id="home-phone-display-1">0933 486 8840</span>
+                  </div>
                 </div>
+                <a class="btn btn-primary" id="home-btn-call-1" data-config-phone1 href="tel:09334868840" style="padding: 8px 10px; font-size: 12.5px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;">
+                  <span>📞</span>
+                  <span>تماس با شماره ۱</span>
+                </a>
               </div>
-              <a class="btn btn-primary" id="home-btn-call-1" data-config-phone1 href="tel:09334868840" style="padding: 7px 10px; font-size: 12px; width: 100%; justify-content: center;">
-                📞 تماس با شماره اول
-              </a>
+
+              <!-- کارت شماره تماس دوم -->
+              <div class="home-contact-subcard" style="background: var(--brand-surface-subtle); padding: 12px 10px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--brand-border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 11.5px; color: var(--brand-text-muted); margin-bottom: 4px; font-weight: 700;">شماره دوم:</div>
+                  <div style="font-size: 15px; font-weight: 800; color: var(--brand-green); margin-bottom: 10px; line-height: 1.2;">
+                    <span dir="ltr" style="display: inline-block; direction: ltr; unicode-bidi: isolate; letter-spacing: 0.5px;" id="home-phone-display-2">0912 547 2055</span>
+                  </div>
+                </div>
+                <a class="btn btn-outline" id="home-btn-call-2" data-config-phone2 href="tel:09125472055" style="padding: 8px 10px; font-size: 12.5px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;">
+                  <span>📞</span>
+                  <span>تماس با شماره ۲</span>
+                </a>
+              </div>
             </div>
 
-            <!-- شماره تماس دوم -->
-            <div style="background: var(--brand-surface-subtle); padding: 12px 10px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--brand-border); display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="font-size: 11.5px; color: var(--brand-text-muted); margin-bottom: 4px;">شماره دوم:</div>
-                <div style="font-size: 14.5px; font-weight: 800; color: var(--brand-green); margin-bottom: 8px;">
-                  <span dir="ltr" style="display: inline-block; direction: ltr; unicode-bidi: isolate; letter-spacing: 0.5px;" id="home-phone-display-2">0912 547 2055</span>
+            <!-- کارت گفتگوی مستقیم با میزبان در تلگرام (زیر دو شماره) -->
+            <div class="home-contact-subcard home-telegram-chat-card" style="background: rgba(34, 158, 217, 0.08); padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid rgba(34, 158, 217, 0.35); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px; line-height: 1;">💬</span>
+                <div>
+                  <div style="font-size: 12.5px; color: #1d69a3; font-weight: 800;">گفتگوی مستقیم با میزبان در تلگرام</div>
+                  <div style="font-size: 13.5px; font-weight: 800; color: #1d69a3; margin-top: 2px;">
+                    <span dir="ltr" style="display: inline-block; direction: ltr; unicode-bidi: isolate;">0933 486 8840</span>
+                  </div>
                 </div>
               </div>
-              <a class="btn btn-outline" id="home-btn-call-2" data-config-phone2 href="tel:09125472055" style="padding: 7px 10px; font-size: 12px; width: 100%; justify-content: center;">
-                📞 تماس با شماره دوم
+              <a class="btn" id="home-btn-direct-tg" href="https://t.me/+989334868840" target="_blank" rel="noopener noreferrer" data-config-host-telegram onclick="openBarzokTelegramChat(event)" style="padding: 8px 16px; font-size: 12.5px; background: #229ED9; color: #ffffff; font-weight: 800; border: 1px solid #1a82b3; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius-sm); white-space: nowrap;">
+                <span>ارسال پیام</span>
+                <span style="font-size: 14px;">←</span>
               </a>
             </div>
-          </div>
-
-          <!-- دکمه ویژه گفتگوی مستقیم با میزبان در تلگرام در صفحه اول -->
-          <div style="background: rgba(34, 158, 217, 0.08); padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid rgba(34, 158, 217, 0.35); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-            <div style="text-align: right;">
-              <div style="font-size: 12px; color: #1d69a3; font-weight: 700;">💬 گفتگوی مستقیم با میزبان در تلگرام:</div>
-              <div style="font-size: 13.5px; font-weight: 800; color: #1d69a3;">
-                <span dir="ltr">0933 486 8840</span>
-              </div>
-            </div>
-            <a class="btn" id="home-btn-direct-tg" href="https://t.me/+989334868840" target="_blank" rel="noopener noreferrer" data-config-host-telegram onclick="openBarzokTelegramChat(event)" style="padding: 7px 12px; font-size: 12px; background: #229ED9; color: #ffffff; font-weight: 800; border: 1px solid #1a82b3; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
-              💬 شروع چت مستقیم
-            </a>
           </div>
 
           <!-- دکمه‌های دایره‌ای آیکون‌محور وب‌سایت، تلگرام و اینستاگرام زیر شماره‌های تلفن -->
@@ -290,7 +369,7 @@
               </span>
               <span class="social-label">وب‌سایت</span>
             </a>
-            <a class="home-social-btn home-social-tg is-loading" id="home-btn-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="handleSocialLinkClick(event, 'https://t.me/barzokhouse')" title="کانال و ارتباط در تلگرام" aria-label="کانال تلگرام خانه برزک">
+            <a class="home-social-btn home-social-tg is-loading" id="home-btn-telegram" data-config-telegram href="https://t.me/barzokhouse" target="_blank" rel="noopener noreferrer" onclick="openBarzokTelegramChannel(event)" title="کانال و ارتباط در تلگرام" aria-label="کانال تلگرام خانه برزک">
               <span class="social-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
               </span>
@@ -313,6 +392,59 @@
             <p style="font-size: 12.5px; color: var(--brand-text-muted); line-height: 1.7; margin-bottom: 0;">
               از لحظه تصمیم به سفر تا بدرقه، کنارتان هستیم تا اقامتی آسوده و پر از خاطره‌های خوش در برزک داشته باشید.
             </p>
+          </div>
+        </div>
+
+        <!-- بخش نشانی، نقشه و راهنمای مسیر در پایین صفحه اول -->
+        <div class="content-card home-address-card" id="home-address-section" style="margin-top: 0; margin-bottom: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+          <h3 style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 15.5px; color: var(--brand-green); margin-bottom: 8px;">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <span>📍</span>
+              <span>نشانی و موقعیت اقامتگاه</span>
+            </span>
+            <button type="button" class="badge" onclick="navigateTo('screen-address')" style="border: 1px solid var(--brand-border); background: var(--brand-surface-subtle); color: var(--brand-teal); font-size: 11px; cursor: pointer; padding: 3px 8px; border-radius: 99px;">
+              جزئیات مسیر ←
+            </button>
+          </h3>
+
+          <!-- چیدمان دو ستونه: نقشه در سمت چپ، آدرس در سمت راست -->
+          <div class="home-address-split" id="home-address-split-container">
+            <!-- ستون سمت چپ: نقشه کوچک قابل کلیک -->
+            <div class="home-map-col" id="home-map-preview-col">
+              <a class="home-map-preview-card" id="home-map-preview-link" href="https://maps.google.com/?q=33.78289783354854,51.22915745964105" target="_blank" rel="noopener noreferrer" data-config-map title="مشاهده موقعیت خانه برزک روی نقشه گوگل" aria-label="نقشه گوگل اقامتگاه خانه برزک">
+                <img class="home-map-img" src="./assets/brand/brand-bg.webp" alt="موقعیت جغرافیایی خانه برزک" loading="lazy" />
+                <div class="home-map-badge">
+                  <span>🗺️</span>
+                  <span>باز کردن نقشه</span>
+                </div>
+              </a>
+            </div>
+
+            <!-- ستون سمت راست: متن آدرس خانه برزک و دکمه مسیریابی -->
+            <div class="home-address-col" id="home-address-text-col">
+              <p class="home-address-text" id="home-address-display-text">
+                استان اصفهان، کاشان، شهر برزک، محله مصلی، کوچه باغستان، اقامتگاه بومگردی خانه برزک
+              </p>
+              <a class="btn btn-mustard home-map-btn" id="home-btn-open-map" data-config-map href="https://maps.google.com/?q=33.78289783354854,51.22915745964105" target="_blank" rel="noopener noreferrer">
+                <span>📍</span>
+                <span>مسیریابی با نقشه</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- باکس چطور بیاییم زیر دو ستون نقشه و آدرس -->
+          <div class="home-how-to-reach-box" id="home-how-to-reach-container">
+            <div class="home-how-to-reach-title">
+              <span>🚗</span>
+              <span>چطور بیاییم؟</span>
+            </div>
+            <p class="home-how-to-reach-text">
+              برزک در ۴۵ کیلومتری جنوب غربی کاشان قرار دارد. جاده آسفالت و کوهستانی است و ممکن است شانس دیدن روباه، شغال و خارپشت را به‌خصوص در شب داشته باشید؛ آنچنان برانید که از حضورشان محروم نشویم.
+            </p>
+            <div class="home-how-to-reach-dist">
+              <span>⏱️</span>
+              <span>حدود ۳ ساعت از تهران (۲۵۰ کیلومتر) • حدود ۲ ساعت از اصفهان (۱۷۰ کیلومتر)</span>
+            </div>
           </div>
         </div>
       </section>
@@ -809,9 +941,40 @@
             برزک در دامنه جنوبی کوه‌های کرکس قرار دارد و هوایش همیشه چند درجه از کاشان خنک‌تر است. بهار و پاییز خنک و تابستانش همراه با نسیم مطبوع کوهستان است، زمستان‌ها نیز همراه با برف و سرما هست که گرمای زیر کرسی را دلپذیر می‌کند.
           </p>
 
+          <!-- ویجت آب‌وهوای زنده و پیش‌بینی چندروزه در صفحه آب‌وهوا بدون خروج از برنامه -->
+          <div class="screen-weather-live-box" id="screen-weather-live-box" style="margin: 16px 0; background: linear-gradient(135deg, rgba(31, 133, 120, 0.08) 0%, rgba(212, 143, 56, 0.08) 100%); border: 1.5px solid rgba(31, 133, 120, 0.25); border-radius: var(--radius-md); padding: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-size: 13.5px; font-weight: 800; color: var(--brand-green);">وضعیت کنونی هوای برزک:</span>
+              <span style="font-size: 11.5px; color: var(--brand-text-muted); display: flex; align-items: center; gap: 4px;">
+                <span class="weather-pulse-circle"></span>
+                <span>آنلاین (Open-Meteo)</span>
+              </span>
+            </div>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <div>
+                <div style="display: flex; align-items: baseline; gap: 4px;">
+                  <span style="font-size: 34px; font-weight: 800; color: var(--brand-green);" id="detail-weather-temp">--</span>
+                  <span style="font-size: 16px; font-weight: 700; color: var(--brand-text-muted);">°C</span>
+                </div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--brand-text); margin-top: 2px;" id="detail-weather-desc">در حال دریافت وضعیت...</div>
+                <div style="font-size: 12px; color: var(--brand-text-muted); margin-top: 2px;">دمای حسی: <span id="detail-weather-feels" dir="ltr">--°C</span> • باد: <span id="detail-weather-wind" dir="ltr">--</span> • رطوبت: <span id="detail-weather-humidity" dir="ltr">--</span></div>
+              </div>
+              <div style="font-size: 46px; line-height: 1;" id="detail-weather-icon">🌤️</div>
+            </div>
+
+            <!-- پیش‌بینی ۳ روز آینده برزک -->
+            <div style="border-top: 1px dashed rgba(31, 133, 120, 0.25); padding-top: 12px;">
+              <div style="font-size: 12.5px; font-weight: 700; color: var(--brand-green); margin-bottom: 8px;">پیش‌بینی روزهای آینده برزک:</div>
+              <div class="weather-forecast-grid" id="weather-forecast-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                <!-- توسط جاوااسکریپت به صورت زنده پر می‌شود -->
+              </div>
+            </div>
+          </div>
+
           <div class="button-stack" style="margin-top: 18px;">
             <a class="btn btn-mustard" id="btn-weather-forecast" data-config-weather href="https://www.accuweather.com/en/ir/azaran/208117/weather-forecast/208117?type=place&placename=barzok%20house" target="_blank" rel="noopener noreferrer">
-              🌤️ پیش‌بینی وضعیت آب‌وهوا
+              🌤️ پیش‌بینی کامل در AccuWeather
             </a>
           </div>
         </div>
